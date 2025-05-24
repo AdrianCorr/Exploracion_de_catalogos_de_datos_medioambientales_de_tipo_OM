@@ -1,0 +1,370 @@
+/* Root theme variables */
+:root {
+    --primary-color: #4f46e5;
+    --primary-light: #eef2ff;
+    --secondary-color: #ec4899;
+    --background-color: #f3f4f6;
+    --card-bg: #ffffff;
+    --text-dark: #1f2937;
+    --text-light: #4b5563;
+    --border-color: #e5e7eb;
+}
+  
+/* Reset and base */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', sans-serif;
+}
+body {
+    background-color: var(--background-color);
+    color: var(--text-dark);
+    line-height: 1.6;
+    padding: 20px;
+}
+
+/* Container */
+.container {
+    max-width: 900px;
+    margin: auto;
+    background: var(--card-bg);
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+header {
+    background: var(--primary-color);
+    color: white;
+    text-align: center;
+    padding: 1.5rem;
+}
+
+header h1 {
+    font-size: 1.75rem;
+}
+
+/* Search area */
+.search-container {
+    padding: 1.5rem;
+    background: var(--primary-light);
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 1rem;
+    align-items: center;
+}
+.search-row select, .search-row input {
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 0.75rem;
+    font-size: 1rem;
+}
+.search-row select:hover, .search-row input:hover {
+    border-color: var(--primary-color);
+}
+.search-row button {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.search-row button:hover {
+    background: var(--secondary-color);
+}
+@media(max-width: 600px) {
+    .search-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Results area */
+.result-container {
+    padding: 1.5rem;
+}
+.result-container h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: var(--text-dark);
+}
+
+/* Accordion cards */
+.process-item {
+    margin-bottom: 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--card-bg);
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+}
+
+.process-item.open {
+    box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+}
+
+.process-header {
+    cursor: pointer;
+    padding: 1rem 1rem 1rem 2.5rem;
+    position: relative;
+    background: var(--primary-light);
+    color: var(--text-dark);
+    font-weight: 600;
+    transition: background 0.2s;
+}
+
+.process-header:hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+.process-header::before {
+    content: '▶';
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%) rotate(0deg);
+    transition: transform 0.3s, color 0.2s;
+    color: var(--text-dark);
+}
+
+.process-item.open .process-header::before {
+    transform: translateY(-50%) rotate(90deg);
+}
+
+.process-item.open .process-header {
+    background: var(--primary-color);
+    color: white;
+}
+
+.process-detail {
+    padding: 1rem 1rem 1rem 2rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.process-detail.hidden {
+    display: none;
+}
+
+.process-detail h4 {
+    font-size: 1.125rem;
+    margin-top: 1rem;
+    color: var(--secondary-color);
+}
+
+.process-detail ul {
+    list-style: none;
+    margin-left: 0;
+    padding-left: 0;
+}
+
+.process-detail li {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.process-detail li:last-child {
+    border-bottom: none;
+}
+
+.process-detail .prop-name {
+    font-weight: 500;
+    color: var(--text-dark);
+}
+
+.process-detail .prop-type {
+    font-style: italic;
+    color: var(--text-light);
+}
+
+.translation {
+    font-size: 0.9rem;
+    color: var(--secondary-color);
+    margin-top: 0.5rem;
+}
+  
+
+/* Acordeón anidado */
+.foi-header {
+    cursor: pointer;
+    padding: 0.65rem 1rem;
+    background: #e0e7ff;
+    border-radius: 4px;
+    margin: 0.5rem 0;
+    font-weight: 500;
+    position: relative;
+}
+.foi-header::before {
+    content: '▶';
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%) rotate(0deg);
+    transition: transform 0.3s;
+}
+.process-item.open .foi-header::before {
+    transform: translateY(-50%) rotate(90deg);
+}
+.foi-detail {
+    padding: 0.75rem 1rem 0.75rem 2rem;
+    background: #f0faff;
+    border-left: 3px solid #4f46e5;
+}
+.foi-detail.hidden {
+    display: none;
+}
+  
+
+
+
+
+.hidden {
+    display: none !important;
+}
+  
+
+
+
+/* Centraliza y da forma al modal */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    pointer-events: auto;
+}
+/* El propio modal */
+.modal {
+    position: relative;         /* para que el botón ‘×’ se posicione respecto a este contenedor */
+    background: var(--card-bg);
+    border-radius: 8px;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.15);
+    overflow: hidden;
+    pointer-events: auto;  /* ¡Esto es imprescindible! */
+}
+  
+/* Cabecera: posición relativa para contener el botón */
+.modal-header {
+    position: relative;         /* hace que el botón de cierre se ancle dentro */
+    padding: 1rem 1.5rem;
+    background: var(--primary-color);
+    color: white;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+  
+/* Botón cerrar en la esquina */
+.modal-close {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.75rem;
+    background: transparent;
+    border: none;
+    font-size: 1.5rem;
+    line-height: 1;
+    color: white;
+    cursor: pointer;
+}
+  
+  
+  /* Cuerpo */
+.modal-body {
+    padding: 1.5rem;
+    color: var(--text-dark);
+    line-height: 1.5;
+}
+  
+  /* Títulos internos */
+.modal-body h5 {
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+    font-size: 1.1rem;
+    color: var(--secondary-color);
+}
+  
+  /* Párrafos */
+.modal-body p {
+    margin-bottom: 1rem;
+}
+  
+  /* Tablas dentro del modal */
+.modal-body table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1.25rem;
+}
+  
+  /* Encabezados de tabla */
+.modal-body th {
+    text-align: left;
+    font-weight: 600;
+    padding: 0.5rem;
+    background: var(--primary-light);
+    color: var(--text-dark);
+    border-bottom: 2px solid var(--border-color);
+}
+  
+  /* Celdas de tabla */
+.modal-body td {
+    padding: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-light);
+}
+  
+  /* Espaciado extra tras cada tabla */
+.modal-body br + h5, .modal-body table + h5 {
+    margin-top: 1.5rem;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  /* Botón FOI en detalle */
+.foi-button {
+    margin: 1rem 0;
+    padding: 0.5rem 1rem;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.foi-button:hover {   
+    background: var(--secondary-color);
+}
+  
+
+.foi-link {
+    color: var(--primary-color);
+    text-decoration: underline;
+    cursor: pointer;
+    font-weight: 600;
+    transition: color 0.2s;
+  }
+  .foi-link:hover {
+    color: var(--secondary-color);
+  }
+  
