@@ -29,19 +29,19 @@ La aplicación ofrece una interfaz web que permite:
    ```
 2. Entra en el directorio del proyecto:
   ```bash
-    cd Exploracion_de_catalogos_de_datos_medioambientales_de_tipo_OM
+cd Exploracion_de_catalogos_de_datos_medioambientales_de_tipo_OM
   ```
 5. Instala las dependencias necesarias:
   ```bash
-    npm install
+npm install
   ```
 7. Ejecuta el servidor:
   ```bash
-    node server.js
+node server.js
   ```
 8. Abre tu navegador y accede a:
   ```bash
-    http://localhost:3000
+http://localhost:3000
   ```
 
 ## 📁 Estructura del proyecto
