@@ -29,31 +29,31 @@ La aplicación ofrece una interfaz web que permite:
    ```
 2. Entra en el directorio del proyecto:
   ```bash
-  cd Exploracion_de_catalogos_de_datos_medioambientales_de_tipo_OM
+    cd Exploracion_de_catalogos_de_datos_medioambientales_de_tipo_OM
   ```
 5. Instala las dependencias necesarias:
   ```bash
-  npm install
+    npm install
   ```
 7. Ejecuta el servidor:
   ```bash
-  node server.js
+    node server.js
   ```
 8. Abre tu navegador y accede a:
   ```bash
-  http://localhost:3000
+    http://localhost:3000
   ```
 
-## Estructura del proyecto
+## 📁 Estructura del proyecto
 La estructura del proyecto está organizada en torno a un servidor Node.js y archivos web dentro de la carpeta public. El código JavaScript está modularizado en distintos archivos dentro de public/scripts.
 
    ⚠️ La estructura puede estar sujeta a cambios durante el desarrollo.
 
-## Licencia
+## 📄 Licencia
 
 Este proyecto se distribuye con fines académicos como parte de un Trabajo de Fin de Grado. Su uso está limitado a propósitos educativos y de investigación.
 
-## Autor
+## 👨‍🎓 Autor
 
 Adrián Correa Miguel
 Trabajo de Fin de Grado - Universidad de Santiago de Compostela
