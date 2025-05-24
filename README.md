@@ -28,21 +28,21 @@ La aplicación ofrece una interfaz web que permite:
    git clone https://github.com/AdrianCorr/Exploracion_de_catalogos_de_datos_medioambientales_de_tipo_OM.git
    ```
 2. Entra en el directorio del proyecto:
-```bash
-cd Exploracion_de_catalogos_de_datos_medioambientales_de_tipo_OM
-```
+  ```bash
+  cd Exploracion_de_catalogos_de_datos_medioambientales_de_tipo_OM
+  ```
 5. Instala las dependencias necesarias:
-```bash
-npm install
-```
+  ```bash
+  npm install
+  ```
 7. Ejecuta el servidor:
-```bash
-node server.js
-```
+  ```bash
+  node server.js
+  ```
 8. Abre tu navegador y accede a:
-```bash
-http://localhost:3000
-```
+  ```bash
+  http://localhost:3000
+  ```
 
 ## Estructura del proyecto
 La estructura del proyecto está organizada en torno a un servidor Node.js y archivos web dentro de la carpeta public. El código JavaScript está modularizado en distintos archivos dentro de public/scripts.
