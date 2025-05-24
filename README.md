@@ -25,7 +25,7 @@ La aplicación ofrece una interfaz web que permite:
 
 1. Clona este repositorio:
    ```bash
-   git clone https://github.com/AdrianCorr/Exploracion_de_catalogos_de_datos_medioambientales_de_tipo_OM.git
+git clone https://github.com/AdrianCorr/Exploracion_de_catalogos_de_datos_medioambientales_de_tipo_OM.git
    ```
 2. Entra en el directorio del proyecto:
   ```bash
