@@ -1,90 +1,60 @@
-# Proyecto ccmm-proxy
+# Exploración de catálogos de datos medioambientales de tipo O&M
 
-Este proyecto es un servidor proxy basado en Node.js que utiliza Express para manejar solicitudes HTTP y realizar peticiones a una API externa.
+Este proyecto es el resultado de un **Trabajo de Fin de Grado (TFG)** que tiene como objetivo el desarrollo de un **cliente web genérico** para la exploración de conjuntos de datos medioambientales. Está basado en el modelo **Observations and Measurements (O&M)** del Open Geospatial Consortium (OGC) y permite la interacción con una **API externa** mediante un servidor intermedio en Node.js.
 
-## Pasos para ponerlo en marcha
+## 🌐 Descripción
 
-### Paso 1: Requisitos previos
-Antes de comenzar, necesitarás tener instalado:
-- **Node.js**: Descárgalo e instálalo desde [nodejs.org](https://nodejs.org/)
-- **Editor de código**: Recomiendo [Visual Studio Code](https://code.visualstudio.com/)
+La aplicación ofrece una interfaz web que permite:
 
-### Paso 2: Configuración del proyecto
-1. **Crea una carpeta para el proyecto:**
-   - Crea una carpeta llamada "EjemploAPI" en tu escritorio, por ejemplo.
-   - Dentro de esta carpeta, crea otra llamada "public".
-2. **Copia los archivos:**
-   - `server.js` (en la carpeta principal).
-   - `package.json` (en la carpeta principal).
-   - `index.html` (en la carpeta `public`).
+- Descubrir catálogos y conjuntos de datos medioambientales disponibles.
+- Navegar por sus dimensiones temporales y espaciales.
+- Visualizar los datos en un **mapa interactivo** usando Leaflet.
+- Filtrar resultados y explorar metadatos clave.
 
-### Paso 3: Instalación de dependencias
-1. **Abre una terminal o línea de comandos.**
-2. **Navega hasta la carpeta del proyecto:**
-   ```sh
-   cd c:\Users\TuNombreDeUsuario\Desktop\EjemploAPI
+## 🛠️ Tecnologías utilizadas
+
+- **Frontend**: HTML, CSS, JavaScript  
+- **Backend**: Node.js con Express  
+- **Librerías**:
+  - `express`: para el servidor web
+  - `node-fetch`: para hacer peticiones a la API externa
+  - `cors`: para manejar políticas de acceso cruzado
+  - `Leaflet`: para visualización geoespacial interactiva en mapas
+
+## 🚀 Ejecución del proyecto
+
+1. Clona este repositorio:
+   ```bash
+   git clone https://github.com/AdrianCorr/Exploracion_de_catalogos_de_datos_medioambientales_de_tipo_OM.git
    ```
-3. **Instala las dependencias ejecutando:**
-   ```sh
+2. Entra en el directorio del proyecto:
+  ```bash
+   cd Exploracion_de_catalogos_de_datos_medioambientales_de_tipo_OM
+  ```
+5. Instala las dependencias necesarias:
+  ```bash
    npm install
-   ```
-   Este comando instalará las bibliotecas necesarias (`express`, `node-fetch` y `cors`) definidas en el archivo `package.json`.
+  ```
+7. Ejecuta el servidor:
+  ```bash
+   node server.js
+  ```
+8. Abre tu navegador y accede a:
+  ```bash
+   http://localhost:3000
+  ```
 
-### Paso 4: Ejecutar el servidor
-Una vez terminada la instalación, inicia el servidor con:
-```sh
-node server.js
-```
-Deberías ver en la terminal el mensaje:
-```
-http://localhost:3000
-```
+## 📁 Estructura del proyecto
+La estructura del proyecto está organizada en torno a un servidor Node.js y archivos web dentro de la carpeta public. El código JavaScript está modularizado en distintos archivos dentro de public/scripts.
 
-### Paso 5: Usar la aplicación
-1. **Abre un navegador y ve a la dirección:**
-   ```
-http://localhost:3000
-   ```
-2. **Interfaz de usuario:**
-   - Selecciona un `vocabulary` (ES, GL o EN).
-   - Escribe un término de búsqueda en el campo de texto: modelo, barco, etc.
-   - Haz clic en el botón "Buscar".
-   - Verás los resultados en la sección inferior.
+   ⚠️ La estructura puede estar sujeta a cambios durante el desarrollo.
 
-## Explicación básica del código
+## 📄 Licencia
 
-- **`server.js`**: Crea un servidor web que sirve la página HTML y actúa como intermediario (proxy) para hacer peticiones a una API externa protegida con contraseña.
-- **`index.html`**: Contiene la interfaz de usuario con HTML, CSS y JavaScript.
-- **`package.json`**: Define las dependencias del proyecto y permite gestionar el entorno.
+Este proyecto se distribuye con fines académicos como parte de un Trabajo de Fin de Grado. Su uso está limitado a propósitos educativos y de investigación.
 
-## Funcionamiento del `package.json`
+## 👨‍🎓 Autor
 
-El archivo `package.json` es un elemento clave del proyecto, ya que define las dependencias y configuraciones del mismo. Su contenido principal es:
-
-```json
-{
-  "name": "ccmm-proxy",         // Nombre del proyecto
-  "version": "1.0.0",           // Versión del proyecto
-  "main": "server.js",         // Archivo principal que se ejecutará al iniciar el servidor
-  "dependencies": {              // Lista de paquetes necesarios para el proyecto
-    "express": "^4.18.2",      // Framework para el servidor web
-    "node-fetch": "^2.6.9",    // Librería para realizar peticiones HTTP desde Node.js
-    "cors": "^2.8.5"           // Middleware para permitir solicitudes desde diferentes dominios (CORS)
-  }
-}
-```
-
-### Elementos clave del `package.json`
-1. **`name` y `version`**: Identifican el proyecto y su versión actual.
-2. **`main`**: Define el archivo de entrada principal del proyecto (`server.js`).
-3. **`dependencies`**: Especifica los módulos necesarios para que el servidor funcione correctamente.
-
-Cuando se ejecuta `npm install`, Node.js descarga e instala automáticamente las dependencias listadas en este archivo dentro de la carpeta `node_modules`.
-
-## ¿Cómo funciona la aplicación?
-1. El usuario introduce un término y pulsa "Buscar".
-2. El navegador envía una petición al servidor local.
-3. El servidor reenvía la petición a la API externa.
-4. La API externa responde con los datos.
-5. El servidor devuelve los datos al navegador y los muestra en pantalla.
-
+Adrián Correa Miguel
+Trabajo de Fin de Grado - Universidad de Santiago de Compostela
+2025
