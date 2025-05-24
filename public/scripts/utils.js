@@ -184,145 +184,54 @@ async function renderResults(data) {
         [{ name: process.observation_type }]
       ));
     }
-
-    // Observed Properties
+    
+    // Observed Properties (con Validación embebido)
     if (Array.isArray(process.observed_properties)) {
-      detail.appendChild(createListSection(
+      // 1) Crear la sección UNA sola vez
+      const obsSection = createListSection(
         'Observed Properties',
         process.observed_properties.map(op => ({
           name: (op.names || []).find(n => n.vocabulary === vocabKey)?.term || op.name,
-          code: op.name,             // <— guardamos el código original
+          code: op.name,      // guardamos el código original
           type: op.data_type
         }))
-      ));
-      detail.appendChild(createListSection(
-        'Observed Properties',
-        process.observed_properties.map(op => ({
-          name: (op.names || []).find(n => n.vocabulary === vocabKey)?.term || op.name,
-          code: op.name,             // <— guardamos el código original
-          type: op.data_type
-        }))
-      ));
-    }
+      );
+      detail.appendChild(obsSection);
 
-    // —— INSERCIÓN: convertir ctd_intecmar.flags_validacion y roms_meteogalicia.sea_water_velocity en enlaces —— 
-    detail.querySelectorAll('ul li').forEach(li => {
-      const code = li.dataset.code;
-      if (code === 'ctd_intecmar.flags_validacion' || code === 'roms_meteogalicia.sea_water_velocity') {
-        // Creamos el <span> enlace
-        const span = document.createElement('span');
-        span.className = 'foi-link';
-        span.textContent = li.textContent; // el texto ya pintado
-        span.style.cursor = 'pointer';
-        span.style.color = 'var(--primary-color)';
-        span.style.textDecoration = 'underline';
+      // 2) Convertir el ítem “ctd_intecmar.flags_validacion” en enlace
+      obsSection.querySelectorAll('li').forEach(li => {
+        if (li.dataset.code === 'ctd_intecmar.flags_validacion') {
+          const nameSpan = li.querySelector('span.prop-name');
+          if (!nameSpan) return;
 
-        span.addEventListener('click', async e => {
-          e.stopPropagation();
-          const title = code;
-          let metaArr = [];
-          try { metaArr = await window.fetchFeatureType(title); }
-          catch (err) { console.warn(err); }
-          const meta = Array.isArray(metaArr) ? metaArr[0] : {};
+          const link = document.createElement('span');
+          link.className = 'foi-link';
+          link.textContent = nameSpan.textContent;
+          link.style.cursor = 'pointer';
+          link.style.color = 'var(--primary-color)';
+          link.style.textDecoration = 'underline';
 
-          const content = document.createElement('div');
-          content.appendChild(Object.assign(document.createElement('h5'), {
-            textContent: `Feature Type: ${title}`
-          }));
-
-          // Properties
-          if (Array.isArray(meta.properties)) {
-            const tbl = document.createElement('table');
-            tbl.innerHTML = '<tr><th>Name</th><th>Type</th></tr>';
-            meta.properties.forEach(p => {
-              tbl.innerHTML += `<tr><td>${p.name}</td><td>${p.data_type}</td></tr>`;
-            });
-            content.appendChild(Object.assign(document.createElement('h5'), {
-              textContent: 'Properties:'
-            }));
-            content.appendChild(tbl);
+          // — Creamos una sola vez el debugDiv fuera del listener —
+          let debugDiv = document.getElementById('debugJson');
+          if (!debugDiv) {
+            debugDiv = document.createElement('div');
+            debugDiv.id = 'debugJson';
+            debugDiv.style.marginTop = '1rem';
+            obsSection.appendChild(debugDiv);
           }
 
-          // SSF
-          const ssf = meta.spatialSamplingFeatureType || {};
-          const tblS = document.createElement('table');
-          tblS.innerHTML = '<tr><th>Field</th><th>Value</th></tr>';
-          ['sampledFeatureType','shapeCRS','verticalCRS'].forEach(k => {
-            if (ssf[k]) tblS.innerHTML += `<tr><td>${k}</td><td>${ssf[k]}</td></tr>`;
+          link.addEventListener('click', e => {
+            e.stopPropagation();
+
+            // obtenemos el array original
+            const obsProps = process.observed_properties;
+
+            // volcamos siempre en ese debugDiv
+            debugDiv.textContent = JSON.stringify(obsProps, null, 2);
           });
-          content.appendChild(Object.assign(document.createElement('h5'), {
-            textContent: 'Spatial Sampling Feature Type:'
-          }));
-          content.appendChild(tblS);
-
-          showModal(title, content);
-        });
-
-        // Reemplazamos el nodo de texto original por el enlace
-        li.textContent = '';         // vaciamos
-        li.appendChild(span);        // metemos el enlace
-      }
-    });
-    
-
-    // ——— Validación para ctd_intecmar.configuracion_ctd ———
-    if (process.name === 'ctd_intecmar.configuracion_ctd') {
-      const valContainer = document.createElement('div');
-      const hVal = document.createElement('h4');
-      hVal.textContent = 'Validación';
-      valContainer.appendChild(hVal);
-
-      const valLink = document.createElement('span');
-      valLink.className = 'foi-link';
-      valLink.textContent = 'ctd_intecmar.flags_validacion';
-      valContainer.appendChild(valLink);
-      detail.appendChild(valContainer);
-
-      valLink.addEventListener('click', async e => {
-        /*event.stopPropagation();
-        const title = valLink.textContent;
-        // Reusar tu lógica de modal
-        let inst = {}, metaArr = [];
-        try { inst = (await window.filterFeatureOfInterest(title))[0] || {}; }
-        catch(e){ console.warn(e); }
-        try { metaArr = await window.fetchFeatureType(title); }
-        catch(e){ console.warn(e); }
-        const meta = Array.isArray(metaArr) ? metaArr[0] : {};
-
-        const content = document.createElement('div');
-        content.appendChild(Object.assign(document.createElement('h5'), { textContent: `Feature Type: ${title}` }));
-
-        if (Array.isArray(meta.properties)) {
-          const tbl = document.createElement('table');
-          tbl.innerHTML = '<tr><th>Name</th><th>Type</th></tr>';
-          meta.properties.forEach(p => tbl.innerHTML += `<tr><td>${p.name}</td><td>${p.data_type}</td></tr>`);
-          content.appendChild(Object.assign(document.createElement('h5'), { textContent: 'Properties:' }));
-          content.appendChild(tbl);
+          
+          nameSpan.parentNode.replaceChild(link, nameSpan);
         }
-        const ssf = meta.spatialSamplingFeatureType || {};
-        const tblS = document.createElement('table');
-        tblS.innerHTML = '<tr><th>Field</th><th>Value</th></tr>';
-        ['sampledFeatureType','shapeCRS','verticalCRS'].forEach(k => {
-          if (ssf[k]) tblS.innerHTML += `<tr><td>${k}</td><td>${ssf[k]}</td></tr>`;
-        });
-        content.appendChild(Object.assign(document.createElement('h5'), { textContent: 'Spatial Sampling Feature Type:' }));
-        content.appendChild(tblS);
-
-        showModal(title, content);*/
-        e.stopPropagation();
-        const title = code;
-        let inst = {};
-        try {
-          inst = (await window.filterFeatureOfInterest(title))[0] || {};
-        } catch (err) {
-          console.warn(err);
-        }
-        // ——— A partir de aquí: muestra raw JSON en modal ———
-        const content = document.createElement('div');
-        const pre = document.createElement('pre');
-        pre.textContent = JSON.stringify(inst, null, 2);
-        content.appendChild(pre);
-        showModal(title, content);
       });
     }
 
@@ -340,36 +249,22 @@ async function renderResults(data) {
       detail.appendChild(velContainer);
 
       velLink.addEventListener('click', async event => {
-        event.stopPropagation();
-        const title = velLink.textContent;
-        let inst = {}, metaArr = [];
-        try { inst = (await window.filterFeatureOfInterest(title))[0] || {}; }
-        catch(e){ console.warn(e); }
-        try { metaArr = await window.fetchFeatureType(title); }
-        catch(e){ console.warn(e); }
-        const meta = Array.isArray(metaArr) ? metaArr[0] : {};
+       event.stopPropagation();
+       const title = velLink.textContent;
 
-        const content = document.createElement('div');
-        content.appendChild(Object.assign(document.createElement('h5'), { textContent: `Feature Type: ${title}` }));
+       let inst = {};
+       try {
+         inst = (await window.filterFeatureOfInterest(title))[0] || {};
+       } catch (err) {
+         console.warn('Error cargando instancia FOI:', err);
+       }
 
-        if (Array.isArray(meta.properties)) {
-          const tbl = document.createElement('table');
-          tbl.innerHTML = '<tr><th>Name</th><th>Type</th></tr>';
-          meta.properties.forEach(p => tbl.innerHTML += `<tr><td>${p.name}</td><td>${p.data_type}</td></tr>`);
-          content.appendChild(Object.assign(document.createElement('h5'), { textContent: 'Properties:' }));
-          content.appendChild(tbl);
-        }
-        const ssf = meta.spatialSamplingFeatureType || {};
-        const tblS = document.createElement('table');
-        tblS.innerHTML = '<tr><th>Field</th><th>Value</th></tr>';
-        ['sampledFeatureType','shapeCRS','verticalCRS'].forEach(k => {
-          if (ssf[k]) tblS.innerHTML += `<tr><td>${k}</td><td>${ssf[k]}</td></tr>`;
-        });
-        content.appendChild(Object.assign(document.createElement('h5'), { textContent: 'Spatial Sampling Feature Type:' }));
-        content.appendChild(tblS);
-
-        showModal(title, content);
-      });
+       const content = document.createElement('div');
+       const pre = document.createElement('pre');
+       pre.textContent = JSON.stringify(inst, null, 2);
+       content.appendChild(pre);
+       showModal(title, content);
+     });
     }
 
     section.appendChild(detail);
@@ -377,6 +272,7 @@ async function renderResults(data) {
       detail.classList.toggle('hidden');
       section.classList.toggle('open');
     });
+
     container.appendChild(section);
   }
 }
