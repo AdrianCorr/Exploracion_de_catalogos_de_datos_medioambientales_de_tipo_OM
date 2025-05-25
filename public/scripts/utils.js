@@ -210,7 +210,7 @@ async function renderResults(data) {
             e.stopPropagation();
             const typeName = typeSpan.textContent;
 
-            // 1) Llamamos al endpoint de Data Type
+            // 2.1) Llamamos al endpoint de Data Type
             let dataTypeMeta = {};
             try {
               const resp = await fetch(
@@ -221,44 +221,71 @@ async function renderResults(data) {
               console.error('Error cargando Data Type:', err);
             }
 
-            // 2) Construimos contenido del modal
+            // 2.2) Construimos contenido del modal
             const content = document.createElement('div');
 
-            // Título
+            // Título con nombre del tipo
             const h5Type = document.createElement('h5');
-            h5Type.textContent = `Data Type: ${typeName}`;
+            h5Type.textContent = dataTypeMeta[0]?.name || typeName;
             content.appendChild(h5Type);
 
-            // Alternative Names (si vienen en el JSON)
-            if (Array.isArray(dataTypeMeta.names) && dataTypeMeta.names.length) {
-              const alt = dataTypeMeta.names
-                .map(n => `${n.vocabulary}: ${n.term}`)
-                .join('  ');
-              const pAlt = document.createElement('p');
-              pAlt.textContent = `Alternative Names: ${alt}`;
-              content.appendChild(pAlt);
-            }
+            // Clase (complex, etc.)
+            const pClass = document.createElement('p');
+            pClass.textContent = `Class: ${dataTypeMeta[0]?.class || 'unknown'}`;
+            content.appendChild(pClass);
 
-            // Campos / propiedades del Data Type
-            if (Array.isArray(dataTypeMeta.properties) && dataTypeMeta.properties.length) {
+            // Tabla con los campos (fields)
+            if (Array.isArray(dataTypeMeta[0]?.fields)) {
               const tbl = document.createElement('table');
-              tbl.innerHTML = '<tr><th>Name</th><th>Type</th></tr>';
-              dataTypeMeta.properties.forEach(p => {
-                tbl.innerHTML += `<tr><td>${p.name}</td><td>${p.data_type}</td></tr>`;
+              tbl.style.borderCollapse = 'collapse';
+              tbl.style.width = '100%';
+              tbl.style.marginTop = '1rem';
+
+              const thead = document.createElement('tr');
+              thead.innerHTML = `
+                <th>Name</th>
+                <th>Type</th>
+                <th>Repeated</th>
+                <th>castellano</th>
+                <th>galego</th>
+                <th>english</th>
+                <th>cf_standard_names</th>
+              `;
+              tbl.appendChild(thead);
+
+              dataTypeMeta[0].fields.forEach(field => {
+                const row = document.createElement('tr');
+                const vocab = {};
+                (field.names || []).forEach(n => vocab[n.vocabulary] = n.term);
+
+                row.innerHTML = `
+                  <td>${field.name}</td>
+                  <td>${field.data_type}</td>
+                  <td>${field.repeated ? 'Sí' : 'No'}</td>
+                  <td>${vocab.castellano || ''}</td>
+                  <td>${vocab.galego || ''}</td>
+                  <td>${vocab.english || ''}</td>
+                  <td>${vocab['cf_standard_names'] || ''}</td>
+                `;
+                tbl.appendChild(row);
               });
-              content.appendChild(document.createElement('br'));
-              const h5Props = document.createElement('h5');
-              h5Props.textContent = 'Properties:';
-              content.appendChild(h5Props);
+
               content.appendChild(tbl);
             }
 
             // Si quieres mostrar el JSON completo al final, descomenta esto:
-            // const pre = document.createElement('pre');
-            // pre.textContent = JSON.stringify(dataTypeMeta, null, 2);
-            // content.appendChild(pre);
+            /*const pre = document.createElement('pre');
+            pre.textContent = JSON.stringify(dataTypeMeta, null, 2);
+            pre.style.marginTop = '1rem';
+            pre.style.background = 'var(--primary-light)';
+            pre.style.border = '1px solid var(--border-color)';
+            pre.style.padding = '0.75rem';
+            pre.style.maxHeight = '400px';
+            pre.style.overflowY = 'auto';
+            pre.style.fontSize = '0.85rem';
+            content.appendChild(pre);*/
 
-            // 3) Mostramos el modal
+            // 2.3) Mostramos el modal
             showModal(typeName, content);
           });
         }
