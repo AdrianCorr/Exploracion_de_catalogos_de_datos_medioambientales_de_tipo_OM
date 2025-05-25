@@ -108,73 +108,68 @@ async function renderResults(data) {
       const foiLink = document.createElement('span');
       foiLink.className = 'foi-link';
       foiLink.textContent = process.feature_of_interest_type;
-      foiLink.style.cursor = 'pointer';
-      foiLink.style.color = 'var(--primary-color)';
-      foiLink.style.textDecoration = 'underline';
-
       foiContainer.appendChild(foiLink);
       detail.appendChild(foiContainer);
 
-      foiLink.addEventListener('click', async event => {
-        event.stopPropagation();
+      if (process.feature_of_interest_type.includes('.')) {
+        foiLink.addEventListener('click', async e => {
+          e.stopPropagation();
+          const foitype = foiLink.textContent;
 
-        // 1) Instancia FOI
-        let inst = {};
-        try {
-          const list = await window.filterFeatureOfInterest(process.feature_of_interest_type);
-          inst = list[0] || {};
-        } catch (e) {
-          console.warn('Error inst FOI:', e);
-        }
+          // 1) Instancia FOI
+          let inst = {};
+          try {
+            const list = await window.filterFeatureOfInterest(foitype);
+            inst = list[0] || {};
+          } catch (err) {
+            console.warn('Error instanciando FOI:', err);
+          }
 
-        // 2) Metadata de tipo FOI
-        let metaArr = [];
-        try {
-          metaArr = await window.fetchFeatureType(process.feature_of_interest_type);
-        } catch (e) {
-          console.warn('Error meta FOI:', e);
-        }
-        const meta = Array.isArray(metaArr) ? metaArr[0] : {};
+          // 2) Metadata FOI
+          let metaArr = [];
+          try {
+            metaArr = await window.fetchFeatureType(foitype);
+          } catch (err) {
+            console.warn('Error obteniendo metadata FOI:', err);
+          }
+          const meta = Array.isArray(metaArr) ? metaArr[0] : {};
 
-        // Construir contenido del modal
-        const content = document.createElement('div');
+          // 3) Construir modal
+          const content = document.createElement('div');
+          const h5Type = document.createElement('h5');
+          h5Type.textContent = foitype;
+          content.appendChild(h5Type);
 
-        // Feature Type
-        const hType = document.createElement('h5');
-        hType.textContent = `Feature Type: ${process.feature_of_interest_type}`;
-        content.appendChild(hType);
+          if (Array.isArray(meta.properties) && meta.properties.length) {
+            const tblP = document.createElement('table');
+            tblP.innerHTML = `<tr><th>Name</th><th>Type</th></tr>`;
+            meta.properties.forEach(p => {
+              tblP.innerHTML += `<tr><td>${p.name}</td><td>${p.data_type}</td></tr>`;
+            });
+            content.appendChild(document.createElement('br'));
+            const h5P = document.createElement('h5');
+            h5P.textContent = 'Properties:';
+            content.appendChild(h5P);
+            content.appendChild(tblP);
+          }
 
-        // Properties (metadata)
-        if (Array.isArray(meta.properties)) {
-          const tblP = document.createElement('table');
-          tblP.innerHTML = '<tr><th>Name</th><th>Type</th></tr>';
-          meta.properties.forEach(p => {
-            tblP.innerHTML += `<tr><td>${p.name}</td><td>${p.data_type}</td></tr>`;
-          });
-          content.appendChild(document.createElement('br'));
-          content.appendChild(document.createElement('h5')).textContent = 'Properties:';
-          content.appendChild(tblP);
-        }
+          const ssf = meta.spatialSamplingFeatureType || {};
+          if (ssf.sampledFeatureType || ssf.shapeCRS || ssf.verticalCRS) {
+            const tblS = document.createElement('table');
+            tblS.innerHTML = `<tr><th>Field</th><th>Value</th></tr>`;
+            if (ssf.sampledFeatureType) tblS.innerHTML += `<tr><td>sampledFeatureType</td><td>${ssf.sampledFeatureType}</td></tr>`;
+            if (ssf.shapeCRS)           tblS.innerHTML += `<tr><td>shapeCRS</td><td>${ssf.shapeCRS}</td></tr>`;
+            if (ssf.verticalCRS)        tblS.innerHTML += `<tr><td>verticalCRS</td><td>${ssf.verticalCRS}</td></tr>`;
+            content.appendChild(document.createElement('br'));
+            const h5S = document.createElement('h5');
+            h5S.textContent = 'Spatial Sampling Feature Type:';
+            content.appendChild(h5S);
+            content.appendChild(tblS);
+          }
 
-        // Spatial Sampling Feature Type
-        const ssf = meta.spatialSamplingFeatureType || {};
-        const tblS = document.createElement('table');
-        tblS.innerHTML = '<tr><th>Field</th><th>Value</th></tr>';
-        if (ssf.sampledFeatureType) {
-          tblS.innerHTML += `<tr><td>sampledFeatureType</td><td>${ssf.sampledFeatureType}</td></tr>`;
-        }
-        if (ssf.shapeCRS) {
-          tblS.innerHTML += `<tr><td>shapeCRS</td><td>${ssf.shapeCRS}</td></tr>`;
-        }
-        if (ssf.verticalCRS) {
-          tblS.innerHTML += `<tr><td>verticalCRS</td><td>${ssf.verticalCRS}</td></tr>`;
-        }
-        content.appendChild(document.createElement('br'));
-        content.appendChild(document.createElement('h5')).textContent = 'Spatial Sampling Feature Type:';
-        content.appendChild(tblS);
-
-        showModal(process.feature_of_interest_type, content);
-      });
+          showModal(foitype, content);
+        });
+      }
     }
 
     // Observation Type
@@ -187,7 +182,7 @@ async function renderResults(data) {
     
     // Observed Properties
     if (Array.isArray(process.observed_properties)) {
-      // 1) Creamos la sección UNA sola vez
+      // 1) Creamos la sección una sola vez
       const obsSection = createListSection(
         'Observed Properties',
         process.observed_properties.map(op => ({
