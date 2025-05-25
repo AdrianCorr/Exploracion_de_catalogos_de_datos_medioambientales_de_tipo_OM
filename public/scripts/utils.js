@@ -205,7 +205,7 @@ async function renderResults(data) {
           typeSpan.classList.add('foi-link');
 
 
-          // — nueva lógica para abrir modal igual que FOI —
+          // 2.0) Añadir evento click para abrir modal
           typeSpan.addEventListener('click', async e => {
             e.stopPropagation();
             const typeName = typeSpan.textContent;
@@ -251,39 +251,47 @@ async function renderResults(data) {
               tbl.style.width = '100%';
               tbl.style.fontSize = '0.9rem';
 
+              // Cabecera: ahora sólo una columna “Name” (con los idiomas) + resto
               const thead = document.createElement('tr');
               thead.innerHTML = `
                 <th>Name</th>
                 <th>Type</th>
-                <th>Repeated</th>
-                <th>castellano</th>
-                <th>galego</th>
-                <th>english</th>
                 <th>cf_standard_names</th>
               `;
               tbl.appendChild(thead);
 
               dataTypeMeta[0].fields.forEach(field => {
-                const row = document.createElement('tr');
+                // Construimos un objeto vocabulario para acceder fácil
                 const vocab = {};
                 (field.names || []).forEach(n => vocab[n.vocabulary] = n.term);
 
-                row.innerHTML = `
-                  <td>${field.name}</td>
-                  <td>${field.data_type}</td>
-                  <td>${field.repeated ? 'Sí' : 'No'}</td>
-                  <td>${vocab.castellano || ''}</td>
-                  <td>${vocab.galego || ''}</td>
-                  <td>${vocab.english || ''}</td>
-                  <td>${vocab['cf_standard_names'] || ''}</td>
+                // Creamos la fila
+                const row = document.createElement('tr');
+
+                // 1) Columna “Name”: pintamos los tres idiomas + el nombre técnico
+                const nameCell = document.createElement('td');
+                nameCell.innerHTML = `
+                  <strong>castellano:</strong><br> ${vocab.castellano || ''}<br/>
+                  <strong>galego:</strong><br> ${vocab.galego || ''}<br/>
+                  <strong>english:</strong><br> ${vocab.english || ''}<br/>
                 `;
+                row.appendChild(nameCell);
+
+                // 2) Resto de columnas
+                const typeCell = document.createElement('td');
+                typeCell.textContent = field.data_type;
+                row.appendChild(typeCell);
+
+                const cfCell = document.createElement('td');
+                cfCell.textContent = vocab['cf_standard_names'] || '';
+                row.appendChild(cfCell);
+
                 tbl.appendChild(row);
               });
 
               scrollContainer.appendChild(tbl);
               content.appendChild(scrollContainer);
             }
-
 
             // Si quieres mostrar el JSON completo al final, descomenta esto:
             /*const pre = document.createElement('pre');
