@@ -234,12 +234,22 @@ async function renderResults(data) {
             pClass.textContent = `Class: ${dataTypeMeta[0]?.class || 'unknown'}`;
             content.appendChild(pClass);
 
+            // Contenedor scrollable para la tabla
+            const scrollContainer = document.createElement('div');
+            scrollContainer.style.maxHeight = '400px';
+            scrollContainer.style.overflowY = 'auto';
+            scrollContainer.style.marginTop = '1rem';
+            scrollContainer.style.border = '1px solid var(--border-color)';
+            scrollContainer.style.padding = '0.5rem';
+            scrollContainer.style.background = 'var(--primary-light)';
+            scrollContainer.style.borderRadius = '4px';
+
             // Tabla con los campos (fields)
             if (Array.isArray(dataTypeMeta[0]?.fields)) {
               const tbl = document.createElement('table');
               tbl.style.borderCollapse = 'collapse';
               tbl.style.width = '100%';
-              tbl.style.marginTop = '1rem';
+              tbl.style.fontSize = '0.9rem';
 
               const thead = document.createElement('tr');
               thead.innerHTML = `
@@ -270,8 +280,10 @@ async function renderResults(data) {
                 tbl.appendChild(row);
               });
 
-              content.appendChild(tbl);
+              scrollContainer.appendChild(tbl);
+              content.appendChild(scrollContainer);
             }
+
 
             // Si quieres mostrar el JSON completo al final, descomenta esto:
             /*const pre = document.createElement('pre');
