@@ -177,7 +177,7 @@ header h1 {
     color: var(--text-dark);
 }
 
-.process-detail .prop-type {
+.process-detail .prop-type:not(.foi-link) {
     font-style: italic;
     color: var(--text-light);
 }

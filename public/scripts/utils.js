@@ -98,7 +98,7 @@ async function renderResults(data) {
       ));
     }
 
-    // Feature of Interest (DEBAJO de Supertypes)
+    // Feature of Interest
     if (process.feature_of_interest_type) {
       const foiContainer = document.createElement('div');
       const foiTitle = document.createElement('h4');
@@ -185,7 +185,7 @@ async function renderResults(data) {
       ));
     }
     
-    // Observed Properties (con validación y debug)
+    // Observed Properties (con validación y debug JSON)
     if (Array.isArray(process.observed_properties)) {
       // 1) Creamos la sección UNA sola vez
       const obsSection = createListSection(
@@ -198,29 +198,78 @@ async function renderResults(data) {
       );
       detail.appendChild(obsSection);
 
-      // 2) Destacar y hacer clicable el data_type 'ctd_intecmar.flags_validacion'
+      // 2) Resaltar el type y enlazar la búsqueda
       obsSection.querySelectorAll('span.prop-type').forEach(typeSpan => {
         if (typeSpan.textContent === 'ctd_intecmar.flags_validacion') {
-          typeSpan.style.color = 'var(--primary-color)';
-          typeSpan.style.cursor = 'pointer';
-          typeSpan.style.textDecoration = 'underline';
-          typeSpan.addEventListener('click', () => {
-            const dataTypeInput = document.getElementById('dataTypeName');
-            if (dataTypeInput) dataTypeInput.value = 'ctd_intecmar.flags_validacion';
-            if (typeof window.searchDataTypes === 'function') {
-              window.searchDataTypes();
+          // — resaltado en azul tal como antes —
+          typeSpan.classList.add('foi-link');
+
+
+          // — nueva lógica para abrir modal igual que FOI —
+          typeSpan.addEventListener('click', async e => {
+            e.stopPropagation();
+            const typeName = typeSpan.textContent;
+
+            // 1) Llamamos al endpoint de Data Type
+            let dataTypeMeta = {};
+            try {
+              const resp = await fetch(
+                `/api/data-type-by-name?dataTypeName=${encodeURIComponent(typeName)}`
+              );
+              dataTypeMeta = await resp.json();
+            } catch (err) {
+              console.error('Error cargando Data Type:', err);
             }
+
+            // 2) Construimos contenido del modal
+            const content = document.createElement('div');
+
+            // Título
+            const h5Type = document.createElement('h5');
+            h5Type.textContent = `Data Type: ${typeName}`;
+            content.appendChild(h5Type);
+
+            // Alternative Names (si vienen en el JSON)
+            if (Array.isArray(dataTypeMeta.names) && dataTypeMeta.names.length) {
+              const alt = dataTypeMeta.names
+                .map(n => `${n.vocabulary}: ${n.term}`)
+                .join('  ');
+              const pAlt = document.createElement('p');
+              pAlt.textContent = `Alternative Names: ${alt}`;
+              content.appendChild(pAlt);
+            }
+
+            // Campos / propiedades del Data Type
+            if (Array.isArray(dataTypeMeta.properties) && dataTypeMeta.properties.length) {
+              const tbl = document.createElement('table');
+              tbl.innerHTML = '<tr><th>Name</th><th>Type</th></tr>';
+              dataTypeMeta.properties.forEach(p => {
+                tbl.innerHTML += `<tr><td>${p.name}</td><td>${p.data_type}</td></tr>`;
+              });
+              content.appendChild(document.createElement('br'));
+              const h5Props = document.createElement('h5');
+              h5Props.textContent = 'Properties:';
+              content.appendChild(h5Props);
+              content.appendChild(tbl);
+            }
+
+            // Si quieres mostrar el JSON completo al final, descomenta esto:
+            // const pre = document.createElement('pre');
+            // pre.textContent = JSON.stringify(dataTypeMeta, null, 2);
+            // content.appendChild(pre);
+
+            // 3) Mostramos el modal
+            showModal(typeName, content);
           });
         }
       });
 
-      // 3) Convertir el ítem 'ctd_intecmar.flags_validacion' en enlace sobre el NOMBRE
+      // 3) Convertir el nombre en enlace que abre el modal con TODO el JSON
       obsSection.querySelectorAll('li').forEach(li => {
         if (li.dataset.code === 'ctd_intecmar.flags_validacion') {
           const nameSpan = li.querySelector('span.prop-name');
           if (!nameSpan) return;
 
-          // Creamos el enlace sobre el nombre
           const link = document.createElement('span');
           link.className = 'foi-link';
           link.textContent = nameSpan.textContent;
@@ -228,42 +277,32 @@ async function renderResults(data) {
           link.style.color = 'var(--primary-color)';
           link.style.textDecoration = 'underline';
 
-          // Al clic muestra/oculta un <pre> con el JSON de observed_properties
-          link.addEventListener('click', e => {
-            e.stopPropagation();
-            // JSON que queremos mostrar
+          link.addEventListener('click', ev => {
+            ev.stopPropagation();
+            // Extraemos el array completo
             const obsProps = process.observed_properties;
-            // Si ya existe, lo quitamos
-            const existing = li.querySelector('pre');
-            if (existing) {
-              existing.remove();
-              return;
-            }
-            // Creamos e insertamos el <pre>
+
+            // Construimos el contenido del modal
+            const content = document.createElement('div');
+            const h5 = document.createElement('h5');
+            h5.textContent = 'Observed Properties JSON';
+            content.appendChild(h5);
+
             const pre = document.createElement('pre');
             pre.textContent = JSON.stringify(obsProps, null, 2);
-            pre.style.marginTop = '0.5rem';
+            pre.style.marginTop = '1rem';
             pre.style.background = 'var(--primary-light)';
             pre.style.border = '1px solid var(--border-color)';
             pre.style.padding = '0.75rem';
-            li.appendChild(pre);
+            content.appendChild(pre);
+
+            showModal('ctd_intecmar.flags_validacion', content);
           });
 
-          // Reemplazamos el span original por nuestro enlace
+          // Reemplazamos el nombre original por nuestro enlace
           nameSpan.parentNode.replaceChild(link, nameSpan);
         }
       });
-
-      // 4) DEBUG: siempre mostrar el JSON completo bajo la lista (sólo en 'configuracion_ctd')
-      if (process.name === 'ctd_intecmar.configuracion_ctd') {
-        const preAlways = document.createElement('pre');
-        preAlways.textContent = JSON.stringify(process.observed_properties, null, 2);
-        preAlways.style.margin = '1rem 0';
-        preAlways.style.background = 'var(--primary-light)';
-        preAlways.style.border = '1px solid var(--border-color)';
-        preAlways.style.padding = '0.75rem';
-        obsSection.appendChild(preAlways);
-      }
     }
 
     // ——— Velocidad de la corriente del agua del mar para roms_meteogalicia.modelo_roms ———
