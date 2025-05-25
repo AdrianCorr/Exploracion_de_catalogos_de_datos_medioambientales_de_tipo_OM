@@ -185,26 +185,42 @@ async function renderResults(data) {
       ));
     }
     
-    // Observed Properties (con Validación embebido)
+    // Observed Properties (con validación y debug)
     if (Array.isArray(process.observed_properties)) {
-      // 1) Crear la sección UNA sola vez
+      // 1) Creamos la sección UNA sola vez
       const obsSection = createListSection(
         'Observed Properties',
         process.observed_properties.map(op => ({
           name: (op.names || []).find(n => n.vocabulary === vocabKey)?.term || op.name,
-          code: op.name,      // guardamos el código original
+          code: op.name,      // para detectar flags_validacion
           type: op.data_type
         }))
       );
       detail.appendChild(obsSection);
 
-      // 2) Convertir el ítem “ctd_intecmar.flags_validacion” en enlace
+      // 2) Destacar y hacer clicable el data_type 'ctd_intecmar.flags_validacion'
+      obsSection.querySelectorAll('span.prop-type').forEach(typeSpan => {
+        if (typeSpan.textContent === 'ctd_intecmar.flags_validacion') {
+          typeSpan.style.color = 'var(--primary-color)';
+          typeSpan.style.cursor = 'pointer';
+          typeSpan.style.textDecoration = 'underline';
+          typeSpan.addEventListener('click', () => {
+            const dataTypeInput = document.getElementById('dataTypeName');
+            if (dataTypeInput) dataTypeInput.value = 'ctd_intecmar.flags_validacion';
+            if (typeof window.searchDataTypes === 'function') {
+              window.searchDataTypes();
+            }
+          });
+        }
+      });
+
+      // 3) Convertir el ítem 'ctd_intecmar.flags_validacion' en enlace sobre el NOMBRE
       obsSection.querySelectorAll('li').forEach(li => {
         if (li.dataset.code === 'ctd_intecmar.flags_validacion') {
           const nameSpan = li.querySelector('span.prop-name');
           if (!nameSpan) return;
 
-          // Creamos el <span> enlace
+          // Creamos el enlace sobre el nombre
           const link = document.createElement('span');
           link.className = 'foi-link';
           link.textContent = nameSpan.textContent;
@@ -212,26 +228,42 @@ async function renderResults(data) {
           link.style.color = 'var(--primary-color)';
           link.style.textDecoration = 'underline';
 
-          // Listener: al hacer clic inserta un <pre> con el JSON justo después del <li>
+          // Al clic muestra/oculta un <pre> con el JSON de observed_properties
           link.addEventListener('click', e => {
             e.stopPropagation();
             // JSON que queremos mostrar
             const obsProps = process.observed_properties;
-            // Si ya existe un <pre> anterior, lo eliminamos
+            // Si ya existe, lo quitamos
             const existing = li.querySelector('pre');
-            if (existing) existing.remove();
+            if (existing) {
+              existing.remove();
+              return;
+            }
             // Creamos e insertamos el <pre>
             const pre = document.createElement('pre');
             pre.textContent = JSON.stringify(obsProps, null, 2);
             pre.style.marginTop = '0.5rem';
+            pre.style.background = 'var(--primary-light)';
+            pre.style.border = '1px solid var(--border-color)';
+            pre.style.padding = '0.75rem';
             li.appendChild(pre);
           });
 
           // Reemplazamos el span original por nuestro enlace
           nameSpan.parentNode.replaceChild(link, nameSpan);
         }
-
       });
+
+      // 4) DEBUG: siempre mostrar el JSON completo bajo la lista (sólo en 'configuracion_ctd')
+      if (process.name === 'ctd_intecmar.configuracion_ctd') {
+        const preAlways = document.createElement('pre');
+        preAlways.textContent = JSON.stringify(process.observed_properties, null, 2);
+        preAlways.style.margin = '1rem 0';
+        preAlways.style.background = 'var(--primary-light)';
+        preAlways.style.border = '1px solid var(--border-color)';
+        preAlways.style.padding = '0.75rem';
+        obsSection.appendChild(preAlways);
+      }
     }
 
     // ——— Velocidad de la corriente del agua del mar para roms_meteogalicia.modelo_roms ———
