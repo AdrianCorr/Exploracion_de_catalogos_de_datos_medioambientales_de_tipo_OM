@@ -9,18 +9,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const filterEndTimeInput = document.getElementById('filterEndTime');
     const filterProcessButton = document.getElementById('filterProcessBtn');
 
-    // Elementos del formulario de filtrado de Feature of Interest
-    const filterFeatureOfInterestNameInput = document.getElementById('featureOfInterestName');
-    const filterKeywordFeatureInput = document.getElementById('keywordFilter');
-    const filterGeometryFeatureInput = document.getElementById('geometryFilter');
-    const filterFeatureButton = document.getElementById('searchFeatureOfInterest');
-
     // Elementos del formulario de filtrado por ID
     const processByIdTypeNameInput = document.getElementById('processByIdTypeName');
     const processIdInput = document.getElementById('processId');
     const timeFilterInput = document.getElementById('timeFilter');
-    const searchProcessByIdButton = document.getElementById('searchProcessByIdBtn');
-
+    
     // Elemento para mostrar el resultado
     const resultDisplay = document.getElementById('resultDisplay');
 
@@ -127,10 +120,4 @@ document.addEventListener('DOMContentLoaded', () => {
         return await resp.json();
     }
     window.fetchFeatureType = fetchFeatureType;
-
-    // Listeners
-    filterProcessButton.addEventListener('click', filterProcesses);
-    filterFeatureButton.addEventListener('click', filterFeatureOfInterest);
-    searchProcessByIdButton.addEventListener('click', ProcessById);
-    document.getElementById('searchFeatureByIdBtn').addEventListener('click', featureOfInterestById);
 });

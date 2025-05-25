@@ -98,7 +98,7 @@ async function renderResults(data) {
       ));
     }
 
-        // Feature of Interest (DEBAJO de Supertypes)
+    // Feature of Interest (DEBAJO de Supertypes)
     if (process.feature_of_interest_type) {
       const foiContainer = document.createElement('div');
       const foiTitle = document.createElement('h4');
@@ -204,6 +204,7 @@ async function renderResults(data) {
           const nameSpan = li.querySelector('span.prop-name');
           if (!nameSpan) return;
 
+          // Creamos el <span> enlace
           const link = document.createElement('span');
           link.className = 'foi-link';
           link.textContent = nameSpan.textContent;
@@ -211,27 +212,25 @@ async function renderResults(data) {
           link.style.color = 'var(--primary-color)';
           link.style.textDecoration = 'underline';
 
-          // — Creamos una sola vez el debugDiv fuera del listener —
-          let debugDiv = document.getElementById('debugJson');
-          if (!debugDiv) {
-            debugDiv = document.createElement('div');
-            debugDiv.id = 'debugJson';
-            debugDiv.style.marginTop = '1rem';
-            obsSection.appendChild(debugDiv);
-          }
-
+          // Listener: al hacer clic inserta un <pre> con el JSON justo después del <li>
           link.addEventListener('click', e => {
             e.stopPropagation();
-
-            // obtenemos el array original
+            // JSON que queremos mostrar
             const obsProps = process.observed_properties;
-
-            // volcamos siempre en ese debugDiv
-            debugDiv.textContent = JSON.stringify(obsProps, null, 2);
+            // Si ya existe un <pre> anterior, lo eliminamos
+            const existing = li.querySelector('pre');
+            if (existing) existing.remove();
+            // Creamos e insertamos el <pre>
+            const pre = document.createElement('pre');
+            pre.textContent = JSON.stringify(obsProps, null, 2);
+            pre.style.marginTop = '0.5rem';
+            li.appendChild(pre);
           });
-          
+
+          // Reemplazamos el span original por nuestro enlace
           nameSpan.parentNode.replaceChild(link, nameSpan);
         }
+
       });
     }
 

@@ -4,11 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const searchProcessButton = document.getElementById('searchProcess');
 
     const dataTypeInput = document.getElementById('dataTypeName');
-    const searchDataTypeButton = document.getElementById('searchDataType');
-
     const searchFeatureTypeInput = document.getElementById('featureTypeName');
-    const searchFeatureTypeButton = document.getElementById('searchFeatureType');
-
     const resultDisplay = document.getElementById('resultDisplay');
 
 
@@ -71,6 +67,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Agregar los event listeners a los botones
     searchProcessButton.addEventListener('click', searchProcesses);
-    searchDataTypeButton.addEventListener('click', searchDataTypes);
-    searchFeatureTypeButton.addEventListener('click', searchFeatureTypes);
 });
