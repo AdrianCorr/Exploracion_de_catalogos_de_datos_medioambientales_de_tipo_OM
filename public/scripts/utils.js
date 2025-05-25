@@ -185,56 +185,60 @@ async function renderResults(data) {
       ));
     }
     
-    // Observed Properties (con validación y debug JSON)
+    // Observed Properties
     if (Array.isArray(process.observed_properties)) {
       // 1) Creamos la sección UNA sola vez
       const obsSection = createListSection(
         'Observed Properties',
         process.observed_properties.map(op => ({
           name: (op.names || []).find(n => n.vocabulary === vocabKey)?.term || op.name,
-          code: op.name,      // para detectar flags_validacion
+          code: op.name,      // para detectar el data_type
           type: op.data_type
         }))
       );
       detail.appendChild(obsSection);
 
-      // 2) Resaltar el type y enlazar la búsqueda
+      // 2) Recorremos todos los <span class="prop-type"> y, si son namespaced, los convertimos en enlaces
       obsSection.querySelectorAll('span.prop-type').forEach(typeSpan => {
-        if (typeSpan.textContent === 'ctd_intecmar.flags_validacion') {
-          // — resaltado en azul tal como antes —
+        const dt = typeSpan.textContent;
+        // criterio: contenga un punto (namespaced), p.ej. 'ctd_intecmar.flags_validacion', 'roms_meteogalicia.sea_water_velocity', etc.
+        if (dt.includes('.')) {
+          // aplicamos el mismo estilo que tus .foi-link
           typeSpan.classList.add('foi-link');
 
-
-          // 2.0) Añadir evento click para abrir modal
+          // listener para abrir el modal
           typeSpan.addEventListener('click', async e => {
             e.stopPropagation();
-            const typeName = typeSpan.textContent;
 
-            // 2.1) Llamamos al endpoint de Data Type
-            let dataTypeMeta = {};
+            // 1) Llamamos al endpoint de Data Type
+            let dataTypeMeta = [];
             try {
               const resp = await fetch(
-                `/api/data-type-by-name?dataTypeName=${encodeURIComponent(typeName)}`
+                `/api/data-type-by-name?dataTypeName=${encodeURIComponent(dt)}`
               );
               dataTypeMeta = await resp.json();
             } catch (err) {
               console.error('Error cargando Data Type:', err);
+              return;
             }
+            const meta = dataTypeMeta[0] || {};
 
-            // 2.2) Construimos contenido del modal
+            // 2) Construimos contenido del modal
             const content = document.createElement('div');
 
-            // Título con nombre del tipo
+            // Título: Name del data type
             const h5Type = document.createElement('h5');
-            h5Type.textContent = dataTypeMeta[0]?.name || typeName;
+            h5Type.textContent = dt;
             content.appendChild(h5Type);
 
             // Clase (complex, etc.)
-            const pClass = document.createElement('p');
-            pClass.textContent = `Class: ${dataTypeMeta[0]?.class || 'unknown'}`;
-            content.appendChild(pClass);
+            if (meta.class) {
+              const pClass = document.createElement('p');
+              pClass.textContent = `Class: ${meta.class}`;
+              content.appendChild(pClass);
+            }
 
-            // Contenedor scrollable para la tabla
+            // Container scrollable para la tabla
             const scrollContainer = document.createElement('div');
             scrollContainer.style.maxHeight = '400px';
             scrollContainer.style.overflowY = 'auto';
@@ -244,14 +248,14 @@ async function renderResults(data) {
             scrollContainer.style.background = 'var(--primary-light)';
             scrollContainer.style.borderRadius = '4px';
 
-            // Tabla con los campos (fields)
-            if (Array.isArray(dataTypeMeta[0]?.fields)) {
+            // Si trae fields → creamos la tabla
+            if (Array.isArray(meta.fields)) {
               const tbl = document.createElement('table');
               tbl.style.borderCollapse = 'collapse';
               tbl.style.width = '100%';
               tbl.style.fontSize = '0.9rem';
 
-              // Cabecera: ahora sólo una columna “Name” (con los idiomas) + resto
+              // Cabecera
               const thead = document.createElement('tr');
               thead.innerHTML = `
                 <th>Name</th>
@@ -260,32 +264,21 @@ async function renderResults(data) {
               `;
               tbl.appendChild(thead);
 
-              dataTypeMeta[0].fields.forEach(field => {
-                // Construimos un objeto vocabulario para acceder fácil
+              // Filas
+              meta.fields.forEach(field => {
                 const vocab = {};
                 (field.names || []).forEach(n => vocab[n.vocabulary] = n.term);
 
-                // Creamos la fila
                 const row = document.createElement('tr');
-
-                // 1) Columna “Name”: pintamos los tres idiomas + el nombre técnico
-                const nameCell = document.createElement('td');
-                nameCell.innerHTML = `
-                  <strong>castellano:</strong><br> ${vocab.castellano || ''}<br/>
-                  <strong>galego:</strong><br> ${vocab.galego || ''}<br/>
-                  <strong>english:</strong><br> ${vocab.english || ''}<br/>
+                row.innerHTML = `
+                  <td>
+                    <strong>castellano:</strong><br> ${vocab.castellano || ''}<br/>
+                    <strong>galego:</strong><br> ${vocab.galego || ''}<br/>
+                    <strong>english:</strong><br> ${vocab.english || ''}<br/>
+                  </td>
+                  <td>${field.data_type}</td>
+                  <td>${vocab['cf_standard_names'] || ''}</td>
                 `;
-                row.appendChild(nameCell);
-
-                // 2) Resto de columnas
-                const typeCell = document.createElement('td');
-                typeCell.textContent = field.data_type;
-                row.appendChild(typeCell);
-
-                const cfCell = document.createElement('td');
-                cfCell.textContent = vocab['cf_standard_names'] || '';
-                row.appendChild(cfCell);
-
                 tbl.appendChild(row);
               });
 
@@ -293,25 +286,13 @@ async function renderResults(data) {
               content.appendChild(scrollContainer);
             }
 
-            // Si quieres mostrar el JSON completo al final, descomenta esto:
-            /*const pre = document.createElement('pre');
-            pre.textContent = JSON.stringify(dataTypeMeta, null, 2);
-            pre.style.marginTop = '1rem';
-            pre.style.background = 'var(--primary-light)';
-            pre.style.border = '1px solid var(--border-color)';
-            pre.style.padding = '0.75rem';
-            pre.style.maxHeight = '400px';
-            pre.style.overflowY = 'auto';
-            pre.style.fontSize = '0.85rem';
-            content.appendChild(pre);*/
-
-            // 2.3) Mostramos el modal
-            showModal(typeName, content);
+            // 3) Mostrar modal
+            showModal(dt, content);
           });
         }
       });
 
-      // 3) Convertir el nombre en enlace que abre el modal con TODO el JSON
+      // 3) Convertir el nombre en un enlace que abre un ventana
       obsSection.querySelectorAll('li').forEach(li => {
         if (li.dataset.code === 'ctd_intecmar.flags_validacion') {
           const nameSpan = li.querySelector('span.prop-name');
@@ -350,38 +331,6 @@ async function renderResults(data) {
           nameSpan.parentNode.replaceChild(link, nameSpan);
         }
       });
-    }
-
-    // ——— Velocidad de la corriente del agua del mar para roms_meteogalicia.modelo_roms ———
-    if (process.name === 'roms_meteogalicia.modelo_roms') {
-      const velContainer = document.createElement('div');
-      const hVel = document.createElement('h4');
-      hVel.textContent = 'Velocidad de la corriente del agua del mar';
-      velContainer.appendChild(hVel);
-
-      const velLink = document.createElement('span');
-      velLink.className = 'foi-link';
-      velLink.textContent = 'roms_meteogalicia.sea_water_velocity';
-      velContainer.appendChild(velLink);
-      detail.appendChild(velContainer);
-
-      velLink.addEventListener('click', async event => {
-       event.stopPropagation();
-       const title = velLink.textContent;
-
-       let inst = {};
-       try {
-         inst = (await window.filterFeatureOfInterest(title))[0] || {};
-       } catch (err) {
-         console.warn('Error cargando instancia FOI:', err);
-       }
-
-       const content = document.createElement('div');
-       const pre = document.createElement('pre');
-       pre.textContent = JSON.stringify(inst, null, 2);
-       content.appendChild(pre);
-       showModal(title, content);
-     });
     }
 
     section.appendChild(detail);
