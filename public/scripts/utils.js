@@ -165,13 +165,12 @@ async function renderResults(data) {
             row.appendChild(tdField);
 
             const tdValue = document.createElement('td');
-            // Creamos el enlace azul para sampledFeatureType
             const link = document.createElement('span');
             link.className = 'foi-link';
             link.textContent = ssf.sampledFeatureType;
             link.addEventListener('click', async e => {
               e.stopPropagation();
-              // Llamada al endpoint de feature types
+              // 1) Llamada al endpoint de Feature Types
               let featMeta = [];
               try {
                 const resp = await fetch(
@@ -180,23 +179,44 @@ async function renderResults(data) {
                 featMeta = await resp.json();
               } catch (err) {
                 console.error('Error cargando Feature Type:', err);
+                return;
               }
-              const metaFT = Array.isArray(featMeta) ? featMeta[0] : {};
+              const metaFT = featMeta[0] || {};
 
-              // Construimos contenido del modal con JSON crudo
+              // 2) Construimos contenido del modal
               const contentFT = document.createElement('div');
-              const pre = document.createElement('pre');
-              pre.textContent = JSON.stringify(metaFT, null, 2);
-              pre.style.maxHeight = '400px';
-              pre.style.overflowY = 'auto';
-              pre.style.margin = '1rem 0';
-              pre.style.background = 'var(--primary-light)';
-              pre.style.border = '1px solid var(--border-color)';
-              pre.style.padding = '0.75rem';
-              contentFT.appendChild(pre);
+
+              // Título
+              const h5FT = document.createElement('h5');
+              h5FT.textContent = ssf.sampledFeatureType;
+              contentFT.appendChild(h5FT);
+
+              // Clase
+              if (metaFT.class) {
+                const pClass = document.createElement('p');
+                pClass.textContent = `Class: ${metaFT.class}`;
+                contentFT.appendChild(pClass);
+              }
+
+              // Properties del Feature Type
+              if (Array.isArray(metaFT.properties) && metaFT.properties.length) {
+                const tblFT = document.createElement('table');
+                tblFT.innerHTML = '<tr><th>Name</th><th>Type</th></tr>';
+                metaFT.properties.forEach(p => {
+                  tblFT.innerHTML += `<tr><td>${p.name}</td><td>${p.data_type}</td></tr>`;
+                });
+                contentFT.appendChild(document.createElement('br'));
+                contentFT.appendChild(Object.assign(document.createElement('h5'), {
+                  textContent: 'Properties:'
+                }));
+                contentFT.appendChild(tblFT);
+              }
+
+              // Spatial Sampling Feature Type (si existiera anidado, repetir lógica similar)
 
               showModal(ssf.sampledFeatureType, contentFT);
             });
+
             tdValue.appendChild(link);
             row.appendChild(tdValue);
             tblS.appendChild(row);
