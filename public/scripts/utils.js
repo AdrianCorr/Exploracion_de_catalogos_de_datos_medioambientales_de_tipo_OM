@@ -154,18 +154,70 @@ async function renderResults(data) {
           }
 
           const ssf = meta.spatialSamplingFeatureType || {};
-          if (ssf.sampledFeatureType || ssf.shapeCRS || ssf.verticalCRS) {
-            const tblS = document.createElement('table');
-            tblS.innerHTML = `<tr><th>Field</th><th>Value</th></tr>`;
-            if (ssf.sampledFeatureType) tblS.innerHTML += `<tr><td>sampledFeatureType</td><td>${ssf.sampledFeatureType}</td></tr>`;
-            if (ssf.shapeCRS)           tblS.innerHTML += `<tr><td>shapeCRS</td><td>${ssf.shapeCRS}</td></tr>`;
-            if (ssf.verticalCRS)        tblS.innerHTML += `<tr><td>verticalCRS</td><td>${ssf.verticalCRS}</td></tr>`;
-            content.appendChild(document.createElement('br'));
-            const h5S = document.createElement('h5');
-            h5S.textContent = 'Spatial Sampling Feature Type:';
-            content.appendChild(h5S);
-            content.appendChild(tblS);
+          const tblS = document.createElement('table');
+          tblS.innerHTML = '<tr><th>Field</th><th>Value</th></tr>';
+
+          // sampledFeatureType
+          if (ssf.sampledFeatureType) {
+            const row = document.createElement('tr');
+            const tdField = document.createElement('td');
+            tdField.textContent = 'sampledFeatureType';
+            row.appendChild(tdField);
+
+            const tdValue = document.createElement('td');
+            // Creamos el enlace azul para sampledFeatureType
+            const link = document.createElement('span');
+            link.className = 'foi-link';
+            link.textContent = ssf.sampledFeatureType;
+            link.addEventListener('click', async e => {
+              e.stopPropagation();
+              // Llamada al endpoint de feature types
+              let featMeta = [];
+              try {
+                const resp = await fetch(
+                  `/api/feature-type-by-name?featureTypeName=${encodeURIComponent(ssf.sampledFeatureType)}`
+                );
+                featMeta = await resp.json();
+              } catch (err) {
+                console.error('Error cargando Feature Type:', err);
+              }
+              const metaFT = Array.isArray(featMeta) ? featMeta[0] : {};
+
+              // Construimos contenido del modal con JSON crudo
+              const contentFT = document.createElement('div');
+              const pre = document.createElement('pre');
+              pre.textContent = JSON.stringify(metaFT, null, 2);
+              pre.style.maxHeight = '400px';
+              pre.style.overflowY = 'auto';
+              pre.style.margin = '1rem 0';
+              pre.style.background = 'var(--primary-light)';
+              pre.style.border = '1px solid var(--border-color)';
+              pre.style.padding = '0.75rem';
+              contentFT.appendChild(pre);
+
+              showModal(ssf.sampledFeatureType, contentFT);
+            });
+            tdValue.appendChild(link);
+            row.appendChild(tdValue);
+            tblS.appendChild(row);
           }
+
+          // shapeCRS
+          if (ssf.shapeCRS) {
+            const r = document.createElement('tr');
+            r.innerHTML = `<td>shapeCRS</td><td>${ssf.shapeCRS}</td>`;
+            tblS.appendChild(r);
+          }
+          // verticalCRS
+          if (ssf.verticalCRS) {
+            const r = document.createElement('tr');
+            r.innerHTML = `<td>verticalCRS</td><td>${ssf.verticalCRS}</td>`;
+            tblS.appendChild(r);
+          }
+
+          content.appendChild(document.createElement('br'));
+          content.appendChild(document.createElement('h5')).textContent = 'Spatial Sampling Feature Type:';
+          content.appendChild(tblS);
 
           showModal(foitype, content);
         });
