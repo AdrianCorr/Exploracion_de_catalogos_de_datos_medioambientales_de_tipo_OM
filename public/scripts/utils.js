@@ -170,7 +170,7 @@ async function renderResults(data) {
             link.textContent = ssf.sampledFeatureType;
             link.addEventListener('click', async e => {
               e.stopPropagation();
-              // 1) Llamada al endpoint de Feature Types
+              // 3.1) Llamada al endpoint de Feature Types
               let featMeta = [];
               try {
                 const resp = await fetch(
@@ -183,13 +183,8 @@ async function renderResults(data) {
               }
               const metaFT = featMeta[0] || {};
 
-              // 2) Construimos contenido del modal
+              // 3.2) Construimos contenido del modal
               const contentFT = document.createElement('div');
-
-              // Título
-              const h5FT = document.createElement('h5');
-              h5FT.textContent = ssf.sampledFeatureType;
-              contentFT.appendChild(h5FT);
 
               // Clase
               if (metaFT.class) {
@@ -198,21 +193,66 @@ async function renderResults(data) {
                 contentFT.appendChild(pClass);
               }
 
-              // Properties del Feature Type
-              if (Array.isArray(metaFT.properties) && metaFT.properties.length) {
-                const tblFT = document.createElement('table');
-                tblFT.innerHTML = '<tr><th>Name</th><th>Type</th></tr>';
-                metaFT.properties.forEach(p => {
-                  tblFT.innerHTML += `<tr><td>${p.name}</td><td>${p.data_type}</td></tr>`;
-                });
-                contentFT.appendChild(document.createElement('br'));
-                contentFT.appendChild(Object.assign(document.createElement('h5'), {
-                  textContent: 'Properties:'
-                }));
-                contentFT.appendChild(tblFT);
+              // Nueva parte: mostrar Sampled Feature Type y Supertypes
+              const pSFT = document.createElement('p');
+              pSFT.textContent = `Sampled Feature Type: ${ssf.sampledFeatureType}`;
+              contentFT.appendChild(pSFT);
+
+
+              if (Array.isArray(metaFT.supertypes) && metaFT.supertypes.length) {
+                const pSuper = document.createElement('p');
+                pSuper.textContent = `Supertypes: ${metaFT.supertypes.join(', ')}`;
+                contentFT.appendChild(pSuper);
               }
 
-              // Spatial Sampling Feature Type (si existiera anidado, repetir lógica similar)
+              // Contenedor scrollable para la tabla
+              const scrollContainer = document.createElement('div');
+              scrollContainer.style.maxHeight = '400px';
+              scrollContainer.style.overflowY = 'auto';
+              scrollContainer.style.marginTop = '1rem';
+              scrollContainer.style.border = '1px solid var(--border-color)';
+              scrollContainer.style.padding = '0.5rem';
+              scrollContainer.style.background = 'var(--primary-light)';
+              scrollContainer.style.borderRadius = '4px';
+
+              // Tabla con los campos (fields)
+              if (Array.isArray(metaFT.properties) && metaFT.properties.length) {
+                const tblFT = document.createElement('table');
+                tblFT.style.borderCollapse = 'collapse';
+                tblFT.style.width = '100%';
+                tblFT.style.fontSize = '0.9rem';
+
+                // Cabecera
+                const thead = document.createElement('tr');
+                thead.innerHTML = `
+                  <th>Name</th>
+                  <th>Type</th>
+                `;
+                tblFT.appendChild(thead);
+
+                // Filas
+                metaFT.properties.forEach(p => {
+                  const vocab = {};
+                  (p.names || []).forEach(n => vocab[n.vocabulary] = n.term);
+
+                  const row = document.createElement('tr');
+                  row.innerHTML = `
+                    <td>
+                      <strong>castellano:</strong><br> ${vocab.castellano || ''}<br/>
+                      <strong>galego:</strong><br> ${vocab.galego || ''}<br/>
+                      <strong>english:</strong><br> ${vocab.english || ''}<br/>
+                    </td>
+                    <td>${p.data_type}</td>
+                  `;
+                  tblFT.appendChild(row);
+                });
+
+                contentFT.appendChild(document.createElement('br'));
+                const hProps = document.createElement('h5');
+                hProps.textContent = 'Properties:';
+                contentFT.appendChild(hProps);
+                contentFT.appendChild(tblFT);
+              }
 
               showModal(ssf.sampledFeatureType, contentFT);
             });
