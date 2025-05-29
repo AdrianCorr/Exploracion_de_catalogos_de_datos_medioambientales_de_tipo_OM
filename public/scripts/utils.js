@@ -292,7 +292,7 @@ async function renderResults(data) {
         [{ name: process.observation_type }]
       ));
     }
-    
+
     // Observed Properties
     if (Array.isArray(process.observed_properties)) {
       // 1) Creamos la sección una sola vez
@@ -300,7 +300,7 @@ async function renderResults(data) {
         'Observed Properties',
         process.observed_properties.map(op => ({
           name: (op.names || []).find(n => n.vocabulary === vocabKey)?.term || op.name,
-          code: op.name,      // para detectar el data_type
+          code: op.name,
           type: op.data_type
         }))
       );
@@ -309,55 +309,42 @@ async function renderResults(data) {
       // 2) Recorremos todos los <span class="prop-type"> y, si son namespaced, los convertimos en enlaces
       obsSection.querySelectorAll('span.prop-type').forEach(typeSpan => {
         const dt = typeSpan.textContent;
-        // criterio: contenga un punto (namespaced), p.ej. 'ctd_intecmar.flags_validacion', 'roms_meteogalicia.sea_water_velocity', etc.
         if (dt.includes('.')) {
-          // aplicamos el mismo estilo que tus .foi-link
           typeSpan.classList.add('foi-link');
 
-          // listener para abrir el modal
           typeSpan.addEventListener('click', async e => {
             e.stopPropagation();
 
-            // 1) Llamamos al endpoint de Data Type
             let dataTypeMeta = [];
             try {
-              const resp = await fetch(
-                `/api/data-type-by-name?dataTypeName=${encodeURIComponent(dt)}`
-              );
+              const resp = await fetch(`/api/data-type-by-name?dataTypeName=${encodeURIComponent(dt)}`);
               dataTypeMeta = await resp.json();
             } catch (err) {
               console.error('Error cargando Data Type:', err);
               return;
             }
+
             const meta = dataTypeMeta[0] || {};
-
-            // 2) Construimos contenido del modal
             const content = document.createElement('div');
-
-            // Título: Name del data type
             const h5Type = document.createElement('h5');
             h5Type.textContent = dt;
             content.appendChild(h5Type);
 
-            // Clase (complex, etc.)
             if (meta.class) {
               const pClass = document.createElement('p');
               pClass.textContent = `Class: ${meta.class}`;
               content.appendChild(pClass);
             }
 
-            // Container scrollable para la tabla
             const scrollContainer = document.createElement('div');
             scrollContainer.classList.add('scrollable-table');
 
-            // Si trae fields → creamos la tabla
             if (Array.isArray(meta.fields)) {
               const tbl = document.createElement('table');
               tbl.style.borderCollapse = 'collapse';
               tbl.style.width = '100%';
               tbl.style.fontSize = '0.9rem';
 
-              // Cabecera
               const thead = document.createElement('tr');
               thead.innerHTML = `
                 <th>Name</th>
@@ -366,21 +353,88 @@ async function renderResults(data) {
               `;
               tbl.appendChild(thead);
 
-              // Filas
               meta.fields.forEach(field => {
                 const vocab = {};
                 (field.names || []).forEach(n => vocab[n.vocabulary] = n.term);
 
                 const row = document.createElement('tr');
-                row.innerHTML = `
-                  <td>
-                    <strong>castellano:</strong><br> ${vocab.castellano || ''}<br/>
-                    <strong>galego:</strong><br> ${vocab.galego || ''}<br/>
-                    <strong>english:</strong><br> ${vocab.english || ''}<br/>
-                  </td>
-                  <td>${field.data_type}</td>
-                  <td>${vocab['cf_standard_names'] || ''}</td>
+
+                const tdName = document.createElement('td');
+                tdName.innerHTML = `
+                  <strong>castellano:</strong><br> ${vocab.castellano || ''}<br/>
+                  <strong>galego:</strong><br> ${vocab.galego || ''}<br/>
+                  <strong>english:</strong><br> ${vocab.english || ''}<br/>
                 `;
+
+                const tdDataType = document.createElement('td');
+                if (field.data_type && field.data_type.includes('.')) {
+                  const dtLink = document.createElement('span');
+                  dtLink.className = 'foi-link';
+                  dtLink.textContent = field.data_type;
+                  dtLink.style.cursor = 'pointer';
+                  dtLink.addEventListener('click', async e => {
+                    e.stopPropagation();
+                    let nestedMeta = [];
+                    try {
+                      const resp = await fetch(`/api/data-type-by-name?dataTypeName=${encodeURIComponent(field.data_type)}`);
+                      nestedMeta = await resp.json();
+                    } catch (err) {
+                      console.error('Error cargando Data Type anidado:', err);
+                      return;
+                    }
+                    const nested = nestedMeta[0] || {};
+                    const nestedContent = document.createElement('div');
+
+                    const h5Nested = document.createElement('h5');
+                    h5Nested.textContent = field.data_type;
+                    nestedContent.appendChild(h5Nested);
+
+                    if (nested.class) {
+                      const pClass = document.createElement('p');
+                      pClass.textContent = `Class: ${nested.class}`;
+                      nestedContent.appendChild(pClass);
+                    }
+
+                    const nestedScroll = document.createElement('div');
+                    nestedScroll.classList.add('scrollable-table');
+
+                    if (Array.isArray(nested.fields)) {
+                      const nestedTable = document.createElement('table');
+                      nestedTable.innerHTML = `
+                        <tr><th>Name</th><th>Type</th><th>cf_standard_names</th></tr>
+                      `;
+                      nested.fields.forEach(f => {
+                        const names = {};
+                        (f.names || []).forEach(n => names[n.vocabulary] = n.term);
+                        nestedTable.innerHTML += `
+                          <tr>
+                            <td>
+                              <strong>castellano:</strong><br> ${names.castellano || ''}<br/>
+                              <strong>galego:</strong><br> ${names.galego || ''}<br/>
+                              <strong>english:</strong><br> ${names.english || ''}<br/>
+                            </td>
+                            <td>${f.data_type}</td>
+                            <td>${names['cf_standard_names'] || ''}</td>
+                          </tr>
+                        `;
+                      });
+                      nestedScroll.appendChild(nestedTable);
+                      nestedContent.appendChild(nestedScroll);
+                    }
+
+                    showModal(field.data_type, nestedContent);
+                  });
+                  tdDataType.appendChild(dtLink);
+                } else {
+                  tdDataType.textContent = field.data_type || '';
+                }
+
+                const tdCF = document.createElement('td');
+                tdCF.textContent = vocab['cf_standard_names'] || '';
+
+                row.appendChild(tdName);
+                row.appendChild(tdDataType);
+                row.appendChild(tdCF);
                 tbl.appendChild(row);
               });
 
@@ -388,13 +442,12 @@ async function renderResults(data) {
               content.appendChild(scrollContainer);
             }
 
-            // 3) Mostrar modal
             showModal(dt, content);
           });
         }
       });
 
-      // 3) Convertir el nombre en un enlace que abre un ventana
+      // 3) Enlace especial para el campo concreto
       obsSection.querySelectorAll('li').forEach(li => {
         if (li.dataset.code === 'ctd_intecmar.flags_validacion') {
           const nameSpan = li.querySelector('span.prop-name');
@@ -409,10 +462,8 @@ async function renderResults(data) {
 
           link.addEventListener('click', ev => {
             ev.stopPropagation();
-            // Extraemos el array completo
             const obsProps = process.observed_properties;
 
-            // Construimos el contenido del modal
             const content = document.createElement('div');
             const h5 = document.createElement('h5');
             h5.textContent = 'Observed Properties JSON';
@@ -429,7 +480,6 @@ async function renderResults(data) {
             showModal('ctd_intecmar.flags_validacion', content);
           });
 
-          // Reemplazamos el nombre original por nuestro enlace
           nameSpan.parentNode.replaceChild(link, nameSpan);
         }
       });
