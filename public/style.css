@@ -246,7 +246,8 @@ header h1 {
     position: relative;         /* para que el botón ‘×’ se posicione respecto a este contenedor */
     background: var(--card-bg);
     border-radius: 8px;
-    max-width: 500px;
+    max-width: 90vw;
+    max-height: 90vh;
     width: 90%;
     box-shadow: 0 6px 24px rgba(0,0,0,0.15);
     overflow: hidden;
@@ -282,6 +283,8 @@ header h1 {
     padding: 1.5rem;
     color: var(--text-dark);
     line-height: 1.5;
+    overflow-y: auto;
+    max-height: calc(90vh - 4rem);
 }
   
   /* Títulos internos */
@@ -363,8 +366,30 @@ header h1 {
     cursor: pointer;
     font-weight: 600;
     transition: color 0.2s;
-  }
-  .foi-link:hover {
+ }
+.foi-link:hover {
     color: var(--secondary-color);
-  }
+}
   
+
+
+
+
+
+
+
+
+
+
+
+.scrollable-table {
+  max-height: 60vh;
+  overflow-y: auto;
+  margin-top: 1rem;
+  border: 1px solid var(--border-color);
+  padding: 0.5rem;
+  background: var(--primary-light);
+  border-radius: 4px;
+  width: 100%;
+  box-sizing: border-box;
+}

@@ -211,13 +211,7 @@ async function renderResults(data) {
 
               // Contenedor scrollable para la tabla
               const scrollContainer = document.createElement('div');
-              scrollContainer.style.maxHeight = '400px';
-              scrollContainer.style.overflowY = 'auto';
-              scrollContainer.style.marginTop = '1rem';
-              scrollContainer.style.border = '1px solid var(--border-color)';
-              scrollContainer.style.padding = '0.5rem';
-              scrollContainer.style.background = 'var(--primary-light)';
-              scrollContainer.style.borderRadius = '4px';
+              scrollContainer.classList.add('scrollable-table');
 
               // Tabla con los campos (fields)
               if (Array.isArray(metaFT.properties) && metaFT.properties.length) {
@@ -354,13 +348,7 @@ async function renderResults(data) {
 
             // Container scrollable para la tabla
             const scrollContainer = document.createElement('div');
-            scrollContainer.style.maxHeight = '400px';
-            scrollContainer.style.overflowY = 'auto';
-            scrollContainer.style.marginTop = '1rem';
-            scrollContainer.style.border = '1px solid var(--border-color)';
-            scrollContainer.style.padding = '0.5rem';
-            scrollContainer.style.background = 'var(--primary-light)';
-            scrollContainer.style.borderRadius = '4px';
+            scrollContainer.classList.add('scrollable-table');
 
             // Si trae fields → creamos la tabla
             if (Array.isArray(meta.fields)) {
