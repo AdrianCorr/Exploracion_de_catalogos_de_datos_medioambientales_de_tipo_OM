@@ -374,52 +374,58 @@ async function renderResults(data) {
                   dtLink.style.cursor = 'pointer';
                   dtLink.addEventListener('click', async e => {
                     e.stopPropagation();
+
+                    // Fetch del data type anidado
                     let nestedMeta = [];
                     try {
-                      const resp = await fetch(`/api/data-type-by-name?dataTypeName=${encodeURIComponent(field.data_type)}`);
+                      const resp = await fetch(
+                        `/api/data-type-by-name?dataTypeName=${encodeURIComponent(field.data_type)}`
+                      );
                       nestedMeta = await resp.json();
                     } catch (err) {
                       console.error('Error cargando Data Type anidado:', err);
                       return;
                     }
+
                     const nested = nestedMeta[0] || {};
                     const nestedContent = document.createElement('div');
 
-                    const h5Nested = document.createElement('h5');
-                    h5Nested.textContent = field.data_type;
-                    nestedContent.appendChild(h5Nested);
+                    // Si es una enumeración, la renderizamos con tablas/lists
+                    if (nested.class === 'enumeration' && Array.isArray(nested.values)) {
+                      // Título de la enum
+                      const h5Enum = document.createElement('h5');
+                      h5Enum.textContent = `${nested.name} (enumeration)`;
+                      h5Enum.classList.add('enumeration-title');
+                      nestedContent.appendChild(h5Enum);
 
-                    if (nested.class) {
-                      const pClass = document.createElement('p');
-                      pClass.textContent = `Class: ${nested.class}`;
-                      nestedContent.appendChild(pClass);
-                    }
+                      // Contenedor global de la enum
+                      const enumContainer = document.createElement('div');
+                      enumContainer.classList.add('enumeration-section');
 
-                    const nestedScroll = document.createElement('div');
-                    nestedScroll.classList.add('scrollable-table');
+                      nested.values.forEach(entry => {
+                        const vocTitle = document.createElement('h6');
+                        vocTitle.textContent = entry.vocabulary;
+                        enumContainer.appendChild(vocTitle);
 
-                    if (Array.isArray(nested.fields)) {
-                      const nestedTable = document.createElement('table');
-                      nestedTable.innerHTML = `
-                        <tr><th>Name</th><th>Type</th><th>cf_standard_names</th></tr>
-                      `;
-                      nested.fields.forEach(f => {
-                        const names = {};
-                        (f.names || []).forEach(n => names[n.vocabulary] = n.term);
-                        nestedTable.innerHTML += `
-                          <tr>
-                            <td>
-                              <strong>castellano:</strong><br> ${names.castellano || ''}<br/>
-                              <strong>galego:</strong><br> ${names.galego || ''}<br/>
-                              <strong>english:</strong><br> ${names.english || ''}<br/>
-                            </td>
-                            <td>${f.data_type}</td>
-                            <td>${names['cf_standard_names'] || ''}</td>
-                          </tr>
-                        `;
+                        const ul = document.createElement('ul');
+                        entry.values.forEach(val => {
+                          const li = document.createElement('li');
+                          li.textContent = val;
+                          ul.appendChild(li);
+                        });
+                        enumContainer.appendChild(ul);
                       });
-                      nestedScroll.appendChild(nestedTable);
-                      nestedContent.appendChild(nestedScroll);
+
+                      nestedContent.appendChild(enumContainer);
+
+                    } else {
+                      // Fallback: JSON crudo
+                      const pre = document.createElement('pre');
+                      pre.textContent = JSON.stringify(nested, null, 2);
+                      pre.style.whiteSpace = 'pre-wrap';
+                      pre.style.maxHeight = '60vh';
+                      pre.style.overflowY = 'auto';
+                      nestedContent.appendChild(pre);
                     }
 
                     showModal(field.data_type, nestedContent);
@@ -429,9 +435,11 @@ async function renderResults(data) {
                   tdDataType.textContent = field.data_type || '';
                 }
 
+                // Celda cf_standard_names
                 const tdCF = document.createElement('td');
                 tdCF.textContent = vocab['cf_standard_names'] || '';
 
+                // Montamos la fila y la añadimos a la tabla
                 row.appendChild(tdName);
                 row.appendChild(tdDataType);
                 row.appendChild(tdCF);
@@ -442,45 +450,9 @@ async function renderResults(data) {
               content.appendChild(scrollContainer);
             }
 
+            // 3) Mostramos el modal del primer nivel
             showModal(dt, content);
           });
-        }
-      });
-
-      // 3) Enlace especial para el campo concreto
-      obsSection.querySelectorAll('li').forEach(li => {
-        if (li.dataset.code === 'ctd_intecmar.flags_validacion') {
-          const nameSpan = li.querySelector('span.prop-name');
-          if (!nameSpan) return;
-
-          const link = document.createElement('span');
-          link.className = 'foi-link';
-          link.textContent = nameSpan.textContent;
-          link.style.cursor = 'pointer';
-          link.style.color = 'var(--primary-color)';
-          link.style.textDecoration = 'underline';
-
-          link.addEventListener('click', ev => {
-            ev.stopPropagation();
-            const obsProps = process.observed_properties;
-
-            const content = document.createElement('div');
-            const h5 = document.createElement('h5');
-            h5.textContent = 'Observed Properties JSON';
-            content.appendChild(h5);
-
-            const pre = document.createElement('pre');
-            pre.textContent = JSON.stringify(obsProps, null, 2);
-            pre.style.marginTop = '1rem';
-            pre.style.background = 'var(--primary-light)';
-            pre.style.border = '1px solid var(--border-color)';
-            pre.style.padding = '0.75rem';
-            content.appendChild(pre);
-
-            showModal('ctd_intecmar.flags_validacion', content);
-          });
-
-          nameSpan.parentNode.replaceChild(link, nameSpan);
         }
       });
     }

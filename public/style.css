@@ -329,6 +329,50 @@ header h1 {
     margin-top: 1.5rem;
 }
 
+/* Subtítulos de vocabulario */
+.modal-body h6 {
+  font-size: 1rem;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  color: var(--secondary-color);
+  border-left: 3px solid var(--primary-color);
+  padding-left: 0.5rem;
+}
+
+/* Listas de valores */
+.modal-body ul {
+  list-style: none;
+  margin: 0.5rem 0 1rem 0;
+  padding: 0;
+}
+
+/* Bullets personalizados */
+.modal-body ul li {
+  position: relative;
+  padding-left: 1.5rem;
+  margin-bottom: 0.4rem;
+  color: var(--text-dark);
+  line-height: 1.4;
+}
+
+/* Círculo antes de cada item */
+.modal-body ul li::before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  top: 0;
+  color: var(--primary-color);
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+/* Fondo ligero detrás de toda la sección enumeration */
+.modal-body .enumeration-section {
+  background: var(--primary-light);
+  padding: 1rem;
+  border-radius: 6px;
+  margin-bottom: 1.5rem;
+}
 
 
 
