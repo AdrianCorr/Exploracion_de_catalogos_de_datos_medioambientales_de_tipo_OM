@@ -168,6 +168,10 @@ async function renderResults(data) {
             const link = document.createElement('span');
             link.className = 'foi-link';
             link.textContent = ssf.sampledFeatureType;
+            link.style.cursor = 'pointer';
+            link.style.color = 'var(--primary-color)';
+            link.style.textDecoration = 'underline';
+
             link.addEventListener('click', async e => {
               e.stopPropagation();
               // 3.1) Llamada al endpoint de Feature Types
@@ -227,6 +231,7 @@ async function renderResults(data) {
                 thead.innerHTML = `
                   <th>Name</th>
                   <th>Type</th>
+                  <th>Names</th>
                 `;
                 tblFT.appendChild(thead);
 
@@ -235,24 +240,26 @@ async function renderResults(data) {
                   const vocab = {};
                   (p.names || []).forEach(n => vocab[n.vocabulary] = n.term);
 
-                  const row = document.createElement('tr');
-                  row.innerHTML = `
-                    <td>
-                      <strong>castellano:</strong><br> ${vocab.castellano || ''}<br/>
-                      <strong>galego:</strong><br> ${vocab.galego || ''}<br/>
-                      <strong>english:</strong><br> ${vocab.english || ''}<br/>
-                    </td>
+                  const Frow = document.createElement('tr');
+                  Frow.innerHTML = `
+                    <td>${p.name}</td>
                     <td>${p.data_type}</td>
+                    <td>
+                      <strong>castellano:</strong> ${vocab.castellano || ''}<br/>
+                      <strong>galego:</strong> ${vocab.galego || ''}<br/>
+                      <strong>english:</strong> ${vocab.english || ''}<br/>
+                      ${vocab.cf_standard_names ? `<strong>cf_standard_names:</strong> ${vocab.cf_standard_names}` : ''}
+                    </td>
                   `;
-                  tblFT.appendChild(row);
+                  tblFT.appendChild(Frow);
                 });
 
-                contentFT.appendChild(document.createElement('br'));
-                const hProps = document.createElement('h5');
-                hProps.textContent = 'Properties:';
-                contentFT.appendChild(hProps);
-                contentFT.appendChild(tblFT);
+                // Insertamos la tabla dentro del scrollContainer
+                scrollContainer.appendChild(tblFT);
               }
+
+              // Ahora metemos el scrollContainer dentro del contentFT
+              contentFT.appendChild(scrollContainer);
 
               showModal(ssf.sampledFeatureType, contentFT);
             });
