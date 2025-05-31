@@ -3,3 +3,4 @@ public/snippets
 .env
 .DS_Store
 *.log
+.gitignore
