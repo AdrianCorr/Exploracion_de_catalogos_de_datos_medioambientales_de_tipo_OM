@@ -1,45 +1,45 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Buscador de Procesos y Tipos de Datos</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Buscador de Procesos y Tipos de Datos</title>
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/components.css" />
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Endpoints y Métodos</h1>
-        </header>
+  <div class="container">
+    <header>
+      <h1>Endpoints y Métodos</h1>
+    </header>
 
-        <div class="search-container">
+    <div class="search-container">
+      <!-- Búsqueda de procesos por vocabulario y término -->
+      <div class="search-row">
+        <!-- Vocabulario con tres idiomas -->
+        <select id="vocabulary" title="Idioma">
+          <option value="es">ES</option>
+          <option value="gl">GL</option>
+          <option value="en">EN</option>
+        </select>
 
-            <!-- Búsqueda de procesos por vocabulario y término -->
-            <div class="search-row">
-                <!-- Vocabulario con tres idiomas -->
-                <select id="vocabulary" title="Idioma">
-                    <option value="es">ES</option>
-                    <option value="gl">GL</option>
-                    <option value="en">EN</option>
-                </select>
-
-                <input type="text" id="searchTerm" placeholder="searchTerm *">
-                <button id="searchProcess">Buscar Procesos</button>
-            </div>
-        </div>
-        
-        <div class="result-container">
-            <h2>Resultados</h2>
-            <div id="resultDisplay" class="results">Los resultados aparecerán aquí.</div>
-
-        </div>
+        <input type="text" id="searchTerm" placeholder="searchTerm *" />
+        <button id="searchProcess">Buscar Procesos</button>
+      </div>
     </div>
 
-    <!-- Contenedor para el modal; arranca oculto -->
-    <div id="modalOverlay" class="modal-overlay hidden"></div>
+    <div class="result-container">
+      <h2>Resultados</h2>
+      <div id="resultDisplay" class="results">
+        Los resultados aparecerán aquí.
+      </div>
+    </div>
+  </div>
 
-    <script src="scripts/app.js"></script>
-    <script src="scripts/contextOM.js"></script>
-    <script src="scripts/utils.js"></script>
+  <!-- Contenedor para el modal; arranca oculto -->
+  <div id="modalOverlay" class="modal-overlay hidden"></div>
+
+  <!-- Único script de producción: main.js -->
+  <script type="module" src="js/main.js"></script>
 </body>
 </html>

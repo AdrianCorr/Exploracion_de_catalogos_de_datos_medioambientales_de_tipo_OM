@@ -1,0 +1,299 @@
+/* ============================================================
+   components.css — Acordeones, Modal, Utilidades, FOI, etc.
+   ============================================================ */
+
+/* 1. Acordeones de Procesos */
+.process-item {
+  margin-bottom: 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--card-bg);
+  overflow: hidden;
+  transition: box-shadow 0.2s;
+}
+.process-item.open {
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Encabezado del proceso */
+.process-header {
+  position: relative;
+  padding: 1rem 1rem 1rem 2.5rem;
+  background: var(--primary-light);
+  color: var(--text-dark);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.process-header:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Flecha rotatoria en el encabezado */
+.process-header::before {
+  content: '▶';
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%) rotate(0deg);
+  transition: transform 0.3s, color 0.2s;
+  color: var(--text-dark);
+}
+.process-item.open .process-header::before {
+  transform: translateY(-50%) rotate(90deg);
+}
+.process-item.open .process-header {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Detalle del proceso (contenido interno) */
+.process-detail {
+  padding: 1rem 1rem 1rem 2rem;
+  border-top: 1px solid var(--border-color);
+}
+.process-detail.hidden {
+  display: none;
+}
+
+/* Títulos y listas dentro del detalle */
+.process-detail h4 {
+  font-size: 1.125rem;
+  margin-top: 1rem;
+  color: var(--secondary-color);
+}
+.process-detail ul {
+  list-style: none;
+  margin-left: 0;
+  padding-left: 0;
+}
+.process-detail li {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border-color);
+}
+.process-detail li:last-child {
+  border-bottom: none;
+}
+.process-detail .prop-name {
+  font-weight: 500;
+  color: var(--text-dark);
+}
+.process-detail .prop-type:not(.foi-link) {
+  font-style: italic;
+  color: var(--text-light);
+}
+
+/* Traducción del proceso */
+.translation {
+  font-size: 0.9rem;
+  color: var(--secondary-color);
+  margin-top: 0.5rem;
+}
+
+/* 2. Acordeón Anidado (Feature of Interest) */
+.foi-header {
+  position: relative;
+  cursor: pointer;
+  padding: 0.65rem 1rem;
+  background: #e0e7ff; /* color claro para FOI */
+  border-radius: 4px;
+  margin: 0.5rem 0;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+.foi-header::before {
+  content: '▶';
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%) rotate(0deg);
+  transition: transform 0.3s;
+}
+.process-item.open .foi-header::before {
+  transform: translateY(-50%) rotate(90deg);
+}
+.foi-detail {
+  padding: 0.75rem 1rem 0.75rem 2rem;
+  background: #f0faff;
+  border-left: 3px solid var(--primary-color);
+  margin-left: 1rem;
+}
+.foi-detail.hidden {
+  display: none;
+}
+
+/* 3. Utilidades Generales */
+.hidden {
+  display: none !important;
+}
+
+.scrollable-table {
+  max-height: 60vh;
+  overflow-y: auto;
+  margin-top: 1rem;
+  border: 1px solid var(--border-color);
+  padding: 0.5rem;
+  background: var(--primary-light);
+  border-radius: 4px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* 4. Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  pointer-events: auto;
+}
+
+.modal {
+  position: relative;
+  background: var(--card-bg);
+  border-radius: 8px;
+  max-width: 90vw;
+  max-height: 90vh;
+  width: 90%;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  pointer-events: auto;
+}
+
+.modal-header {
+  position: relative;
+  padding: 1rem 1.5rem;
+  background: var(--primary-color);
+  color: #fff;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.modal-close {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.75rem;
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: #fff;
+  cursor: pointer;
+}
+
+.modal-body {
+  padding: 1.5rem;
+  color: var(--text-dark);
+  line-height: 1.5;
+  overflow-y: auto;
+  max-height: calc(90vh - 4rem);
+}
+
+.modal-body h5 {
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  font-size: 1.1rem;
+  color: var(--secondary-color);
+}
+
+.modal-body p {
+  margin-bottom: 1rem;
+}
+
+.modal-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1.25rem;
+}
+
+.modal-body th {
+  text-align: left;
+  font-weight: 600;
+  padding: 0.5rem;
+  background: var(--primary-light);
+  color: var(--text-dark);
+  border-bottom: 2px solid var(--border-color);
+}
+
+.modal-body td {
+  padding: 0.5rem;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-light);
+}
+
+.modal-body br + h5,
+.modal-body table + h5 {
+  margin-top: 1.5rem;
+}
+
+.modal-body h6 {
+  font-size: 1rem;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  color: var(--secondary-color);
+  border-left: 3px solid var(--primary-color);
+  padding-left: 0.5rem;
+}
+
+.modal-body ul {
+  list-style: none;
+  margin: 0.5rem 0 1rem 0;
+  padding: 0;
+}
+
+.modal-body ul li {
+  position: relative;
+  padding-left: 1.5rem;
+  margin-bottom: 0.4rem;
+  color: var(--text-dark);
+  line-height: 1.4;
+}
+.modal-body ul li::before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  top: 0;
+  color: var(--primary-color);
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.modal-body .enumeration-section {
+  background: var(--primary-light);
+  padding: 1rem;
+  border-radius: 6px;
+  margin-bottom: 1.5rem;
+}
+
+/* 5. Botones y enlaces FOI */
+.foi-button {
+  display: inline-block;
+  margin: 1rem 0;
+  padding: 0.5rem 1rem;
+  background: var(--primary-color);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.foi-button:hover {
+  background: var(--secondary-color);
+}
+
+.foi-link {
+  color: var(--primary-color);
+  text-decoration: underline;
+  cursor: pointer;
+  font-weight: 600;
+  transition: color 0.2s;
+}
+.foi-link:hover {
+  color: var(--secondary-color);
+}
