@@ -12,6 +12,9 @@
   <div class="filter-container">
     <h2>Filtrar Proceso</h2>
 
+    <!-- Contenedor donde mostraremos errores de validación o de la llamada -->
+    <div id="filterError" style="color: var(--secondary-color); margin-bottom: 0.5rem;"></div>
+
     <form id="filterForm" action="#" onsubmit="event.preventDefault(); enviarFiltro();">
       <!-- Process Type (readonly, se rellenará desde la querystring) -->
       <label for="processType">Process Type</label>
@@ -34,6 +37,16 @@
     </form>
   </div>
 
-  <script src="js/filter.js" type="module"></script>
+  <!-- Aquí añadimos un contenedor donde se renderizarán los resultados -->
+  <div class="result-container" style="margin: 2rem auto; max-width: 900px;">
+    <h2>Resultados del Filtro</h2>
+    <div id="resultDisplay" class="results">
+      <!-- renderResults colocará aquí las secciones de procesos -->
+    </div>
+  </div>
+
+  <!-- Importamos primero renderer.js para poder usar renderResults, y luego filter.js -->
+  <script type="module" src="js/renderer.js"></script>
+  <script type="module" src="js/filter.js"></script>
 </body>
 </html>
