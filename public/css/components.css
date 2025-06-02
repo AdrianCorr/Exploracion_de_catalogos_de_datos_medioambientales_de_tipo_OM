@@ -297,3 +297,20 @@
 .foi-link:hover {
   color: var(--secondary-color);
 }
+
+
+/* 6. Estilos para botones de filtro */
+.filter-btn {
+  margin: 0.75rem 1rem;
+  padding: 0.5rem 1rem;
+  background: var(--primary-color);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.filter-btn:hover {
+  background: var(--secondary-color);
+}

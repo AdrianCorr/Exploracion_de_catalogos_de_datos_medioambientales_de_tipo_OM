@@ -455,6 +455,27 @@ export function renderResults(data) {
       section.classList.toggle("open");
     });
 
+    // CREAR BOTÓN “FILTRAR” para cada proceso
+    const filterBtn = document.createElement("button");
+    filterBtn.textContent = "Filtrar";
+    filterBtn.className = "filter-btn";
+    // Evitamos que al pulsar el botón se abra/cierre el acordeón (stopPropagation())
+    filterBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      // Abrir ventana nueva con filter.html?processType=<nombre del proceso>
+      const url = `filter.html?processType=${encodeURIComponent(process.name)}`;
+      window.open(url, "_blank");
+    });
+
+    // Si prefieres, puedes colocar el botón dentro del detalle en lugar
+    // de fuera; aquí lo agregamos al final de la sección para que siempre
+    // sea visible (o modifícalo según tu diseño).
+    section.appendChild(filterBtn);
+
+    // Finalmente, añadimos la sección completa al contenedor de resultados
+    container.appendChild(section);
+
+    // Finalmente, añadimos la sección completa al contenedor de resultados
     container.appendChild(section);
   });
 }

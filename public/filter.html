@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Filtrar Proceso</title>
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <link rel="stylesheet" href="css/filter.css" />
+</head>
+<body>
+  <div class="filter-container">
+    <h2>Filtrar Proceso</h2>
+
+    <form id="filterForm" action="#" onsubmit="event.preventDefault(); enviarFiltro();">
+      <!-- Process Type (readonly, se rellenará desde la querystring) -->
+      <label for="processType">Process Type</label>
+      <input type="text" id="processType" name="processType" readonly />
+
+      <!-- Keywords -->
+      <label for="keywords">Keywords</label>
+      <input type="text" id="keywords" name="keywords" placeholder="Introduce palabras clave" />
+
+      <!-- Start Date -->
+      <label for="startDate">Start Date</label>
+      <input type="date" id="startDate" name="startDate" />
+
+      <!-- End Date -->
+      <label for="endDate">End Date</label>
+      <input type="date" id="endDate" name="endDate" />
+
+      <!-- Botón de “Aplicar Filtro” -->
+      <button type="submit">Aplicar Filtro</button>
+    </form>
+  </div>
+
+  <script src="js/filter.js" type="module"></script>
+</body>
+</html>
