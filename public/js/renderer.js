@@ -192,14 +192,14 @@ export function renderResults(data) {
               }
 
               // Mostrar Sampled Feature Type y Supertypes
-              const pSFT = document.createElement("p");
-              pSFT.textContent = `Sampled Feature Type: ${nestedType}`;
-              contentFT.appendChild(pSFT);
+              const h5SFT = document.createElement("h5");
+              h5SFT.textContent = `Sampled Feature Type: ${nestedType}`;
+              contentFT.appendChild(h5SFT);
 
               if (Array.isArray(metaFT.supertypes) && metaFT.supertypes.length) {
-                const pSuper = document.createElement("p");
-                pSuper.textContent = `Supertypes: ${metaFT.supertypes.join(", ")}`;
-                contentFT.appendChild(pSuper);
+                const h5Super = document.createElement("h5");
+                h5Super.textContent = `Supertypes: ${metaFT.supertypes.join(", ")}`;
+                contentFT.appendChild(h5Super);
               }
 
               // Contenedor scrollable para la tabla
