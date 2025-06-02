@@ -2,7 +2,7 @@
 
 import { initResultObserver } from "./observer.js";
 import { renderResults } from "./renderer.js";
-import { showModal, hideModal } from "./modal.js";
+import { showModal } from "./modal.js";
 import { fetchProcessTypes } from "./api.js";
 
 /**

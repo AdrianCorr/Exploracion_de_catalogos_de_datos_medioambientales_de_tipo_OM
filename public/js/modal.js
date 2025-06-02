@@ -1,41 +1,57 @@
 // public/js/modal.js
 
 /**
- * Muestra un modal superpuesto con un título y un contenido (nodo DOM).
+ * Crea dinámicamente un overlay <div class="modal-overlay"> + un <div class="modal"> 
+ * y lo añade al final del <body>. Cada llamada genera una capa nueva.
  */
 export function showModal(titleText, contentElement) {
-  const overlay = document.getElementById("modalOverlay");
-  overlay.innerHTML = "";
+  // 1) Creamos el overlay
+  const overlay = document.createElement("div");
+  overlay.className = "modal-overlay";
 
+  // 2) Dentro del overlay, creamos el contenedor principal del modal
   const modal = document.createElement("div");
   modal.className = "modal";
 
-  // Cabecera del modal
+  // 3) Cabecera del modal (header)
   const header = document.createElement("div");
   header.className = "modal-header";
-  header.textContent = titleText;
 
+  // 3.1) Título
+  const titleElem = document.createElement("span");
+  titleElem.textContent = titleText;
+  header.appendChild(titleElem);
+
+  // 3.2) Botón "×" de cerrar
   const closeBtn = document.createElement("button");
   closeBtn.className = "modal-close";
   closeBtn.textContent = "×";
-  closeBtn.onclick = () => hideModal();
+  // Cuando el usuario haga clic, eliminamos este overlay (solo el más reciente).
+  closeBtn.onclick = (e) => {
+    e.stopPropagation();
+    overlay.remove();
+  };
   header.appendChild(closeBtn);
 
-  // Cuerpo del modal
+  // 4) Cuerpo del modal (body)
   const body = document.createElement("div");
   body.className = "modal-body";
   body.appendChild(contentElement);
 
+  // 5) Montar la estructura
   modal.appendChild(header);
   modal.appendChild(body);
   overlay.appendChild(modal);
-  overlay.classList.remove("hidden");
+
+  // 6) Insertamos el overlay al final de <body>
+  document.body.appendChild(overlay);
 }
 
 /**
- * Oculta el modal (añade la clase .hidden a #modalOverlay).
+ * Función auxiliar que cierra TODOS los modales creados (quita todos los overlays).
+ * Útil para un futuro “Cerrar todo”.
  */
-export function hideModal() {
-  const overlay = document.getElementById("modalOverlay");
-  overlay.classList.add("hidden");
-}
+
+/*export function hideAllModals() {
+  document.querySelectorAll(".modal-overlay").forEach((overlay) => overlay.remove());
+}*/
