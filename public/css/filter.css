@@ -90,6 +90,14 @@
   text-align: center;
 }
 
+/* === Contador de resultados === */
+.results-count {
+  text-align: left;
+  margin: 0.5rem 0 0.5rem;
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
 /* === Tabla de procesos === */
 .filter-table {
   width: 100%;

@@ -60,11 +60,20 @@ function renderResults(data) {
   const container = document.getElementById("filterResults");
   container.innerHTML = "";
 
+  const countContainer = document.getElementById("resultsCount");
+
   if (!Array.isArray(data) || data.length === 0) {
-    const noData = createHeading("div", "No se encontraron resultados para esos filtros.", "no-data");
+    countContainer.textContent = "0 resultados encontrados";
+    const noData = document.createElement("div");
+    noData.textContent = "No se encontraron resultados para esos filtros.";
+    noData.className = "no-data";
     container.appendChild(noData);
     return;
   }
+
+  // Contar cuántas descripciones hay en total
+  const total = data.reduce((acc, item) => acc + (Array.isArray(item.processDescription) ? item.processDescription.length : 0), 0);
+  countContainer.textContent = `${total} resultado${total !== 1 ? "s" : ""} encontrado${total !== 1 ? "s" : ""}`;
 
   const table = document.createElement("table");
   table.className = "filter-table";
