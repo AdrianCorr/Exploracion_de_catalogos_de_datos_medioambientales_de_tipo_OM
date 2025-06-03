@@ -122,7 +122,7 @@ function renderResults(data) {
       measurementCard.className = "measurement-card";
 
       const title = document.createElement("h3");
-      title.textContent = desc.nombre || "";
+      title.textContent = `Name: ${desc.nombre || ""}`;
       title.className = "measurement-title";
       measurementCard.appendChild(title);
 
