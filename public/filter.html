@@ -26,18 +26,23 @@
 
       <!-- Start Date -->
       <label for="startDate">Start Date</label>
-      <input type="datetime-local" id="startDate" name="startDate" />
+      <input type="datetime-local" id="startDate" name="startDate" step="1" />
 
       <!-- End Date -->
       <label for="endDate">End Date</label>
-      <input type="datetime-local" id="endDate" name="endDate" />
+      <input type="datetime-local" id="endDate" name="endDate" step="1" />
 
       <!-- Botón de “Aplicar Filtro” -->
       <button type="submit">Aplicar Filtro</button>
     </form>
 
-    <!-- Contador de resultados -->
-    <div id="resultsCount" class="results-count"></div>
+    <!-- Contenedor de botón “Seleccionar todo” y contador -->
+    <div class="results-header" style="display: none;">
+      <!-- Botón pequeño para seleccionar todo -->
+      <button id="selectAllButton" class="select-all-btn-small">Seleccionar todo</button>
+      <!-- Contador de resultados -->
+      <div id="resultsCount" class="results-count"></div>
+    </div>
 
     <!-- Contenedor donde mostraremos resultados o errores -->
     <div id="filterResults" class="filter-results"></div>
