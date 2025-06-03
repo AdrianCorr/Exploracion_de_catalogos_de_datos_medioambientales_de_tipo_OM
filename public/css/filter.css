@@ -1,7 +1,7 @@
 /* Estilos específicos para filter.html */
 
 .filter-container {
-  max-width: 60%;
+  max-width: 80%;
   margin: 2rem auto;
   background: var(--card-bg);
   border-radius: 8px;
@@ -105,7 +105,7 @@
 }
 
 /* 4. Contenedor de tarjetas de sensores */
-.sensor-cards-container {
+.sensor-cards {
   display: grid;
   gap: 1rem;
   /* Cada tarjeta ocupará como mínimo 220px y como máximo 1fr, 
