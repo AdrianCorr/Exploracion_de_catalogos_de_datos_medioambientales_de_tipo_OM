@@ -1,6 +1,6 @@
 /* public/css/filter.css */
 
-/* Contenedor principal del filtro (80% del ancho) */
+/* === Filtro === */
 .filter-container {
   width: 80%;
   margin: 2rem auto;
@@ -24,7 +24,7 @@
 }
 
 .filter-container input[type="text"],
-.filter-container input[type="date"] {
+.filter-container input[type="datetime-local"] {
   width: 100%;
   padding: 0.5rem;
   margin-top: 0.25rem;
@@ -35,7 +35,7 @@
 }
 
 .filter-container input[type="text"]:focus,
-.filter-container input[type="date"]:focus {
+.filter-container input[type="datetime-local"]:focus {
   border-color: var(--primary-color);
   outline: none;
 }
@@ -61,7 +61,7 @@
   background: var(--secondary-color);
 }
 
-/* Resultados y mensajes */
+/* === Resultados === */
 .filter-results {
   margin-top: 1.5rem;
   font-family: monospace;
@@ -90,7 +90,7 @@
   text-align: center;
 }
 
-/* Tabla principal ocupa 100% del contenedor */
+/* === Tabla de procesos === */
 .filter-table {
   width: 100%;
   margin: 1rem 0;
@@ -129,7 +129,7 @@
   display: none !important;
 }
 
-/* Contenido detallado de la medición */
+/* === Detalle de medición === */
 .detail-content {
   display: flex;
   flex-direction: column;
@@ -152,26 +152,17 @@
   font-weight: 600;
 }
 
-/* Títulos secundarios en rosa para Name y Observations */
 .measurement-title-secondary {
-  font-size: 1.0rem;           /* parecido a h4 */
+  font-size: 1.0rem;
   color: var(--secondary-color);
   margin: 0 0 0.5rem 0;
-  font-weight: 600;            /* igual que los h3/h4 de measurement-title */
+  font-weight: 600;
 }
 
-/* Asegurarnos de que el <span> dentro conserve el peso normal */
 .measurement-title-secondary span {
   font-weight: normal;
-  color: var(--text-dark);     /* texto normal para el contenido */
-  font-size: 0.95rem; /* fuerza tamaño igual a .measurement-text */
-}
-
-.measurement-subtitle {
-  font-size: 1rem;
-  color: var(--secondary-color);
-  margin: 0.75rem 0 0.5rem 0;
-  font-weight: 600;
+  color: var(--text-dark);
+  font-size: 0.95rem;
 }
 
 .measurement-text {
@@ -180,8 +171,8 @@
   color: var(--text-dark);
 }
 
-/* Grid responsive para tarjetas de sensores */
-.sensor-cards-container, .sensor-cards {
+/* === Tarjetas de sensores === */
+.sensor-cards-container {
   display: grid;
   gap: 1rem;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -210,7 +201,7 @@
   color: var(--text-light);
 }
 
-/* Ajustes responsivos si el contenedor se reduce */
+/* === Responsive === */
 @media (max-width: 768px) {
   .filter-container {
     width: 90%;

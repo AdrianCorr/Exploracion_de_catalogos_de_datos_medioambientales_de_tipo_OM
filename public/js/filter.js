@@ -30,13 +30,31 @@ function enviarFiltro() {
   filterProcesses(typeName, keyword, startTime, endTime)
     .then(renderResults)
     .catch((err) => {
+      const resultsContainer = document.getElementById("filterResults");
       const errorMsg = document.createElement("div");
-      errorMsg.textContent = `⚠️ ${err.message}`;
+      if (err.message.includes("500")) {
+        errorMsg.textContent = "⚠️ Por favor, asegúrese de ingresar también la fecha de fin.";
+      } else {
+        errorMsg.textContent = `⚠️ ${err.message}`;
+      }
       errorMsg.className = "error-msg";
       resultsContainer.appendChild(errorMsg);
     });
+
 }
 window.enviarFiltro = enviarFiltro;
+
+function formatDateWithSeconds(isoString) {
+  if (!isoString) return "";
+  const date = new Date(isoString);
+  const day = String(date.getUTCDate()).padStart(2, '0');
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+  const year = date.getUTCFullYear();
+  const hours = String(date.getUTCHours()).padStart(2, '0');
+  const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+  const seconds = String(date.getUTCSeconds()).padStart(2, '0');
+  return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+}
 
 function renderResults(data) {
   const container = document.getElementById("filterResults");
@@ -66,7 +84,7 @@ function renderResults(data) {
 
     processDescription.forEach((desc) => {
       const barco = desc.barco || "";
-      const validInterval = `${formatDate(desc.validTimeStart)} – ${formatDate(desc.validTimeEnd)}`;
+      const validInterval = `${formatDateWithSeconds(desc.validTimeStart)} – ${formatDateWithSeconds(desc.validTimeEnd)}`;
 
       const rowMain = document.createElement("tr");
       rowMain.className = "row-main";
