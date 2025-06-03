@@ -1,70 +1,29 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const params = new URLSearchParams(window.location.search);
-  const processType = params.get("processType") || "";
-  document.getElementById("processType").value = decodeURIComponent(processType);
-});
+/**
+ * filter-render.js — Lógica para renderResults(data):
+ *  • Monta la tabla de resultados dinámicamente
+ *  • Añade checkbox, filas colapsables, cards de detalle
+ *  • Muestra la cabecera de resultados (contador + botones)
+ *  • Al final, invoca setupResultInteractions() para activar eventos en botones/checkbox
+ */
 
-async function filterProcesses(typeName, keyword, startTime, endTime) {
-  if (!typeName) throw new Error("Por favor, introduzca un nombre de tipo de proceso.");
-  
-  const params = new URLSearchParams({ processTypeName: typeName });
-  if (keyword) params.append("keywordFilter", keyword);
-  if (startTime) params.append("startTime", startTime);
-  if (endTime) params.append("endTime", endTime);
+import {
+  createHeading,
+  createLabeledParagraph,
+  createTitleWithSpan,
+  formatDate,
+  formatDateWithSeconds,
+} from "./filter-utils.js";
 
-  const resp = await fetch(`/api/filter-process?${params.toString()}`);
-  if (!resp.ok) throw new Error(`Error HTTP ${resp.status}: ${resp.statusText}`);
-  return await resp.json();
-}
-window.filterProcesses = filterProcesses;
+import { setupResultInteractions } from "./filter-events.js";
 
-function enviarFiltro() {
-  const resultsContainer = document.getElementById("filterResults");
-  resultsContainer.innerHTML = "";
-
-  // Ocultar cabecera de resultados hasta que haya datos
-  document.querySelector(".results-header").style.display = "none";
-
-  const typeName  = document.getElementById("processType").value.trim();
-  const keyword   = document.getElementById("keywords").value.trim();
-  const startTime = document.getElementById("startDate").value;
-  const endTime   = document.getElementById("endDate").value;
-
-  filterProcesses(typeName, keyword, startTime, endTime)
-    .then(renderResults)
-    .catch((err) => {
-      const resultsContainer = document.getElementById("filterResults");
-      const errorMsg = document.createElement("div");
-      if (err.message.includes("500")) {
-        errorMsg.textContent = "⚠️ Por favor, asegúrese de ingresar también la fecha de fin.";
-      } else {
-        errorMsg.textContent = `⚠️ ${err.message}`;
-      }
-      errorMsg.className = "error-msg";
-      resultsContainer.appendChild(errorMsg);
-    });
-}
-window.enviarFiltro = enviarFiltro;
-
-function formatDateWithSeconds(isoString) {
-  if (!isoString) return "";
-  const date = new Date(isoString);
-  const day = String(date.getUTCDate()).padStart(2, '0');
-  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-  const year = date.getUTCFullYear();
-  const hours = String(date.getUTCHours()).padStart(2, '0');
-  const minutes = String(date.getUTCMinutes()).padStart(2, '0');
-  const seconds = String(date.getUTCSeconds()).padStart(2, '0');
-  return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
-}
-
-function renderResults(data) {
+export function renderResults(data) {
   const container = document.getElementById("filterResults");
   container.innerHTML = "";
 
   const countContainer = document.getElementById("resultsCount");
   const headerContainer = document.querySelector(".results-header");
 
+  // Si no hay datos o array vacío
   if (!Array.isArray(data) || data.length === 0) {
     headerContainer.style.display = "none";
     countContainer.textContent = "0 resultados encontrados";
@@ -76,20 +35,22 @@ function renderResults(data) {
     return;
   }
 
-  // Mostrar cabecera (botón y contador)
+  // Mostrar cabecera (contador + botones)
   headerContainer.style.display = "flex";
 
-  // Contar cuántas descripciones hay en total
+  // Calcular total de descripciones
   const total = data.reduce(
-    (acc, item) => acc + (Array.isArray(item.processDescription) ? item.processDescription.length : 0),
+    (acc, item) =>
+      acc + (Array.isArray(item.processDescription) ? item.processDescription.length : 0),
     0
   );
   countContainer.textContent = `${total} resultado${total !== 1 ? "s" : ""} encontrado${total !== 1 ? "s" : ""}`;
 
+  // Crear tabla
   const table = document.createElement("table");
   table.className = "filter-table";
 
-  // Encabezado: primera celda vacía para checkbox
+  // THEAD con columna vacía para checkbox
   const thead = document.createElement("thead");
   const headerRow = document.createElement("tr");
   ["", "Process ID", "Ship", "Valid Interval"].forEach((col) => {
@@ -107,7 +68,7 @@ function renderResults(data) {
       const barco = desc.barco || "";
       const validInterval = `${formatDateWithSeconds(desc.validTimeStart)} – ${formatDateWithSeconds(desc.validTimeEnd)}`;
 
-      // Fila principal con checkbox al inicio
+      // Fila principal
       const rowMain = document.createElement("tr");
       rowMain.className = "row-main";
 
@@ -117,7 +78,7 @@ function renderResults(data) {
       checkbox.type = "checkbox";
       checkbox.className = "result-checkbox";
       checkbox.dataset.processId = processId;
-      // Evitar que al hacer clic en el checkbox se abra el detalle:
+      // Evitar que el checkbox dispare la apertura del detalle
       checkbox.addEventListener("click", (e) => e.stopPropagation());
       tdCheckbox.appendChild(checkbox);
       rowMain.appendChild(tdCheckbox);
@@ -129,16 +90,17 @@ function renderResults(data) {
         rowMain.appendChild(td);
       });
 
-      // Fila de detalle oculto
+      // Fila de detalle (oculta inicialmente)
       const rowDetail = document.createElement("tr");
       rowDetail.className = "row-detail hidden";
       const detailCell = document.createElement("td");
-      detailCell.colSpan = 4; // Ahora 4 columnas: checkbox + 3 columnas
-      detailCell.style.padding = "0"; // Para que el contenido cuadre bien
+      detailCell.colSpan = 4;
+      detailCell.style.padding = "0";
 
       const detailContainer = document.createElement("div");
       detailContainer.className = "detail-content";
 
+      // Card de medición
       const card = document.createElement("div");
       card.className = "measurement-card";
       card.appendChild(createTitleWithSpan("Name", desc.nombre || "", "measurement-title-secondary"));
@@ -161,13 +123,12 @@ function renderResults(data) {
           ["Reception Date", formatDate(desc.equipo.fecha_recepcion)],
           ["Maintenance Period", `${desc.equipo.periodo_mantenimiento} months`],
         ];
-        equipFields.forEach(([k, v]) =>
-          card.appendChild(createLabeledParagraph(k, v, "measurement-text"))
-        );
+        equipFields.forEach(([k, v]) => card.appendChild(createLabeledParagraph(k, v, "measurement-text")));
       }
 
       detailContainer.appendChild(card);
 
+      // Sección “Associated Sensors”
       detailContainer.appendChild(createHeading("h3", "Associated Sensors", "measurement-title"));
       const sensorContainer = document.createElement("div");
       sensorContainer.className = "sensor-cards-container";
@@ -193,9 +154,7 @@ function renderResults(data) {
 
           const fieldsContainer = document.createElement("div");
           fieldsContainer.className = "sensor-fields";
-          fields.forEach(([k, v]) =>
-            fieldsContainer.appendChild(createLabeledParagraph(k, v))
-          );
+          fields.forEach(([k, v]) => fieldsContainer.appendChild(createLabeledParagraph(k, v)));
           sensorCard.appendChild(fieldsContainer);
           sensorContainer.appendChild(sensorCard);
         });
@@ -205,7 +164,7 @@ function renderResults(data) {
       detailCell.appendChild(detailContainer);
       rowDetail.appendChild(detailCell);
 
-      // Solo abrir/cerrar detalle al hacer clic en el resto de la fila (no en el checkbox)
+      // Solo abrir/cerrar detalle al hacer clic en la fila (no en checkbox)
       rowMain.addEventListener("click", () => rowDetail.classList.toggle("hidden"));
 
       tbody.appendChild(rowMain);
@@ -216,54 +175,6 @@ function renderResults(data) {
   table.appendChild(tbody);
   container.appendChild(table);
 
-  // Configurar botón “Seleccionar todo”
-  const selectAllBtn = document.getElementById("selectAllButton");
-  if (selectAllBtn) {
-    selectAllBtn.onclick = () => {
-      const checkboxes = document.querySelectorAll(".result-checkbox");
-      const allChecked = Array.from(checkboxes).every(cb => cb.checked);
-
-      // Si todos estaban marcados -> desmarcamos; si no -> marcamos todos
-      checkboxes.forEach(cb => cb.checked = !allChecked);
-
-      // Alternar clase 'active' en el botón:
-      if (allChecked) {
-        selectAllBtn.classList.remove("active"); // vuelve a azul
-      } else {
-        selectAllBtn.classList.add("active"); // se queda rosa
-      }
-    };
-  }
-}
-
-// Utilidades auxiliares
-
-function formatDate(isoString) {
-  if (!isoString) return "";
-  const date = new Date(isoString);
-  return `${String(date.getUTCDate()).padStart(2, "0")}/${String(
-    date.getUTCMonth() + 1
-  ).padStart(2, "0")}/${date.getUTCFullYear()}`;
-}
-
-function createHeading(tag, text, className = "") {
-  const el = document.createElement(tag);
-  el.textContent = text;
-  if (className) el.className = className;
-  return el;
-}
-
-function createLabeledParagraph(key, val, className = "") {
-  const p = document.createElement("p");
-  p.innerHTML = `<strong>${key}:</strong> ${val ?? "-"}`;
-  if (className) p.className = className;
-  return p;
-}
-
-function createTitleWithSpan(label, text, className) {
-  const heading = createHeading("h4", `${label}: `, className);
-  const span = document.createElement("span");
-  span.textContent = text;
-  heading.appendChild(span);
-  return heading;
+  // Activar interacciones en botones/checkboxes
+  setupResultInteractions();
 }

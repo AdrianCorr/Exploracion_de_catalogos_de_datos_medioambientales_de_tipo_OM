@@ -1,0 +1,35 @@
+/* =================================
+   filter.css — Layout general
+   ================================= */
+.filter-container {
+  width: 80%;
+  margin: 2rem auto;
+  background: var(--card-bg);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+}
+
+.filter-container h2 {
+  margin-bottom: 1rem;
+  color: var(--primary-color);
+  text-align: center;
+}
+
+/* Solo aplica a los botones dentro del form de filter */
+.filter-container form button {
+  margin-top: 1.5rem;
+  width: 100%;
+  padding: 0.75rem;
+  background: var(--primary-color);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.filter-container form button:hover {
+  background: var(--secondary-color);
+}

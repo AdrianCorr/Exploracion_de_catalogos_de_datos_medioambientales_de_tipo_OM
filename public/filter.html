@@ -4,9 +4,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Filtrar Proceso</title>
-  <link rel="stylesheet" href="css/base.css" />
-  <link rel="stylesheet" href="css/components.css" />
-  <link rel="stylesheet" href="css/filter.css" />
+  <link rel="stylesheet" href="css/index/base.css" />
+  <link rel="stylesheet" href="css/index/components.css" />
+
+  <!-- CSS del módulo Filter -->
+  <link rel="stylesheet" href="css/filter/filter.css" />
+  <link rel="stylesheet" href="css/filter/filter-form.css" />
+  <link rel="stylesheet" href="css/filter/filter-results.css" />
+  <link rel="stylesheet" href="css/filter/filter-buttons.css" />
+  <link rel="stylesheet" href="css/filter/filter-responsive.css" />
 </head>
 <body>
   <div class="filter-container">
@@ -36,11 +42,15 @@
       <button type="submit">Aplicar Filtro</button>
     </form>
 
-    <!-- Contenedor de botón “Seleccionar todo” y contador -->
+    <!-- Contenedor de botón “Seleccionar todo”, “View Observations” y contador -->
     <div class="results-header" style="display: none;">
-      <!-- Botón pequeño para seleccionar todo -->
-      <button id="selectAllButton" class="select-all-btn-small">Seleccionar todo</button>
-      <!-- Contador de resultados -->
+      <div class="results-header-buttons">
+        <!-- Botón pequeño para seleccionar todo -->
+        <button id="selectAllButton" class="select-all-btn-small">Seleccionar todo</button>
+        <!-- Nuevo botón View Observations -->
+        <button id="viewObservationsButton" class="view-obs-btn-small">View Observations</button>
+      </div>
+      
       <div id="resultsCount" class="results-count"></div>
     </div>
 
@@ -48,6 +58,6 @@
     <div id="filterResults" class="filter-results"></div>
   </div>
 
-  <script src="js/filter.js" type="module"></script>
+  <script src="js/filter/filter.js" type="module"></script>
 </body>
 </html>

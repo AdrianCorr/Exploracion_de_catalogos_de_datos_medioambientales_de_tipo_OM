@@ -1,0 +1,12 @@
+/* =================================
+   filter-responsive.css — Ajustes responsive
+   ================================= */
+@media (max-width: 768px) {
+  .filter-container {
+    width: 90%;
+  }
+  /* Opcional: si quieres que las tarjetas de sensores ocupen todo en móvil */
+  .sensor-cards-container {
+    grid-template-columns: 1fr;
+  }
+}
