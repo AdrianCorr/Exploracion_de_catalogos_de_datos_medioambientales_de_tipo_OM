@@ -1,39 +1,23 @@
-// public/js/filter.js
-
-/**
- * Lee el parámetro `processType` de la URL y lo pone en el input correspondiente.
- */
 document.addEventListener("DOMContentLoaded", () => {
   const params = new URLSearchParams(window.location.search);
   const processType = params.get("processType") || "";
   document.getElementById("processType").value = decodeURIComponent(processType);
 });
 
-/**
- * Función para filtrar procesos según los criterios ingresados.
- * Devuelve un array con los procesos filtrados (JSON).
- */
 async function filterProcesses(typeName, keyword, startTime, endTime) {
-  if (!typeName) {
-    throw new Error("Por favor, introduzca un nombre de tipo de proceso.");
-  }
-  let url = `/api/filter-process?processTypeName=${encodeURIComponent(typeName)}`;
-  if (keyword)  url += `&keywordFilter=${encodeURIComponent(keyword)}`;
-  if (startTime) url += `&startTime=${encodeURIComponent(startTime)}`;
-  if (endTime)   url += `&endTime=${encodeURIComponent(endTime)}`;
+  if (!typeName) throw new Error("Por favor, introduzca un nombre de tipo de proceso.");
+  
+  const params = new URLSearchParams({ processTypeName: typeName });
+  if (keyword) params.append("keywordFilter", keyword);
+  if (startTime) params.append("startTime", startTime);
+  if (endTime) params.append("endTime", endTime);
 
-  const resp = await fetch(url);
-  if (!resp.ok) {
-    throw new Error(`Error HTTP ${resp.status}: ${resp.statusText}`);
-  }
+  const resp = await fetch(`/api/filter-process?${params.toString()}`);
+  if (!resp.ok) throw new Error(`Error HTTP ${resp.status}: ${resp.statusText}`);
   return await resp.json();
 }
 window.filterProcesses = filterProcesses;
 
-/**
- * Función que se llama cuando el usuario pulsa “Aplicar Filtro”.
- * Lee los valores del formulario y muestra los resultados procesados.
- */
 function enviarFiltro() {
   const resultsContainer = document.getElementById("filterResults");
   resultsContainer.innerHTML = "";
@@ -44,9 +28,7 @@ function enviarFiltro() {
   const endTime   = document.getElementById("endDate").value;
 
   filterProcesses(typeName, keyword, startTime, endTime)
-    .then((data) => {
-      renderResults(data);
-    })
+    .then(renderResults)
     .catch((err) => {
       const errorMsg = document.createElement("div");
       errorMsg.textContent = `⚠️ ${err.message}`;
@@ -56,18 +38,12 @@ function enviarFiltro() {
 }
 window.enviarFiltro = enviarFiltro;
 
-/**
- * Renderiza la tabla de resultados con filas colapsables para cada medición.
- * data: array de objetos con structure: { processId, processDescription: [ ... ] }
- */
 function renderResults(data) {
   const container = document.getElementById("filterResults");
   container.innerHTML = "";
 
   if (!Array.isArray(data) || data.length === 0) {
-    const noData = document.createElement("div");
-    noData.textContent = "No se encontraron resultados para esos filtros.";
-    noData.className = "no-data";
+    const noData = createHeading("div", "No se encontraron resultados para esos filtros.", "no-data");
     container.appendChild(noData);
     return;
   }
@@ -77,38 +53,28 @@ function renderResults(data) {
 
   const thead = document.createElement("thead");
   const headerRow = document.createElement("tr");
-  ["Process ID", "Ship", "Valid Interval"].forEach((colName) => {
-    const th = document.createElement("th");
-    th.textContent = colName;
-    headerRow.appendChild(th);
-  });
+  ["Process ID", "Ship", "Valid Interval"].forEach((col) =>
+    headerRow.appendChild(createHeading("th", col))
+  );
   thead.appendChild(headerRow);
   table.appendChild(thead);
 
   const tbody = document.createElement("tbody");
 
-  data.forEach((item) => {
-    const processId = item.processId;
-    if (!Array.isArray(item.processDescription)) return;
+  data.forEach(({ processId, processDescription }) => {
+    if (!Array.isArray(processDescription)) return;
 
-    item.processDescription.forEach((desc) => {
+    processDescription.forEach((desc) => {
       const barco = desc.barco || "";
       const validInterval = `${formatDate(desc.validTimeStart)} – ${formatDate(desc.validTimeEnd)}`;
 
       const rowMain = document.createElement("tr");
       rowMain.className = "row-main";
-
-      const tdId = document.createElement("td");
-      tdId.textContent = processId;
-      rowMain.appendChild(tdId);
-
-      const tdShip = document.createElement("td");
-      tdShip.textContent = barco;
-      rowMain.appendChild(tdShip);
-
-      const tdInterval = document.createElement("td");
-      tdInterval.textContent = validInterval;
-      rowMain.appendChild(tdInterval);
+      [processId, barco, validInterval].forEach((val) => {
+        const td = document.createElement("td");
+        td.textContent = val;
+        rowMain.appendChild(td);
+      });
 
       const rowDetail = document.createElement("tr");
       rowDetail.className = "row-detail hidden";
@@ -118,34 +84,15 @@ function renderResults(data) {
       const detailContainer = document.createElement("div");
       detailContainer.className = "detail-content";
 
-      const measurementCard = document.createElement("div");
-      measurementCard.className = "measurement-card";
+      const card = document.createElement("div");
+      card.className = "measurement-card";
+      card.appendChild(createTitleWithSpan("Name", desc.nombre || "", "measurement-title-secondary"));
 
-      // Name en h4 con color secundario y texto normal tras “Name: ”
-      const title = document.createElement("h4");
-      title.textContent = "Name: ";
-      title.className = "measurement-title-secondary";
-      const titleText = document.createElement("span");
-      titleText.textContent = desc.nombre || "";
-      title.appendChild(titleText);
-      measurementCard.appendChild(title);
-
-      // Observations en h4 con color secundario, texto normal tras “Observations: ”
       if (desc.observaciones) {
-        const obs = document.createElement("h4");
-        obs.textContent = "Observations: ";
-        obs.className = "measurement-title-secondary";
-        const obsText = document.createElement("span");
-        obsText.textContent = desc.observaciones;
-        obs.appendChild(obsText);
-        measurementCard.appendChild(obs);
+        card.appendChild(createTitleWithSpan("Observations", desc.observaciones, "measurement-title-secondary"));
       }
 
-      // Equipment como h3 con estilo original (primario)
-      const equipTitle = document.createElement("h3");
-      equipTitle.textContent = "Equipment";
-      equipTitle.className = "measurement-title";
-      measurementCard.appendChild(equipTitle);
+      card.appendChild(createHeading("h3", "Equipment", "measurement-title"));
 
       if (desc.equipo) {
         const equipFields = [
@@ -157,25 +104,14 @@ function renderResults(data) {
           ["Maintenance PNT", desc.equipo.pnt_mantenimiento],
           ["Service Date", formatDate(desc.equipo.fecha_servicio)],
           ["Reception Date", formatDate(desc.equipo.fecha_recepcion)],
-          ["Maintenance Period", `${desc.equipo.periodo_mantenimiento} months`]
+          ["Maintenance Period", `${desc.equipo.periodo_mantenimiento} months`],
         ];
-        equipFields.forEach(([key, val]) => {
-          const p = document.createElement("p");
-          p.innerHTML = `<strong>${key}:</strong> ${val !== null && val !== undefined ? val : "-"}`;
-          p.className = "measurement-text";
-          measurementCard.appendChild(p);
-        });
+        equipFields.forEach(([k, v]) => card.appendChild(createLabeledParagraph(k, v, "measurement-text")));
       }
 
-      detailContainer.appendChild(measurementCard);
+      detailContainer.appendChild(card);
 
-      // Title for Associated Sensors, as h3 original style
-      const sensorSectionTitle = document.createElement("h3");
-      sensorSectionTitle.textContent = "Associated Sensors";
-      sensorSectionTitle.className = "measurement-title";
-      detailContainer.appendChild(sensorSectionTitle);
-
-      // Container for sensor cards (grid)
+      detailContainer.appendChild(createHeading("h3", "Associated Sensors", "measurement-title"));
       const sensorContainer = document.createElement("div");
       sensorContainer.className = "sensor-cards-container";
 
@@ -184,12 +120,9 @@ function renderResults(data) {
           const card = document.createElement("div");
           card.className = "sensor-card";
 
-          const name = document.createElement("h5");
-          name.textContent = sensor.nombre || sensor.id;
-          name.className = "sensor-name";
-          card.appendChild(name);
+          card.appendChild(createHeading("h5", sensor.nombre || sensor.id, "sensor-name"));
 
-          const sensorFields = [
+          const fields = [
             ["Serial Number", sensor.numero_serie],
             ["Range", sensor.rango_medida],
             ["Scale Division", sensor.division_escala],
@@ -198,18 +131,13 @@ function renderResults(data) {
             ["Calibration PNT", sensor.pnt_calibracion],
             ["Maintenance PNT", sensor.pnt_mantenimiento],
             ["Calibration Period", sensor.periodo_calibracion],
-            ["Maintenance Period", sensor.periodo_mantenimiento]
+            ["Maintenance Period", sensor.periodo_mantenimiento],
           ];
 
           const fieldsContainer = document.createElement("div");
           fieldsContainer.className = "sensor-fields";
-          sensorFields.forEach(([key, val]) => {
-            const p = document.createElement("p");
-            p.innerHTML = `<strong>${key}:</strong> ${val !== null && val !== undefined ? val : "-"}`;
-            fieldsContainer.appendChild(p);
-          });
+          fields.forEach(([k, v]) => fieldsContainer.appendChild(createLabeledParagraph(k, v)));
           card.appendChild(fieldsContainer);
-
           sensorContainer.appendChild(card);
         });
       }
@@ -218,9 +146,7 @@ function renderResults(data) {
       detailCell.appendChild(detailContainer);
       rowDetail.appendChild(detailCell);
 
-      rowMain.addEventListener("click", () => {
-        rowDetail.classList.toggle("hidden");
-      });
+      rowMain.addEventListener("click", () => rowDetail.classList.toggle("hidden"));
 
       tbody.appendChild(rowMain);
       tbody.appendChild(rowDetail);
@@ -231,14 +157,32 @@ function renderResults(data) {
   container.appendChild(table);
 }
 
-/**
- * Convierte fecha ISO a formato DD/MM/YYYY.
- */
 function formatDate(isoString) {
   if (!isoString) return "";
   const date = new Date(isoString);
-  const day = String(date.getUTCDate()).padStart(2, '0');
-  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-  const year = date.getUTCFullYear();
-  return `${day}/${month}/${year}`;
+  return `${String(date.getUTCDate()).padStart(2, "0")}/${String(date.getUTCMonth() + 1).padStart(2, "0")}/${date.getUTCFullYear()}`;
+}
+
+// Utilidades auxiliares
+
+function createHeading(tag, text, className = "") {
+  const el = document.createElement(tag);
+  el.textContent = text;
+  if (className) el.className = className;
+  return el;
+}
+
+function createLabeledParagraph(key, val, className = "") {
+  const p = document.createElement("p");
+  p.innerHTML = `<strong>${key}:</strong> ${val ?? "-"}`;
+  if (className) p.className = className;
+  return p;
+}
+
+function createTitleWithSpan(label, text, className) {
+  const heading = createHeading("h4", `${label}: `, className);
+  const span = document.createElement("span");
+  span.textContent = text;
+  heading.appendChild(span);
+  return heading;
 }
