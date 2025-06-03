@@ -221,8 +221,17 @@ function renderResults(data) {
   if (selectAllBtn) {
     selectAllBtn.onclick = () => {
       const checkboxes = document.querySelectorAll(".result-checkbox");
-      const allChecked = Array.from(checkboxes).every((cb) => cb.checked);
-      checkboxes.forEach((cb) => (cb.checked = !allChecked));
+      const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+
+      // Si todos estaban marcados -> desmarcamos; si no -> marcamos todos
+      checkboxes.forEach(cb => cb.checked = !allChecked);
+
+      // Alternar clase 'active' en el botón:
+      if (allChecked) {
+        selectAllBtn.classList.remove("active"); // vuelve a azul
+      } else {
+        selectAllBtn.classList.add("active"); // se queda rosa
+      }
     };
   }
 }
