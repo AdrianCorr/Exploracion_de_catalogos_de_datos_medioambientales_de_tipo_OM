@@ -52,3 +52,95 @@
 .filter-container button:hover {
   background: var(--secondary-color);
 }
+
+.filter-results {
+  margin-top: 1.5rem;
+  font-family: monospace;
+  font-size: 0.9rem;
+  color: var(--text-dark);
+}
+
+/* Si queremos que el pre tenga scroll horizontal en pantallas pequeñas */
+.filter-results pre {
+  white-space: pre-wrap;      /* Para que el JSON se ajuste en pantallas estrechas */
+  word-break: break-word;
+}
+
+
+/* 1. Tabla principal de resultados */
+.filter-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+.filter-table th,
+.filter-table td {
+  border: 1px solid var(--border-color);
+  padding: 0.5rem;
+  text-align: left;
+}
+.filter-table th {
+  background: var(--primary-light);
+  color: var(--text-dark);
+  font-weight: 600;
+}
+
+/* 2. Fila principal (clicable) */
+.row-main {
+  cursor: pointer;
+  background: var(--background-color);
+  transition: background 0.2s;
+}
+.row-main:hover {
+  background: var(--primary-light);
+}
+
+/* 3. Fila de detalle (oculta por defecto) */
+.row-detail td {
+  background: var(--background-color);
+  padding: 0.75rem;
+}
+.hidden {
+  display: none !important;
+}
+
+/* 4. Contenedor de tarjetas de sensores */
+.sensor-cards-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+/* 5. Tarjeta de cada sensor */
+.sensor-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 0.75rem;
+  flex: 1 1 calc(33% - 1rem);
+  box-sizing: border-box;
+  min-width: 200px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+.sensor-card h4 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1rem;
+  color: var(--text-dark);
+}
+.sensor-card p {
+  margin: 0.25rem 0;
+  font-size: 0.9rem;
+  color: var(--text-light);
+}
+
+/* 6. Ajuste responsive para tarjetas en pantallas más estrechas */
+@media (max-width: 768px) {
+  .sensor-card {
+    flex: 1 1 calc(50% - 1rem);
+  }
+}
+@media (max-width: 480px) {
+  .sensor-card {
+    flex: 1 1 100%;
+  }
+}

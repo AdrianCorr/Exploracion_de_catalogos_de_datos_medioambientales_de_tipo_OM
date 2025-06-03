@@ -35,18 +35,11 @@
       <!-- Botón de “Aplicar Filtro” -->
       <button type="submit">Aplicar Filtro</button>
     </form>
+
+    <!-- Contenedor donde mostraremos resultados o errores -->
+    <div id="filterResults" class="filter-results"></div>
   </div>
 
-  <!-- Aquí añadimos un contenedor donde se renderizarán los resultados -->
-  <div class="result-container" style="margin: 2rem auto; max-width: 900px;">
-    <h2>Resultados del Filtro</h2>
-    <div id="resultDisplay" class="results">
-      <!-- renderResults colocará aquí las secciones de procesos -->
-    </div>
-  </div>
-
-  <!-- Importamos primero renderer.js para poder usar renderResults, y luego filter.js -->
-  <script type="module" src="js/renderer.js"></script>
-  <script type="module" src="js/filter.js"></script>
+  <script src="js/filter.js" type="module"></script>
 </body>
 </html>

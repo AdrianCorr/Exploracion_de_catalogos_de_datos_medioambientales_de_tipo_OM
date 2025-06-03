@@ -1,8 +1,7 @@
 // public/js/filter.js
 
 /**
- * Al cargar la página, leemos el parámetro `processType` de la URL
- * y lo escribimos en el input correspondiente.
+ * Lee el parámetro `processType` de la URL y lo pone en el input correspondiente.
  */
 document.addEventListener("DOMContentLoaded", () => {
   const params = new URLSearchParams(window.location.search);
@@ -10,200 +9,188 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("processType").value = decodeURIComponent(processType);
 });
 
-// public/js/filter.js
-
 /**
  * Función para filtrar procesos según los criterios ingresados.
- * Lanza un Error si falta typeName o si la petición HTTP falla.
- * Devuelve la respuesta JSON de `/api/filter-process`.
+ * Devuelve un array con los procesos filtrados (JSON).
  */
 async function filterProcesses(typeName, keyword, startTime, endTime) {
   if (!typeName) {
     throw new Error("Por favor, introduzca un nombre de tipo de proceso.");
   }
   let url = `/api/filter-process?processTypeName=${encodeURIComponent(typeName)}`;
-  if (keyword)   url += `&keywordFilter=${encodeURIComponent(keyword)}`;
+  if (keyword)  url += `&keywordFilter=${encodeURIComponent(keyword)}`;
   if (startTime) url += `&startTime=${encodeURIComponent(startTime)}`;
   if (endTime)   url += `&endTime=${encodeURIComponent(endTime)}`;
 
   const resp = await fetch(url);
   if (!resp.ok) {
-    throw new Error(`HTTP ${resp.status}`);
+    throw new Error(`Error HTTP ${resp.status}: ${resp.statusText}`);
   }
   return await resp.json();
 }
+// Exponemos también la función en window (por si se quiere usar desde consola)
 window.filterProcesses = filterProcesses;
 
+/**
+ * Función que se llama cuando el usuario pulsa “Aplicar Filtro”.
+ * Lee los valores del formulario y muestra los resultados procesados.
+ */
+function enviarFiltro() {
+  const resultsContainer = document.getElementById("filterResults");
+  // Limpiamos cualquier contenido previo
+  resultsContainer.innerHTML = "";
 
-/*////////////////////////////////////////////////////////////////////////////////
-// Función para filtrar Feature of Interest según los criterios ingresados.
-// - featureTypeName: nombre del Feature Type (opcional; si está vacío, devuelve []).
-async function filterFeatureOfInterest(featureTypeName) {
-  if (!featureTypeName) return [];
-  const url = `/api/filter-feature-of-interest?featureTypeName=${encodeURIComponent(featureTypeName)}`;
-  const resp = await fetch(url);
-  if (!resp.ok) {
-    throw new Error(`HTTP ${resp.status}`);
-  }
-  return await resp.json();
+  // Leemos los valores del formulario
+  const typeName  = document.getElementById("processType").value.trim();
+  const keyword   = document.getElementById("keywords").value.trim();
+  const startTime = document.getElementById("startDate").value;
+  const endTime   = document.getElementById("endDate").value;
+
+  // Llamamos a la función de filtrado en forma asíncrona
+  filterProcesses(typeName, keyword, startTime, endTime)
+    .then((data) => {
+      renderResults(data);
+    })
+    .catch((err) => {
+      const errorMsg = document.createElement("div");
+      errorMsg.textContent = `⚠️ ${err.message}`;
+      errorMsg.style.color = "var(--secondary-color)";
+      errorMsg.style.marginTop = "1rem";
+      resultsContainer.appendChild(errorMsg);
+    });
 }
-window.filterFeatureOfInterest = filterFeatureOfInterest;
-*/
-
-/*////////////////////////////////////////////////////////////////////////////////
-// Función para filtrar procesos por ID.
-// Lee inputs con IDs: processByIdTypeNameInput, processIdInput, timeFilterInput
-async function processById() {
-  const processByIdTypeNameInput = document.getElementById("processByIdTypeNameInput");
-  const processIdInput          = document.getElementById("processIdInput");
-  const timeFilterInput         = document.getElementById("timeFilterInput");
-  const resultDisplay           = document.getElementById("resultDisplay");
-
-  const processTypeName = processByIdTypeNameInput?.value.trim() || "";
-  const processId       = processIdInput?.value.trim() || "";
-  const timeFilter      = timeFilterInput?.value.trim() || "";
-
-  if (!processTypeName) {
-    if (resultDisplay) resultDisplay.textContent = "Por favor, introduzca un nombre de tipo de proceso.";
-    return;
-  }
-
-  let url = `/api/process-by-id?processTypeName=${encodeURIComponent(processTypeName)}&id=${encodeURIComponent(processId)}`;
-  if (timeFilter) {
-    url += `&timeFilter=${encodeURIComponent(timeFilter)}`;
-  }
-
-  try {
-    const resp = await fetch(url);
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    const data = await resp.json();
-    if (resultDisplay) {
-      resultDisplay.textContent = JSON.stringify(data, null, 2);
-    }
-    return data;
-  } catch (error) {
-    if (resultDisplay) resultDisplay.textContent = `Error: ${error.message}`;
-    console.error(error);
-    throw error;
-  }
-}
-window.processById = processById;
-*/
-
-/*////////////////////////////////////////////////////////////////////////////////
-// Función para buscar Feature of Interest por ID.
-// Lee inputs con IDs: 'featureTypeNameFOI' y 'fid'
-async function featureOfInterestById() {
-  const featureTypeNameFOI = document.getElementById("featureTypeNameFOI")?.value.trim() || "";
-  const fid                = document.getElementById("fid")?.value.trim() || "";
-  const resultDisplay      = document.getElementById("resultDisplay");
-
-  if (!featureTypeNameFOI || !fid) {
-    if (resultDisplay) resultDisplay.textContent = "Por favor, introduzca el nombre del Feature Type y su ID.";
-    return;
-  }
-
-  const url = `/api/feature-of-interest-by-id?featureTypeName=${encodeURIComponent(featureTypeNameFOI)}&fid=${encodeURIComponent(fid)}`;
-  try {
-    const resp = await fetch(url);
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    const data = await resp.json();
-    if (resultDisplay) {
-      resultDisplay.textContent = JSON.stringify(data, null, 2);
-    }
-    return data;
-  } catch (error) {
-    if (resultDisplay) resultDisplay.textContent = `Error: ${error.message}`;
-    console.error(error);
-    throw error;
-  }
-}
-window.featureOfInterestById = featureOfInterestById;
-*/
-
-/*////////////////////////////////////////////////////////////////////////////////
-// Función para obtener la metadata de un Feature Type (spatialSamplingFeatureType).
-async function fetchFeatureType(featureTypeName) {
-  if (!featureTypeName) {
-    throw new Error("Por favor, introduzca un nombre de Feature Type.");
-  }
-  const url = `/api/feature-type-by-name?featureTypeName=${encodeURIComponent(featureTypeName)}`;
-  const resp = await fetch(url);
-  if (!resp.ok) {
-    throw new Error(`HTTP ${resp.status}`);
-  }
-  return await resp.json();
-}
-window.fetchFeatureType = fetchFeatureType;
-*/
-
-/////////////////////////////////////////////////////////////////////////////////
-// Ahora la parte que se encarga de capturar el submit de filter.html y mostrar
-// los resultados en el propio filtro (en lugar de enviarlos a la ventana padre).
-
-import { renderResults } from "./renderer.js";
+// Exponemos la función en window para que el inline onsubmit la encuentre
+window.enviarFiltro = enviarFiltro;
 
 /**
- * Función que se ejecuta al enviar el formulario de filtrado en filter.html.
- * Lee los valores de los inputs: #processType, #keywords, #startDate, #endDate,
- * llama a filterProcesses(...) y, si todo va bien, llama a renderResults(data) para
- * poblar #resultDisplay en esta misma página. En caso de error, muestra el mensaje
- * en el div #filterError.
+ * Renderiza la tabla de resultados con filas colapsables para cada medición.
+ * data: array de objetos con structure: { processId, processDescription: [ ... ] }
  */
-async function enviarFiltro() {
-  // Capturamos los elementos del DOM; si no existen, obtendremos 'null'
-  const processTypeNameInput = document.getElementById("processType");
-  const keywordInput         = document.getElementById("keywords");
-  const startDateInput       = document.getElementById("startDate");
-  const endDateInput         = document.getElementById("endDate");
-  const errorDisplay         = document.getElementById("filterError");
-  const resultDisplay        = document.getElementById("resultDisplay");
+function renderResults(data) {
+  const container = document.getElementById("filterResults");
+  container.innerHTML = "";
 
-  // 1) Verificamos que #processType exista, ya que es obligatorio:
-  if (!processTypeNameInput) {
-    if (errorDisplay) {
-      errorDisplay.textContent = "No se encontró el campo 'Process Type' en el formulario.";
-    }
+  if (!Array.isArray(data) || data.length === 0) {
+    const noData = document.createElement("div");
+    noData.textContent = "No se encontraron resultados para esos filtros.";
+    noData.style.marginTop = "1rem";
+    container.appendChild(noData);
     return;
   }
 
-  // 2) Leemos los valores (trim) o "" si el campo opcional no existiera
-  const typeName  = processTypeNameInput.value.trim();
-  const keyword   = keywordInput?.value.trim() || "";
-  const startTime = startDateInput?.value.trim() || "";
-  const endTime   = endDateInput?.value.trim() || "";
+  // Creamos la tabla
+  const table = document.createElement("table");
+  table.className = "filter-table";
+  
+  // Thead
+  const thead = document.createElement("thead");
+  const headerRow = document.createElement("tr");
+  ["Process ID", "Ship", "Valid Interval"].forEach((colName) => {
+    const th = document.createElement("th");
+    th.textContent = colName;
+    headerRow.appendChild(th);
+  });
+  thead.appendChild(headerRow);
+  table.appendChild(thead);
 
-  // 3) Limpiamos mensajes previos y resultados antiguos
-  if (errorDisplay) {
-    errorDisplay.textContent = "";
-  }
-  if (resultDisplay) {
-    resultDisplay.innerHTML = "";
-  }
+  // Tbody
+  const tbody = document.createElement("tbody");
 
-  // 4) Validamos que se haya introducido un tipo de proceso
-  if (!typeName) {
-    if (errorDisplay) {
-      errorDisplay.textContent = "Por favor, introduzca un nombre de tipo de proceso.";
-    }
-    return;
-  }
+  data.forEach((item) => {
+    const processId = item.processId;
+    if (!Array.isArray(item.processDescription)) return;
 
-  try {
-    // 5) Llamamos a la API de filtrado
-    const data = await filterProcesses(typeName, keyword, startTime, endTime);
+    item.processDescription.forEach((desc) => {
+      const barco = desc.barco || "";
+      const validInterval = `${formatDate(desc.validTimeStart)} – ${formatDate(desc.validTimeEnd)}`;
 
-    // 6) Mostramos los resultados usando renderResults en <div id="resultDisplay">
-    renderResults(data);
-  } catch (err) {
-    // 7) Si ocurre un error (HTTP o validación), lo mostramos
-    if (errorDisplay) {
-      errorDisplay.textContent = err.message;
-    } else {
-      alert(`Error al filtrar procesos: ${err.message}`);
-    }
-  }
+      // Fila principal
+      const rowMain = document.createElement("tr");
+      rowMain.className = "row-main";
+
+      const tdId = document.createElement("td");
+      tdId.textContent = processId;
+      rowMain.appendChild(tdId);
+
+      const tdShip = document.createElement("td");
+      tdShip.textContent = barco;
+      rowMain.appendChild(tdShip);
+
+      const tdInterval = document.createElement("td");
+      tdInterval.textContent = validInterval;
+      rowMain.appendChild(tdInterval);
+
+      // Fila de detalle (inicialmente oculta)
+      const rowDetail = document.createElement("tr");
+      rowDetail.className = "row-detail hidden";
+      const detailCell = document.createElement("td");
+      detailCell.colSpan = 3;
+
+      // Contenedor de tarjetas de sensores
+      const sensorContainer = document.createElement("div");
+      sensorContainer.className = "sensor-cards-container";
+
+      if (Array.isArray(desc.sensores)) {
+        desc.sensores.forEach((sensor) => {
+          const card = document.createElement("div");
+          card.className = "sensor-card";
+
+          const h4 = document.createElement("h4");
+          h4.textContent = sensor.nombre || sensor.id;
+          card.appendChild(h4);
+
+          // Mostrar pares clave-valor del sensor
+          for (const [key, value] of Object.entries(sensor)) {
+            if (value === null || key === "nombre") continue;
+            const p = document.createElement("p");
+            p.innerHTML = `<strong>${formatKey(key)}:</strong> ${formatValue(value)}`;
+            card.appendChild(p);
+          }
+
+          sensorContainer.appendChild(card);
+        });
+      }
+
+      detailCell.appendChild(sensorContainer);
+      rowDetail.appendChild(detailCell);
+
+      // Evento para expandir/colapsar detalle al hacer clic en la fila principal
+      rowMain.addEventListener("click", () => {
+        rowDetail.classList.toggle("hidden");
+      });
+
+      tbody.appendChild(rowMain);
+      tbody.appendChild(rowDetail);
+    });
+  });
+
+  table.appendChild(tbody);
+  container.appendChild(table);
 }
 
-// Exponemos enviarFiltro para que filter.html lo invoque con onsubmit
-window.enviarFiltro = enviarFiltro;
+/**
+ * Formatea una fecha ISO (YYYY-MM-DDTHH:mm:ss) a solo YYYY-MM-DD.
+ */
+function formatDate(isoString) {
+  if (!isoString) return "";
+  return isoString.split("T")[0];
+}
+
+/**
+ * Convierte claves en formato camelCase o snake_case a texto más legible.
+ */
+function formatKey(key) {
+  // Reemplaza guiones bajos por espacios y capitaliza la primera letra
+  const withSpaces = key.replace(/_/g, " ");
+  return withSpaces.charAt(0).toUpperCase() + withSpaces.slice(1);
+}
+
+/**
+ * Formatea valores según tipo (por ejemplo, fechas, números, etc.).
+ */
+function formatValue(val) {
+  if (typeof val === "string" && val.includes("T")) {
+    return formatDate(val);
+  }
+  return val;
+}
