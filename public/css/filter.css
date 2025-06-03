@@ -154,7 +154,7 @@
 
 /* Títulos secundarios en rosa para Name y Observations */
 .measurement-title-secondary {
-  font-size: 1.1rem;           /* parecido a h4 */
+  font-size: 1.0rem;           /* parecido a h4 */
   color: var(--secondary-color);
   margin: 0 0 0.5rem 0;
   font-weight: 600;            /* igual que los h3/h4 de measurement-title */
@@ -164,6 +164,7 @@
 .measurement-title-secondary span {
   font-weight: normal;
   color: var(--text-dark);     /* texto normal para el contenido */
+  font-size: 0.95rem; /* fuerza tamaño igual a .measurement-text */
 }
 
 .measurement-subtitle {
