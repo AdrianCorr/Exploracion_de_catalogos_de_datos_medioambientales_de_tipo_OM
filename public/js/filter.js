@@ -28,7 +28,6 @@ async function filterProcesses(typeName, keyword, startTime, endTime) {
   }
   return await resp.json();
 }
-// Exponemos también la función en window (por si se quiere usar desde consola)
 window.filterProcesses = filterProcesses;
 
 /**
@@ -37,16 +36,13 @@ window.filterProcesses = filterProcesses;
  */
 function enviarFiltro() {
   const resultsContainer = document.getElementById("filterResults");
-  // Limpiamos cualquier contenido previo
   resultsContainer.innerHTML = "";
 
-  // Leemos los valores del formulario
   const typeName  = document.getElementById("processType").value.trim();
   const keyword   = document.getElementById("keywords").value.trim();
   const startTime = document.getElementById("startDate").value;
   const endTime   = document.getElementById("endDate").value;
 
-  // Llamamos a la función de filtrado en forma asíncrona
   filterProcesses(typeName, keyword, startTime, endTime)
     .then((data) => {
       renderResults(data);
@@ -54,12 +50,10 @@ function enviarFiltro() {
     .catch((err) => {
       const errorMsg = document.createElement("div");
       errorMsg.textContent = `⚠️ ${err.message}`;
-      errorMsg.style.color = "var(--secondary-color)";
-      errorMsg.style.marginTop = "1rem";
+      errorMsg.className = "error-msg";
       resultsContainer.appendChild(errorMsg);
     });
 }
-// Exponemos la función en window para que el inline onsubmit la encuentre
 window.enviarFiltro = enviarFiltro;
 
 /**
@@ -73,16 +67,14 @@ function renderResults(data) {
   if (!Array.isArray(data) || data.length === 0) {
     const noData = document.createElement("div");
     noData.textContent = "No se encontraron resultados para esos filtros.";
-    noData.style.marginTop = "1rem";
+    noData.className = "no-data";
     container.appendChild(noData);
     return;
   }
 
-  // Creamos la tabla
   const table = document.createElement("table");
   table.className = "filter-table";
-  
-  // Thead
+
   const thead = document.createElement("thead");
   const headerRow = document.createElement("tr");
   ["Process ID", "Ship", "Valid Interval"].forEach((colName) => {
@@ -93,7 +85,6 @@ function renderResults(data) {
   thead.appendChild(headerRow);
   table.appendChild(thead);
 
-  // Tbody
   const tbody = document.createElement("tbody");
 
   data.forEach((item) => {
@@ -104,7 +95,6 @@ function renderResults(data) {
       const barco = desc.barco || "";
       const validInterval = `${formatDate(desc.validTimeStart)} – ${formatDate(desc.validTimeEnd)}`;
 
-      // Fila principal
       const rowMain = document.createElement("tr");
       rowMain.className = "row-main";
 
@@ -120,41 +110,103 @@ function renderResults(data) {
       tdInterval.textContent = validInterval;
       rowMain.appendChild(tdInterval);
 
-      // Fila de detalle (inicialmente oculta)
       const rowDetail = document.createElement("tr");
       rowDetail.className = "row-detail hidden";
       const detailCell = document.createElement("td");
       detailCell.colSpan = 3;
 
-      // Contenedor de tarjetas de sensores
+      const detailContainer = document.createElement("div");
+      detailContainer.className = "detail-content";
+
+      const measurementCard = document.createElement("div");
+      measurementCard.className = "measurement-card";
+
+      const title = document.createElement("h3");
+      title.textContent = desc.nombre || "";
+      title.className = "measurement-title";
+      measurementCard.appendChild(title);
+
+      if (desc.observaciones) {
+        const obs = document.createElement("p");
+        obs.textContent = `Observations: ${desc.observaciones}`;
+        obs.className = "measurement-text";
+        measurementCard.appendChild(obs);
+      }
+
+      const equipTitle = document.createElement("h4");
+      equipTitle.textContent = "Equipment";
+      equipTitle.className = "measurement-subtitle";
+      measurementCard.appendChild(equipTitle);
+
+      if (desc.equipo) {
+        const equipFields = [
+          ["ID", desc.equipo.id],
+          ["Name", desc.equipo.nombre],
+          ["Manufacturer", desc.equipo.fabricante],
+          ["Responsible", desc.equipo.responsable],
+          ["Serial Number", desc.equipo.numero_serie],
+          ["Maintenance PNT", desc.equipo.pnt_mantenimiento],
+          ["Service Date", formatDate(desc.equipo.fecha_servicio)],
+          ["Reception Date", formatDate(desc.equipo.fecha_recepcion)],
+          ["Maintenance Period", `${desc.equipo.periodo_mantenimiento} months`]
+        ];
+        equipFields.forEach(([key, val]) => {
+          const p = document.createElement("p");
+          p.textContent = `${key}: ${val !== null && val !== undefined ? val : "-"}`;
+          p.className = "measurement-text";
+          measurementCard.appendChild(p);
+        });
+      }
+
+      detailContainer.appendChild(measurementCard);
+
+      const sensorSectionTitle = document.createElement("h4");
+      sensorSectionTitle.textContent = "Associated Sensors";
+      sensorSectionTitle.className = "measurement-subtitle";
+      detailContainer.appendChild(sensorSectionTitle);
+
       const sensorContainer = document.createElement("div");
-      sensorContainer.className = "sensor-cards-container";
+      sensorContainer.className = "sensor-cards";
 
       if (Array.isArray(desc.sensores)) {
         desc.sensores.forEach((sensor) => {
           const card = document.createElement("div");
           card.className = "sensor-card";
 
-          const h4 = document.createElement("h4");
-          h4.textContent = sensor.nombre || sensor.id;
-          card.appendChild(h4);
+          const name = document.createElement("h5");
+          name.textContent = sensor.nombre || sensor.id;
+          name.className = "sensor-name";
+          card.appendChild(name);
 
-          // Mostrar pares clave-valor del sensor
-          for (const [key, value] of Object.entries(sensor)) {
-            if (value === null || key === "nombre") continue;
+          const sensorFields = [
+            ["Serial Number", sensor.numero_serie],
+            ["Range", sensor.rango_medida],
+            ["Scale Division", sensor.division_escala],
+            ["Service Date", formatDate(sensor.fecha_servicio)],
+            ["Reception Date", formatDate(sensor.fecha_recepcion)],
+            ["Calibration PNT", sensor.pnt_calibracion],
+            ["Maintenance PNT", sensor.pnt_mantenimiento],
+            ["Calibration Period", sensor.periodo_calibracion],
+            ["Maintenance Period", sensor.periodo_mantenimiento]
+          ];
+
+          const fieldsContainer = document.createElement("div");
+          fieldsContainer.className = "sensor-fields";
+          sensorFields.forEach(([key, val]) => {
             const p = document.createElement("p");
-            p.innerHTML = `<strong>${formatKey(key)}:</strong> ${formatValue(value)}`;
-            card.appendChild(p);
-          }
+            p.innerHTML = `<strong>${key}:</strong> ${val !== null && val !== undefined ? val : "-"}`;
+            fieldsContainer.appendChild(p);
+          });
+          card.appendChild(fieldsContainer);
 
           sensorContainer.appendChild(card);
         });
       }
 
-      detailCell.appendChild(sensorContainer);
+      detailContainer.appendChild(sensorContainer);
+      detailCell.appendChild(detailContainer);
       rowDetail.appendChild(detailCell);
 
-      // Evento para expandir/colapsar detalle al hacer clic en la fila principal
       rowMain.addEventListener("click", () => {
         rowDetail.classList.toggle("hidden");
       });
@@ -169,28 +221,13 @@ function renderResults(data) {
 }
 
 /**
- * Formatea una fecha ISO (YYYY-MM-DDTHH:mm:ss) a solo YYYY-MM-DD.
+ * Convierte fecha ISO a formato DD/MM/YYYY.
  */
 function formatDate(isoString) {
   if (!isoString) return "";
-  return isoString.split("T")[0];
-}
-
-/**
- * Convierte claves en formato camelCase o snake_case a texto más legible.
- */
-function formatKey(key) {
-  // Reemplaza guiones bajos por espacios y capitaliza la primera letra
-  const withSpaces = key.replace(/_/g, " ");
-  return withSpaces.charAt(0).toUpperCase() + withSpaces.slice(1);
-}
-
-/**
- * Formatea valores según tipo (por ejemplo, fechas, números, etc.).
- */
-function formatValue(val) {
-  if (typeof val === "string" && val.includes("T")) {
-    return formatDate(val);
-  }
-  return val;
+  const date = new Date(isoString);
+  const day = String(date.getUTCDate()).padStart(2, '0');
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+  const year = date.getUTCFullYear();
+  return `${day}/${month}/${year}`;
 }
