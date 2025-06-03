@@ -121,21 +121,30 @@ function renderResults(data) {
       const measurementCard = document.createElement("div");
       measurementCard.className = "measurement-card";
 
-      const title = document.createElement("h3");
-      title.textContent = `Name: ${desc.nombre || ""}`;
-      title.className = "measurement-title";
+      // Name en h4 con color secundario y texto normal tras “Name: ”
+      const title = document.createElement("h4");
+      title.textContent = "Name: ";
+      title.className = "measurement-title-secondary";
+      const titleText = document.createElement("span");
+      titleText.textContent = desc.nombre || "";
+      title.appendChild(titleText);
       measurementCard.appendChild(title);
 
+      // Observations en h4 con color secundario, texto normal tras “Observations: ”
       if (desc.observaciones) {
-        const obs = document.createElement("p");
-        obs.textContent = `Observations: ${desc.observaciones}`;
-        obs.className = "measurement-text";
+        const obs = document.createElement("h4");
+        obs.textContent = "Observations: ";
+        obs.className = "measurement-title-secondary";
+        const obsText = document.createElement("span");
+        obsText.textContent = desc.observaciones;
+        obs.appendChild(obsText);
         measurementCard.appendChild(obs);
       }
 
-      const equipTitle = document.createElement("h4");
+      // Equipment como h3 con estilo original (primario)
+      const equipTitle = document.createElement("h3");
       equipTitle.textContent = "Equipment";
-      equipTitle.className = "measurement-subtitle";
+      equipTitle.className = "measurement-title";
       measurementCard.appendChild(equipTitle);
 
       if (desc.equipo) {
@@ -152,7 +161,7 @@ function renderResults(data) {
         ];
         equipFields.forEach(([key, val]) => {
           const p = document.createElement("p");
-          p.textContent = `${key}: ${val !== null && val !== undefined ? val : "-"}`;
+          p.innerHTML = `<strong>${key}:</strong> ${val !== null && val !== undefined ? val : "-"}`;
           p.className = "measurement-text";
           measurementCard.appendChild(p);
         });
@@ -160,13 +169,15 @@ function renderResults(data) {
 
       detailContainer.appendChild(measurementCard);
 
-      const sensorSectionTitle = document.createElement("h4");
+      // Title for Associated Sensors, as h3 original style
+      const sensorSectionTitle = document.createElement("h3");
       sensorSectionTitle.textContent = "Associated Sensors";
-      sensorSectionTitle.className = "measurement-subtitle";
+      sensorSectionTitle.className = "measurement-title";
       detailContainer.appendChild(sensorSectionTitle);
 
+      // Container for sensor cards (grid)
       const sensorContainer = document.createElement("div");
-      sensorContainer.className = "sensor-cards";
+      sensorContainer.className = "sensor-cards-container";
 
       if (Array.isArray(desc.sensores)) {
         desc.sensores.forEach((sensor) => {
