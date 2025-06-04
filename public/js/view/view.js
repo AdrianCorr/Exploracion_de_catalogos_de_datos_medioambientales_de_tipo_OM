@@ -1,104 +1,69 @@
 /**
- * view.js — Inicializa el mapa de Leaflet centrado en Galicia,
- *          lee los IDs seleccionados de la URL y luego puede
- *          desplegar marcadores o información en “Results”.
+ * view.js — Al cargarse, lee los IDs pasados en la URL,
+ *          recupera window.opener.lastFilterData (JSON de filter),
+ *          filtra por esos IDs y muestra el resultado en pantalla.
+ *
+ * Requisitos:
+ *  • Filter (“filter-render.js”) debe haber guardado el JSON completo en window.lastFilterData
+ *  • Al pulsar “View Observations”, se abre view.html? id=... , pasando los IDs como parámetros “id”
+ *  • Aquí recuperamos ese JSON de window.opener y lo imprimimos en <div id="jsonOutput">
+ *  • Adicionalmente, inicializamos un mapa Leaflet vacío (centrado en Galicia)
  */
 
-import { coordinatesTemplate } from "./view-utils.js";
+import { formatJSON } from "./view-utils.js";
 
 document.addEventListener("DOMContentLoaded", () => {
-  // 1) Leer IDs seleccionados desde query string: ?selected=1,2,3,...
+  const titleEl = document.getElementById("viewTitle");
+  const errorEl = document.getElementById("viewError");
+  const jsonContainer = document.getElementById("jsonOutput");
+
+  // 1) Leer parámetros: ?id=123&id=456&id=789 ...
   const params = new URLSearchParams(window.location.search);
-  const selectedParam = params.get("selected") || ""; // p.e. "1,2,3"
-  const selectedIds = selectedParam
-    .split(",")
-    .map((s) => s.trim())
-    .filter((s) => s !== "");
+  const ids = params.getAll("id"); // devuelve array de strings
 
-  // 2) Inicializar el mapa
-  initMap();
-
-  // 3) Añadir marcadores (o lógica) para cada ID en el mapa
-  //    (aquí deberías obtener coordenadas reales de cada observación/ID)
-  //    Por ahora, simplemente mostramos el array de IDs en “Results”.
-  const resultsDiv = document.getElementById("resultsList");
-  if (selectedIds.length === 0) {
-    resultsDiv.textContent = "No se seleccionaron observaciones.";
-  } else {
-    const ul = document.createElement("ul");
-    selectedIds.forEach((id) => {
-      const li = document.createElement("li");
-      li.textContent = `Observación ID: ${id}`;
-      ul.appendChild(li);
-    });
-    resultsDiv.appendChild(ul);
+  if (ids.length === 0) {
+    errorEl.textContent = "⚠️ No se recibieron IDs de procesos seleccionados.";
+    return;
   }
+
+  // Mostrar encabezado con IDs
+  titleEl.textContent = `Observaciones seleccionadas (IDs): ${ids.join(", ")}`;
+
+  // 2) Acceder a window.opener.lastFilterData
+  if (!window.opener || !Array.isArray(window.opener.lastFilterData)) {
+    errorEl.textContent = "⚠️ Imposible recuperar los datos de la ventana anterior.";
+    return;
+  }
+
+  const allData = window.opener.lastFilterData;
+
+  // 3) Filtrar solo los objetos cuyo processId esté en ids[]
+  const filtered = allData.filter((item) => ids.includes(String(item.processId)));
+
+  if (filtered.length === 0) {
+    errorEl.textContent = "⚠️ Ninguna coincidencia encontrada en el JSON original.";
+    return;
+  }
+
+  // 4) Mostrar el JSON filtrado dentro de <div id="jsonOutput">
+  const pre = document.createElement("pre");
+  pre.textContent = formatJSON(filtered);
+  jsonContainer.appendChild(pre);
+
+  // 5) Inicializar mapa Leaflet vacío (centrado en Galicia)
+  initMap();
 });
 
 function initMap() {
   // Centro aproximado de Galicia
-  const galiciaCenter = [42.7284, -8.6538]; // lat, lng
-  const initialZoom = 8;
+  const galiciaCenter = [42.7284, -8.6538];
+  const zoomInicial = 8;
 
-  // Crear mapa
-  const map = L.map("map").setView(galiciaCenter, initialZoom);
+  const map = L.map("map").setView(galiciaCenter, zoomInicial);
 
-  // Capa base OpenStreetMap
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    attribution: "© OpenStreetMap contributors"
+    attribution: "&copy; OpenStreetMap contributors",
   }).addTo(map);
 
-  // Si quieres desactivar controles predeterminados:
-  map.zoomControl.remove();
-
-  // Agregar control “zoom home” (opcional)
-  if (L.Control && L.Control.zoomHome) {
-    const zoomHome = L.Control.zoomHome({
-      position: "topleft",
-      homeCoordinates: galiciaCenter,
-      homeZoom: initialZoom
-    });
-    zoomHome.addTo(map);
-  }
-
-  // Grupo para elementos dibujados (Leaflet Draw)
-  const drawnItems = new L.FeatureGroup();
-  map.addLayer(drawnItems);
-
-  // Control de dibujo: solo rectángulo activo
-  const drawControl = new L.Control.Draw({
-    draw: {
-      polygon: false,
-      polyline: false,
-      circle: false,
-      marker: false,
-      circlemarker: false,
-      rectangle: true
-    },
-    edit: {
-      featureGroup: drawnItems
-    }
-  });
-  map.addControl(drawControl);
-
-  // Inicializar contenedor de coordenadas
-  document.getElementById("bbox-coordinates").innerHTML = coordinatesTemplate();
-
-  // Evento tras crear un rectángulo
-  map.on("draw:created", (e) => {
-    const layer = e.layer;
-    drawnItems.clearLayers();
-    drawnItems.addLayer(layer);
-    const bounds = layer.getBounds();
-    document.getElementById("bbox-coordinates").innerHTML = coordinatesTemplate(
-      bounds.getSouthWest().lat.toFixed(6),
-      bounds.getSouthWest().lng.toFixed(6),
-      bounds.getNorthEast().lat.toFixed(6),
-      bounds.getNorthEast().lng.toFixed(6)
-    );
-  });
-
-  map.on("draw:deleted", () => {
-    document.getElementById("bbox-coordinates").innerHTML = coordinatesTemplate();
-  });
+  // Por ahora no añadimos marcadores; el mapa queda centrado en Galicia
 }

@@ -1,17 +1,17 @@
 /**
  * view-utils.js — Funciones auxiliares para view.html
- *  • coordinatesTemplate: dado SW y NE, devuelve el HTML formateado
+ *
+ * Por ahora, solo exporta una utilidad mínima para formatear texto o JSON,
+ * pero podrías ampliar con más helpers si lo necesitas.
  */
 
-export function coordinatesTemplate(
-  swLat = "",
-  swLng = "",
-  neLat = "",
-  neLng = ""
-) {
-  return (
-    `<span class="coordinate-label">Coordenadas del BBox:</span><br>` +
-    `<span class="coordinate-label">SW:</span> ${swLat} ${swLng}<br>` +
-    `<span class="coordinate-label">NE:</span> ${neLat} ${neLng}`
-  );
+/**
+ * Dado un objeto JavaScript, devuelve su representación en JSON bien indentado.
+ */
+export function formatJSON(obj) {
+  try {
+    return JSON.stringify(obj, null, 2);
+  } catch {
+    return String(obj);
+  }
 }

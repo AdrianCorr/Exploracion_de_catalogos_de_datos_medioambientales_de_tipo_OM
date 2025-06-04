@@ -61,7 +61,19 @@ export function setupResultInteractions() {
   const viewObsBtn = document.getElementById("viewObservationsButton");
   if (viewObsBtn) {
     viewObsBtn.onclick = () => {
-      window.open("view.html", "_blank");
+      // Recoge todos los checkboxes marcados
+      const checked = document.querySelectorAll(".result-checkbox:checked");
+      const ids = Array.from(checked).map((cb) => cb.dataset.processId);
+      if (ids.length === 0) {
+        alert("Por favor, seleccione al menos un proceso para visualizar.");
+        return;
+      }
+
+      // Construye query string: ?id=123&id=456&id=789
+      const params = new URLSearchParams();
+      ids.forEach((id) => params.append("id", id));
+
+      window.open(`view.html?${params.toString()}`, "_blank");
     };
   }
 }

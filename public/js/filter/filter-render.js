@@ -17,6 +17,9 @@ import {
 import { setupResultInteractions } from "./filter-events.js";
 
 export function renderResults(data) {
+  // —–––––– Guarda el JSON completo para que view.html lo recupere —
+  window.lastFilterData = data;
+  
   const container = document.getElementById("filterResults");
   container.innerHTML = "";
 
