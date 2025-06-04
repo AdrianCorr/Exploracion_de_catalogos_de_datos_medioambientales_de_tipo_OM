@@ -1,22 +1,78 @@
-<!-- public/view.html -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CTD Viewer</title>
-  <link rel="stylesheet" href="css/index/base.css" />
-  <link rel="stylesheet" href="css/index/components.css" />
-  <!-- <link rel="stylesheet" href="css/ctd-viewer.css" /> -->
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CTD Viewer - Observations</title>
+
+  <!-- CSS base y components (ya usados en todo el proyecto) -->
+  <link rel="stylesheet" href="css/index/base.css"/>
+  <link rel="stylesheet" href="css/index/components.css"/>
+
+  <!-- CSS específico para View Observations -->
+  <link rel="stylesheet" href="css/view/view.css"/>
+  
+  <!-- Leaflet CSS (via CDN) -->
+  <link 
+    rel="stylesheet" 
+    href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" 
+    integrity="sha256-dDnmfaQkX+8tR0PxQhIRgF6u4qwZgFhcVGGb2aFEx5E=" 
+    crossorigin=""
+  />
+
+  <!-- Leaflet Draw CSS (dibujo en el mapa) -->
+  <link 
+    rel="stylesheet" 
+    href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" 
+    integrity="sha512-dtpLdWTLx176FzSdxN1bhW+dwDJjyPWrAqOpfKSCRDmzkCVxu4ynDf2WVDIk8nsHglrQkcyY5xMkHoZOub2v2Q==" 
+    crossorigin="" 
+    referrerpolicy="no-referrer"
+  />
 </head>
 <body>
-  <div class="container">
+  <div class="view-container">
     <header>
       <h1>CTD Viewer</h1>
     </header>
-    <main>
-      <p>Aquí iría el contenido de CTD Viewer (gráficas, datos, etc.).</p>
-    </main>
+
+    <!-- Sección “Map” siempre desplegada -->
+    <details open>
+      <summary class="view-summary">Map</summary>
+      <div id="map"></div>
+      <!-- Las coordenadas o caja delimitadora se mostrarán si en el futuro decides usar Leaflet Draw -->
+      <div id="bbox-coordinates" class="bbox-coordinates"></div>
+    </details>
+
+    <!-- Sección “Results” -->
+    <details open>
+      <summary class="view-summary">Results</summary>
+      <div id="resultsList" class="results-list">
+        <!-- Aquí irán, en el futuro, los detalles de cada observación -->
+      </div>
+    </details>
   </div>
+
+  <!-- Leaflet JS (via CDN) -->
+  <script 
+    src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js" 
+    integrity="sha256-vQA2kYYDGN0adgzA8Wfyq5f9KCnPXyuHquq0t/8JTB0=" 
+    crossorigin=""
+  ></script>
+
+  <!-- Leaflet Draw JS (para dibujar sobre el mapa) -->
+  <script
+    src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"
+    integrity="sha512-TyaKfHHXDxjv2na49mGJaZUs1fpOtoUe0W8+/wgDGax/Bn9B7ADGRnMfH2W2i2H2Z1D2lkl8↵
+             iK4HVSqXI6xlQ==" 
+    crossorigin="" 
+    referrerpolicy="no-referrer"
+  ></script>
+
+  <!-- Control “zoom home” (opcional: si quieres que el botón “home” funcione) -->
+  <link rel="stylesheet" href="lib/leaflet.zoomhome.css"/>
+  <script src="lib/leaflet.zoomhome.min.js"></script>
+
+  <!-- Nuestro JavaScript para inicializar el mapa y procesar los IDs -->
+  <script type="module" src="js/view/view.js"></script>
 </body>
 </html>

@@ -1,0 +1,66 @@
+/* =========================================
+   view.css — Estilos específicos para view.html
+   ========================================= */
+
+.view-container {
+  width: 90%;
+  max-width: 1200px;
+  margin: 2rem auto;
+  background: var(--card-bg);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  font-family: 'Inter', sans-serif;
+}
+
+.view-container header h1 {
+  text-align: center;
+  color: var(--primary-color);
+  margin-bottom: 1rem;
+}
+
+/* Títulos de cada sección (Map, Results) */
+.view-summary {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--secondary-color);
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+  user-select: none;
+  background: var(--primary-light);
+  border-radius: 4px;
+}
+
+/* Contenedor del mapa */
+#map {
+  height: 500px;    /* 500px de alto */
+  width: 100%;      /* 100% del ancho del contenedor padre */
+  margin-top: 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+/* Coordenadas del BBox (Leaflet Draw) */
+.bbox-coordinates {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  color: var(--text-dark);
+}
+
+/* Sección Results */
+.results-list {
+  margin-top: 1rem;
+  /* Por ahora vacío, listo para llenarlo dinámicamente */
+}
+
+/* En móviles, ajustar el ancho del contenedor */
+@media (max-width: 768px) {
+  .view-container {
+    width: 95%;
+    padding: 1rem;
+  }
+  #map {
+    height: 300px;
+  }
+}
