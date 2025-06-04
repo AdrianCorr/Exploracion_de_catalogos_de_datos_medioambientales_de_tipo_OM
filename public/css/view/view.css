@@ -27,7 +27,7 @@
   text-align: center;
 }
 
-/* Mapa */
+/* Mapa Leaflet */
 #map {
   height: 500px;
   width: 100%;
@@ -37,7 +37,7 @@
   box-sizing: border-box;
 }
 
-/* Contenedor JSON */
+/* Contenedor de JSON */
 .json-output {
   background: var(--primary-light);
   border: 1px solid var(--border-color);
@@ -45,11 +45,11 @@
   padding: 1rem;
   font-family: monospace;
   font-size: 0.9rem;
-  max-height: 300px;
+  max-height: 400px;
   overflow: auto;
 }
 
-/* Adaptaciones para pantallas pequeñas */
+/* Adaptaciones para móviles */
 @media (max-width: 768px) {
   #map {
     height: 300px;

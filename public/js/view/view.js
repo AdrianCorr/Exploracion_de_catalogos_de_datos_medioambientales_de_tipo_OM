@@ -1,69 +1,112 @@
 /**
- * view.js — Al cargarse, lee los IDs pasados en la URL,
- *          recupera window.opener.lastFilterData (JSON de filter),
- *          filtra por esos IDs y muestra el resultado en pantalla.
- *
- * Requisitos:
- *  • Filter (“filter-render.js”) debe haber guardado el JSON completo en window.lastFilterData
- *  • Al pulsar “View Observations”, se abre view.html? id=... , pasando los IDs como parámetros “id”
- *  • Aquí recuperamos ese JSON de window.opener y lo imprimimos en <div id="jsonOutput">
- *  • Adicionalmente, inicializamos un mapa Leaflet vacío (centrado en Galicia)
+ * view.js — Al cargarse:
+ *  1) Lee todos los parámetros `featureTypeName` de la URL
+ *  2) Para cada uno, hace un fetch a /api/filter-feature-of-interest?featureTypeName=…
+ *  3) Si la llamada falla (500, etc.), muestra el error en pantalla bajo su título
+ *  4) Si tiene éxito, imprime el JSON formateado y dibuja en el mapa cualquier `geo` que encuentre
  */
 
 import { formatJSON } from "./view-utils.js";
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   const titleEl = document.getElementById("viewTitle");
   const errorEl = document.getElementById("viewError");
   const jsonContainer = document.getElementById("jsonOutput");
 
-  // 1) Leer parámetros: ?id=123&id=456&id=789 ...
+  // 1) Leer todos los featureTypeName: view.html?featureTypeName=a&featureTypeName=b…
   const params = new URLSearchParams(window.location.search);
-  const ids = params.getAll("id"); // devuelve array de strings
+  const featureTypes = params.getAll("featureTypeName");
 
-  if (ids.length === 0) {
-    errorEl.textContent = "⚠️ No se recibieron IDs de procesos seleccionados.";
+  if (featureTypes.length === 0) {
+    errorEl.textContent = "⚠️ No se recibió ningún parámetro 'featureTypeName' en la URL.";
     return;
   }
 
-  // Mostrar encabezado con IDs
-  titleEl.textContent = `Observaciones seleccionadas (IDs): ${ids.join(", ")}`;
+  titleEl.textContent = `Feature of Interest: ${featureTypes.join(" , ")}`;
 
-  // 2) Acceder a window.opener.lastFilterData
-  if (!window.opener || !Array.isArray(window.opener.lastFilterData)) {
-    errorEl.textContent = "⚠️ Imposible recuperar los datos de la ventana anterior.";
-    return;
+  // 2) Inicializa el mapa Leaflet (centrado en Galicia)
+  const map = initMap();
+
+  // 3) Para cada featureTypeName hacemos la petición y mostramos resultados
+  for (const ft of featureTypes) {
+    // Crear una sección independiente para este featureTypeName
+    const section = document.createElement("section");
+    section.className = "json-section";
+
+    // Título de la sección
+    const h2 = document.createElement("h2");
+    h2.textContent = `featureTypeName: ${ft}`;
+    section.appendChild(h2);
+
+    // Mensaje de “Cargando…”
+    const loading = document.createElement("p");
+    loading.textContent = "Cargando datos…";
+    section.appendChild(loading);
+
+    try {
+      const url = `/api/filter-feature-of-interest?featureTypeName=${encodeURIComponent(ft)}`;
+      const resp = await fetch(url);
+      if (!resp.ok) {
+        throw new Error(`HTTP ${resp.status} – ${resp.statusText}`);
+      }
+      const data = await resp.json();
+
+      // Quitar “Cargando…”
+      section.removeChild(loading);
+
+      // Mostrar el JSON completo
+      const pre = document.createElement("pre");
+      pre.textContent = formatJSON(data);
+      section.appendChild(pre);
+
+      // Dibujar geometrías en el mapa
+      data.forEach((feature) => {
+        if (feature.geo && feature.geo.type && feature.geo.coordinates) {
+          try {
+            const geoJsonFeature = {
+              type: "Feature",
+              geometry: feature.geo,
+              properties: {},
+            };
+            L.geoJSON(geoJsonFeature, {
+              style: {
+                color: "#ff0000",
+                weight: 2,
+                fillOpacity: 0.3,
+              },
+            }).addTo(map);
+          } catch (e) {
+            console.warn("No se pudo dibujar la geometría para", feature, e);
+          }
+        }
+      });
+    } catch (err) {
+      // Quitar “Cargando…” y mostrar el error en rojo
+      section.removeChild(loading);
+      const errMsg = document.createElement("p");
+      errMsg.textContent = `Error al obtener datos: ${err.message}`;
+      errMsg.className = "error-msg";
+      section.appendChild(errMsg);
+    }
+
+    // Añadir esta sección al contenedor principal
+    jsonContainer.appendChild(section);
   }
-
-  const allData = window.opener.lastFilterData;
-
-  // 3) Filtrar solo los objetos cuyo processId esté en ids[]
-  const filtered = allData.filter((item) => ids.includes(String(item.processId)));
-
-  if (filtered.length === 0) {
-    errorEl.textContent = "⚠️ Ninguna coincidencia encontrada en el JSON original.";
-    return;
-  }
-
-  // 4) Mostrar el JSON filtrado dentro de <div id="jsonOutput">
-  const pre = document.createElement("pre");
-  pre.textContent = formatJSON(filtered);
-  jsonContainer.appendChild(pre);
-
-  // 5) Inicializar mapa Leaflet vacío (centrado en Galicia)
-  initMap();
 });
 
+/**
+ * Inicializa el mapa Leaflet centrado en Galicia (EPSG:4326).
+ * @returns {L.Map} La instancia del mapa creada.
+ */
 function initMap() {
-  // Centro aproximado de Galicia
+  // Coordenadas aproximadas del centro de Galicia
   const galiciaCenter = [42.7284, -8.6538];
   const zoomInicial = 8;
 
   const map = L.map("map").setView(galiciaCenter, zoomInicial);
-
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: "&copy; OpenStreetMap contributors",
   }).addTo(map);
 
-  // Por ahora no añadimos marcadores; el mapa queda centrado en Galicia
+  return map;
 }
