@@ -93,8 +93,16 @@ export function setupResultInteractions() {
       const maxStart = startTimes.reduce((prev, cur) => (prev > cur ? prev : cur));
       const minEnd   = endTimes.reduce((prev, cur) => (prev < cur ? prev : cur));
 
-      // 4) Construir URL: view.html?startTime=<maxStart>&endTime=<minEnd>
+      // 4) Recoger processTypeName del formulario
+      const processTypeName = document.getElementById("processType").value.trim();
+      if (!processTypeName) {
+        alert("No se encontró el tipo de proceso. Actualice la página de filtro.");
+        return;
+      }
+
+      // 5) Construir URL: view.html?processTypeName=xxx&startTime=<maxStart>&endTime=<minEnd>
       const params = new URLSearchParams();
+      params.append("processTypeName", processTypeName);
       params.append("startTime", maxStart);
       params.append("endTime",   minEnd);
 

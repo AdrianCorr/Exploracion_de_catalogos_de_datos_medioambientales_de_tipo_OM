@@ -3,29 +3,65 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mapa de Santiago de Compostela</title>
+  <title>CTD Viewer</title>
 
-  <!-- Estilos de Leaflet y plugins -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
+  <!-- 1. Leaflet CSS -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
+  />
+
+  <!-- 2. Leaflet Draw CSS -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css"
+  />
+
+  <!-- 3. ZoomHome CSS (local) -->
   <link rel="stylesheet" href="lib/leaflet.zoomhome.css" />
+
+  <!-- 4. CSS propio para View -->
   <link rel="stylesheet" href="css/view/view.css" />
-
-  <!-- Librerías JS -->
-  <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
-  <script src="lib/leaflet.zoomhome.min.js"></script>
 </head>
+
 <body>
-  <h2>Mapa de Santiago de Compostela</h2>
-  <div id="map"></div>
+  <!-- Título principal (de color var(--primary-color)) -->
+  <header class="view-header">
+    <h1>CTD Viewer</h1>
+  </header>
 
-  <div id="bbox-coordinates">
-    <span class="coordinate-label">Coordenadas del BBox:</span><br>
-    <span class="coordinate-label">SW:</span><br>
-    <span class="coordinate-label">NE:</span>
-  </div>
+  <!-- Secciones en <details> siempre abiertas -->
+  <section class="view-container">
+    <!--  ──────────────── Map Section ────────────────  -->
+    <details open class="view-section">
+      <summary class="view-summary">Map</summary>
+      <div id="map"></div>
+      <div id="bbox-coordinates" class="bbox-coordinates"></div>
+    </details>
 
-  <script src="js/view/view.js"></script>
+    <!--  ─────────────── Results Section ──────────────  -->
+    <details open class="view-section">
+      <summary class="view-summary">Results</summary>
+      <div id="resultsList" class="results-list">
+        <!-- Aquí se irá rellenando la lista de IDs o datos extraídos -->
+      </div>
+    </details>
+  </section>
+
+  <!-- 5. Leaflet JS -->
+  <script
+    src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"
+  ></script>
+
+  <!-- 6. Leaflet Draw JS -->
+  <script
+    src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"
+  ></script>
+
+  <!-- 7. ZoomHome JS (local) -->
+  <script src="lib/leaflet.zoomhome.min.js"></script>
+
+  <!-- 8. Nuestro código JS de “view” -->
+  <script type="module" src="js/view/view.js"></script>
 </body>
 </html>

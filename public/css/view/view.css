@@ -1,23 +1,85 @@
+/* public/css/view/view.css */
+
+/* ===== Reset y tipografía ===== */
 html, body {
   margin: 0;
   padding: 0;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
+  background: var(--background-color);
+  color: var(--text-dark);
 }
 
-#map {
-  height: 500px;
-  width: 60%;
+/* ===== Contenedor Principal ===== */
+.view-container {
+  width: 90%;
+  max-width: 1200px;
+  margin: 2rem auto;
+  background: var(--card-bg);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  box-sizing: border-box;
+}
+
+/* ===== Título ===== */
+.view-header h1 {
+  text-align: center;
+  color: var(--primary-color);
   margin-bottom: 1rem;
 }
 
-#bbox-coordinates {
-  margin-left: 10px;
-  padding: 10px;
-  font-size: 14px;
-  border: 1px solid black;
+/* ===== Cada sección <details> ===== */
+.view-section {
+  margin-bottom: 1rem;
+}
+
+/* ===== Título de cada sección ===== */
+.view-summary {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--secondary-color);
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+  user-select: none;
+  background: var(--primary-light);
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+}
+
+/* ===== Contenedor del mapa ===== */
+#map {
+  height: 500px;
+  width: 100%;
+  margin: 0 auto;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+/* ===== Coordenadas del BBox (Leaflet Draw) ===== */
+.bbox-coordinates {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  color: var(--text-dark);
+  padding: 0.75rem;
+  background: var(--primary-light);
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
   width: fit-content;
 }
 
-.coordinate-label {
-  font-weight: bold;
+/* ===== Lista de resultados (initialmente vacía) ===== */
+.results-list {
+  margin-top: 1rem;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  .view-container {
+    width: 95%;
+    padding: 1rem;
+  }
+  #map {
+    height: 300px;
+  }
 }
