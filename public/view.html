@@ -3,50 +3,29 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Prueba Leaflet + Draw</title>
+  <title>Mapa de Santiago de Compostela</title>
 
-  <!-- Leaflet core -->
+  <!-- Estilos de Leaflet y plugins -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
-
-  <!-- Leaflet.draw -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
-
-  <!-- ZoomHome plugin -->
-  <link rel="stylesheet" href="/lib/leaflet.zoomhome.css" />
-  <script src="/lib/leaflet.zoomhome.min.js"></script>
-
-  <!-- 4) Tus estilos específicos para view -->
+  <link rel="stylesheet" href="lib/leaflet.zoomhome.css" />
   <link rel="stylesheet" href="css/view/view.css" />
+
+  <!-- Librerías JS -->
+  <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+  <script src="lib/leaflet.zoomhome.min.js"></script>
 </head>
 <body>
+  <h2>Mapa de Santiago de Compostela</h2>
+  <div id="map"></div>
 
-  <div class="view-container">
-    <header>
-      <h1>Mapa de Prueba - Leaflet + Draw</h1>
-    </header>
-
-    <div id="map"></div>
-    <div id="bbox-coordinates"></div>
-
-    <section class="results-list">
-      <!-- Aquí podrás volcar resultados en el futuro -->
-    </section>
+  <div id="bbox-coordinates">
+    <span class="coordinate-label">Coordenadas del BBox:</span><br>
+    <span class="coordinate-label">SW:</span><br>
+    <span class="coordinate-label">NE:</span>
   </div>
 
-  <!-- 5) Leaflet JS (CDN) -->
-  <script
-    src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"
-  ></script>
-
-  <!-- 6) Leaflet Draw JS (CDN) -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
-
-  <!-- 7) zoomHome JS (local en public/lib/) -->
-  <script src="lib/leaflet.zoomhome.min.js"></script>
-
-  <!-- 8) Tu JS personalizado para inicializar el mapa -->
   <script src="js/view/view.js"></script>
 </body>
 </html>

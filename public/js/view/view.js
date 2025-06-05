@@ -1,46 +1,30 @@
-// public/js/view/view.js
-
-/**
- * view.js — Inicializa el mapa de Leaflet centrado en Galicia,
- *          habilita Leaflet Draw y zoomHome (si está disponible).
- */
-
 document.addEventListener("DOMContentLoaded", () => {
-  initMap();
-});
+  const coordinatesTemplate = (swLat = '', swLng = '', neLat = '', neLng = '') =>
+    `<span class="coordinate-label">Coordenadas del BBox:</span><br>` +
+    `<span class="coordinate-label">SW:</span> ${swLat} ${swLng}<br>` +
+    `<span class="coordinate-label">NE:</span> ${neLat} ${neLng}`;
 
-function initMap() {
-  console.log("↗ Iniciando Leaflet en #map");
+  const map = L.map("map").setView([42.5, -8.0], 8);
 
-  // Centro aproximado de Galicia
-  const galiciaCenter = [42.7284, -8.6538];
-  const initialZoom = 8;
-
-  // 1) Crear el mapa dentro de <div id="map">
-  const map = L.map("map").setView(galiciaCenter, initialZoom);
-
-  // 2) Añadir capa base de OpenStreetMap
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: "© OpenStreetMap contributors"
   }).addTo(map);
 
-  // 3) Eliminar controles de zoom predeterminados (opcional)
+  // Quitar zoom por defecto
   map.zoomControl.remove();
 
-  // 4) Agregar zoomHome si existe
-  if (L.Control && L.Control.zoomHome) {
-    const zoomHome = new L.Control.zoomHome({
-      position: "topleft",
-      homeCoordinates: galiciaCenter,
-      homeZoom: initialZoom
-    });
-    map.addControl(zoomHome);
-  }
+  // Agregar control de zoom con botón home
+  const zoomHome = new L.Control.zoomHome({
+    position: "topleft",
+    homeCoordinates: [42.5, -8.0],
+    homeZoom: 8
+  }).addTo(map);
 
-  // 5) Preparar Leaflet Draw (solo rectángulo)
+  // Grupo para los elementos dibujados
   const drawnItems = new L.FeatureGroup();
   map.addLayer(drawnItems);
 
+  // Control de dibujo solo para rectángulos
   const drawControl = new L.Control.Draw({
     draw: {
       polygon: false,
@@ -56,24 +40,26 @@ function initMap() {
   });
   map.addControl(drawControl);
 
-  // 6) Inicializar contenedor de coordenadas vacío
-  const bboxDiv = document.getElementById("bbox-coordinates");
-  bboxDiv.innerHTML = "";
+  // Inicializar contenedor
+  document.getElementById("bbox-coordinates").innerHTML = coordinatesTemplate();
 
-  // 7) Evento cuando se crea un rectángulo
+  // Evento al crear rectángulo
   map.on("draw:created", (e) => {
+    const layer = e.layer;
     drawnItems.clearLayers();
-    drawnItems.addLayer(e.layer);
-    const bounds = e.layer.getBounds();
+    drawnItems.addLayer(layer);
 
-    bboxDiv.innerHTML =
-      `<span class="coordinate-label">Coordenadas del BBox:</span><br>` +
-      `<span class="coordinate-label">SW:</span> ${bounds.getSouthWest().lat.toFixed(6)} ${bounds.getSouthWest().lng.toFixed(6)}<br>` +
-      `<span class="coordinate-label">NE:</span> ${bounds.getNorthEast().lat.toFixed(6)} ${bounds.getNorthEast().lng.toFixed(6)}`;
+    const bounds = layer.getBounds();
+    document.getElementById("bbox-coordinates").innerHTML = coordinatesTemplate(
+      bounds.getSouthWest().lat.toFixed(6),
+      bounds.getSouthWest().lng.toFixed(6),
+      bounds.getNorthEast().lat.toFixed(6),
+      bounds.getNorthEast().lng.toFixed(6)
+    );
   });
 
-  // 8) Evento cuando se elimina el rectángulo
+  // Evento al eliminar
   map.on("draw:deleted", () => {
-    bboxDiv.innerHTML = "";
+    document.getElementById("bbox-coordinates").innerHTML = coordinatesTemplate();
   });
-}
+});

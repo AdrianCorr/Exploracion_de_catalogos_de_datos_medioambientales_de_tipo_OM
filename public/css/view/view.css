@@ -1,64 +1,23 @@
-/* =========================================
-   view.css — Estilos específicos para view.html
-   ========================================= */
-
-body {
+html, body {
   margin: 0;
   padding: 0;
-  background: #ffffff;
-  font-family: 'Inter', sans-serif;
-  text-align: center;
-}
-
-.view-container {
-  width: 90%;
-  max-width: 1200px;
-  margin: 2rem auto;
-  background: #f9fafb; /* color suave de fondo para el contenedor */
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  padding: 1.5rem;
-}
-
-.view-container header h1 {
-  margin: 0 0 1rem;
-  font-size: 1.75rem;
-  color: #4f46e5; /* color primario */
-  font-weight: 600;
+  font-family: Arial, sans-serif;
 }
 
 #map {
-  width: 100%;
-  height: 500px;    /* Imprescindible para que Leaflet pinte */
-  margin-top: 1rem;
-  border: 1px solid #e5e7eb; /* color borde */
-  border-radius: 4px;
-  box-sizing: border-box;
+  height: 500px;
+  width: 60%;
+  margin-bottom: 1rem;
 }
 
 #bbox-coordinates {
-  margin-top: 1rem;
-  font-size: 0.9rem;
-  color: #1f2937; /* color texto oscuro */
+  margin-left: 10px;
+  padding: 10px;
+  font-size: 14px;
+  border: 1px solid black;
+  width: fit-content;
 }
 
 .coordinate-label {
   font-weight: bold;
-}
-
-/* Sección Results (vacía por ahora) */
-.results-list {
-  margin-top: 1rem;
-  /* Lista preparada para llenarse dinámicamente */
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .view-container {
-    width: 95%;
-    padding: 1rem;
-  }
-  #map {
-    height: 300px;
-  }
 }
