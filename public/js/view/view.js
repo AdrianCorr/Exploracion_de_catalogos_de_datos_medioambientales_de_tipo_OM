@@ -1,5 +1,3 @@
-// public/js/view/view.js
-
 import {
   fetchProcessTypesByName,
   fetchFeatureTypeByName,
@@ -13,18 +11,19 @@ document.addEventListener("DOMContentLoaded", async () => {
   // 1) Leer parámetros de la URL
   const params = new URLSearchParams(window.location.search);
   const processTypeName = params.get("processTypeName") || "";
-  const startTime       = params.get("startTime")       || "";
-  const endTime         = params.get("endTime")         || "";
+  const startTime       = params.get("startTime") || "";
+  const endTime         = params.get("endTime")   || "";
 
   // Mostrar por consola (debug)
   console.log("view: processTypeName=", processTypeName);
   console.log("view: startTime=", startTime, " endTime=", endTime);
 
+  // ───────────────────────────────────────────────
   // 2) Inicializar Leaflet (centro Galicia)
   const galiciaCenter = [42.5, -8.0];
   const map = L.map("map").setView(galiciaCenter, 8);
 
-  // 3) Añadir capa OpenStreetMap
+  // 3) Capa base OpenStreetMap
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: "© OpenStreetMap contributors"
   }).addTo(map);
@@ -32,7 +31,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   // 4) Quitar control de zoom predeterminado
   map.zoomControl.remove();
 
-  // 5) Agregar ZoomHome
+  // 5) Agregar ZoomHome (si está cargado)
   if (L.Control && L.Control.zoomHome) {
     const zoomHome = new L.Control.zoomHome({
       position: "topleft",
@@ -62,7 +61,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
   map.addControl(drawControl);
 
-  // 8) Inicializar contenedor de coordenadas
+  // 8) Contenedor de coordenadas
   const coordinatesContainer = document.getElementById("bbox-coordinates");
   const emptyCoordsHTML = `<span class="coordinate-label">Coordenadas del BBox:</span><br>
                            <span class="coordinate-label">SW:</span><br>
@@ -115,8 +114,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       throw new Error(`No se encontró ningún process-type que contenga "${processTypeName}".`);
     }
 
-    // Tomamos el primer elemento que contenga el nombre exacto o similar
-    // (Aquí podrías aplicar un filtro más robusto si hay varios resultados).
+    // Tomamos el primer elemento cuyo name coincida o, si no hay coincidencia exacta, el primero del array.
     const metaProc = procTypesArr.find((p) => p.name === processTypeName) || procTypesArr[0];
     const foiType  = metaProc.feature_of_interest_type;
     if (!foiType) {
@@ -148,42 +146,32 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
     const nestedMeta = nestedFTArr[0];
 
-    // 12.e) extraer geo (Polygon) de nestedMeta
+    // 12.e) extraer “geo” (puede ser GeoJSON o un string "Geometry(POLYGON,4326)")
     const polygonGeo = extractPolygonFromFeatureMeta(nestedMeta);
     if (!polygonGeo) {
-      throw new Error(`No se encontró campo 'geo' en spatialSamplingFeatureType de "${sampledFT}".`);
+      throw new Error(`No se encontró campo 'geo' ni en spatialSamplingFeatureType.geo ni en properties de "${sampledFT}".`);
     }
-    resultsDiv.innerHTML += `<p>Polígono Geo extraído (primer objeto):</p>
+    resultsDiv.innerHTML += `<p>Polígono extraído (o data_type):</p>
                              <pre>${JSON.stringify(polygonGeo, null, 2)}</pre>`;
 
-    // 12.f) Según el formato que devuelva el API, a veces traen directamente WKT, a veces GeoJSON.
-    // Si el campo 'polygonGeo' ya es un GeoJSON válido, podemos dibujarlo directamente. 
-    // Pero si es un WKT, debemos enviarlo a /api/filter-feature-of-interest?featureTypeName=<sampledFT>&geometryFilter=<WKT>.
-    //
-    // Para este ejemplo, supongamos que 'polygonGeo' es WKT (string). Si fuera GeoJSON, habría que adaptarlo.
-    //
-    let finalGeoJSON = null;
-    if (typeof polygonGeo === "string") {
-      //  12.f.a) invocar /api/filter-feature-of-interest
-      const arrFiltered = await fetchFilterFeatureOfInterest(sampledFT, polygonGeo);
-      if (!Array.isArray(arrFiltered) || arrFiltered.length === 0) {
-        throw new Error(`filter-feature-of-interest devolvió array vacío para "${sampledFT}" con ese WKT.`);
-      }
-      // Supondremos que arrFiltered es un array de objetos GeoJSON o similar
-      finalGeoJSON = arrFiltered;
-      resultsDiv.innerHTML += `<p>Recibido array con <strong>${arrFiltered.length}</strong> geometrías:</p>
-                               <pre>${JSON.stringify(arrFiltered, null, 2)}</pre>`;
-    } else {
-      // 12.f.b) Si ya viniera en formato GeoJSON directamente:
-      finalGeoJSON = polygonGeo;
-      resultsDiv.innerHTML += `<p>Usando directamente geoJSON extraído:</p>
-                               <pre>${JSON.stringify(polygonGeo, null, 2)}</pre>`;
+    // 12.f) Si polygonGeo es un string como "Geometry(POLYGON,4326)", no intentamos filtrar,
+    //         pues no es un WKT válido. Solo lo mostramos.
+    if (typeof polygonGeo === "string" && polygonGeo.startsWith("Geometry(")) {
+      resultsDiv.innerHTML += `
+        <p><em>No existe WKT de ejemplo; se obtuvo sólo el tipo de geometría "<code>${polygonGeo}</code>".</em></p>
+        <p>Saltando llamada a <code>filter-feature-of-interest</code>.</p>
+      `;
+      return; // detenemos aquí, porque no tenemos un WKT válido
     }
 
-    // 12.g) Dibujar finalGeoJSON sobre el mapa
-    if (finalGeoJSON) {
-      drawGeoJSONOnMap(map, finalGeoJSON);
+    // 12.g) Si polygonGeo es un objeto GeoJSON válido, lo dibujamos directamente
+    if (typeof polygonGeo === "object") {
+      resultsDiv.innerHTML += `<p>Dibujando GeoJSON directamente sobre el mapa:</p>`;
+      drawGeoJSONOnMap(map, polygonGeo);
+      return;
     }
+
+    // 12.h) Si llegamos aquí y polygonGeo no era string “Geometry(…)” ni objeto, no hacemos nada más.
   } catch (error) {
     console.error("ERROR en la cadena de fetch:", error);
     resultsDiv.innerHTML += `<div class="error-msg">Error: ${error.message}</div>`;

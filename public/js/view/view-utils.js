@@ -1,12 +1,9 @@
-// public/js/view/view-utils.js
-
 /**
  * Dado un processTypeName, devuelve el JSON de /api/process-types?vocabulary=&searchTerm=
  * El endpoint devuelve un array de “process metadata”. Cada objeto puede tener
  *   .feature_of_interest_type
  */
 export async function fetchProcessTypesByName(processTypeName) {
-  // Nota: en tu caso no tienes 'vocabulary', así que lo dejamos vacío.
   const qs = new URLSearchParams({ vocabulary: "", searchTerm: processTypeName });
   const url = `/api/process-types?${qs.toString()}`;
   const resp = await fetch(url);
@@ -31,30 +28,32 @@ export async function fetchFeatureTypeByName(featureTypeName) {
 }
 
 /**
- * Dado un sampledFeatureType (que es string), devuelve el GeoJSON/Polygon
- * contenida en metadata.spatialSamplingFeatureType.geo (o WKT).
+ * Dado un featureMeta (objeto retornado por fetchFeatureTypeByName),
+ * intenta extraer el valor real de “geo”. Si el metadata tiene un objeto
+ * spatialSamplingFeatureType.geo (caso de instancias GeoJSON), lo devuelve directamente.
+ * Si no, busca dentro de featureMeta.properties[] la entrada con name === "geo"
+ * y devuelve su campo data_type (algo como "Geometry(POLYGON,4326)").
+ * Si no encuentra nada, devuelve null.
  */
 export function extractPolygonFromFeatureMeta(featureMeta) {
-  // featureMeta = objeto con propiedades como:
-  //   { name: "...", class: "...", spatialSamplingFeatureType: { geo: { type:"Polygon", coordinates: [...] }, ... } }
-  if (
-    featureMeta &&
-    featureMeta.spatialSamplingFeatureType &&
-    featureMeta.spatialSamplingFeatureType.geo
-  ) {
-    return featureMeta.spatialSamplingFeatureType.geo;
+  // Si no, buscamos en properties[] un field "geo"
+  if (featureMeta && Array.isArray(featureMeta.properties)) {
+    const geoEntry = featureMeta.properties.find((p) => p.name === "geo");
+    if (geoEntry && geoEntry.data_type) {
+      return geoEntry.data_type; // p.ej. "Geometry(POLYGON,4326)"
+    }
   }
+
   return null;
 }
 
 /**
- * Dado un featureTypeName y un WKT (o GeoJSON cosechado en extractPolygonFromFeatureMeta),
+ * Dado un featureTypeName y un WKT (o GeoJSON extraído),
  * invoca /api/filter-feature-of-interest?featureTypeName=<>&geometryFilter=<WKT>
  * y devuelve el array resultante, que normalmente contiene geometrías con coordenadas.
  */
 export async function fetchFilterFeatureOfInterest(featureTypeName, wktPolygon) {
   const qs = new URLSearchParams({ featureTypeName });
-  // Si tu WKT necesita encode (espacios, comas...), haz encodeURIComponent:
   qs.append("geometryFilter", wktPolygon);
   const url = `/api/filter-feature-of-interest?${qs.toString()}`;
   const resp = await fetch(url);
@@ -65,12 +64,10 @@ export async function fetchFilterFeatureOfInterest(featureTypeName, wktPolygon) 
 }
 
 /**
- * Convierte (opcionalmente) un objeto GeoJSON de tipo Polygon en una capa de Leaflet.
- * Por simplicidad, si la respuesta viene en formato GeoJSON “FeatureCollection”, 
- * lo dibujamos.
+ * Dibuja en el mapa (un L.Map de Leaflet) el geojsonData.
+ * Si viene un array de Features o un FeatureCollection, lo añade.
  */
 export function drawGeoJSONOnMap(map, geojsonData) {
-  // Asegurémonos de que geojsonData tenga un formato válido:
   try {
     L.geoJSON(geojsonData, {
       style: { color: "#FF0000", weight: 2, fillOpacity: 0.1 }
