@@ -1,10 +1,4 @@
-/**
- * filter-render.js — Lógica para renderResults(data):
- *  • Monta la tabla de resultados dinámicamente
- *  • Añade checkbox, filas colapsables, cards de detalle
- *  • Muestra la cabecera de resultados (contador + botones)
- *  • Al final, invoca setupResultInteractions() para activar eventos en botones/checkbox
- */
+// public/js/filter/filter-render.js
 
 import {
   createHeading,
@@ -17,9 +11,6 @@ import {
 import { setupResultInteractions } from "./filter-events.js";
 
 export function renderResults(data) {
-  // —–––––– Guarda el JSON completo para que view.html lo recupere —
-  window.lastFilterData = data;
-  
   const container = document.getElementById("filterResults");
   container.innerHTML = "";
 
@@ -80,7 +71,11 @@ export function renderResults(data) {
       const checkbox = document.createElement("input");
       checkbox.type = "checkbox";
       checkbox.className = "result-checkbox";
-      checkbox.dataset.processId = processId;
+
+      // RELLENAR data-start y data-end
+      checkbox.dataset.start = desc.validTimeStart || "";
+      checkbox.dataset.end   = desc.validTimeEnd   || "";
+
       // Evitar que el checkbox dispare la apertura del detalle
       checkbox.addEventListener("click", (e) => e.stopPropagation());
       tdCheckbox.appendChild(checkbox);

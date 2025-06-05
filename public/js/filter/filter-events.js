@@ -1,24 +1,21 @@
-/**
- * filter-events.js — Configuración de listeners para:
- *  • setupEventListeners: escucha el formulario y ejecuta filterProcesses + renderResults
- *  • setupResultInteractions: listener en “Seleccionar todo” y “View Observations”
- */
+// public/js/filter/filter-events.js
 
 import { filterProcesses } from "./filter-utils.js";
 import { renderResults } from "./filter-render.js";
 
 export function setupEventListeners() {
-  // Rellenar el campo processType desde queryString
+  // 1) Rellenar el campo processType desde query string
   const params = new URLSearchParams(window.location.search);
   const processType = params.get("processType") || "";
   document.getElementById("processType").value = decodeURIComponent(processType);
 
-  // Listener del form
+  // 2) Listener del form “Aplicar Filtro”
   const form = document.getElementById("filterForm");
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const resultsContainer = document.getElementById("filterResults");
+
     document.getElementById("filterError").textContent = "";
+    const resultsContainer = document.getElementById("filterResults");
     resultsContainer.innerHTML = "";
 
     // Ocultar cabecera mientras no haya datos
@@ -61,22 +58,45 @@ export function setupResultInteractions() {
   const viewObsBtn = document.getElementById("viewObservationsButton");
   if (viewObsBtn) {
     viewObsBtn.onclick = () => {
-      // 1) Recoge todos los checkboxes marcados
+      // 1) Recoger todos los checkboxes marcados
       const checked = document.querySelectorAll(".result-checkbox:checked");
       if (checked.length === 0) {
-        alert("Por favor, seleccione al menos un proceso para visualizar.");
+        alert("Por favor, seleccione al menos una fila para visualizar.");
         return;
       }
 
-      // 2) Extrae, de cada checkbox, el featureTypeName que tengas guardado
-      //    (aquí asumimos que el checkbox tiene data-feature-type="ctd_intecmar.ria")
-      const featureTypes = Array.from(checked).map((cb) =>
-        cb.dataset.featureType // ej. "ctd_intecmar.ria"
-      );
+      // 2) Extraer arrays de start y end
+      const startTimes = [];
+      const endTimes   = [];
 
-      // 3) Construye query string: ?featureTypeName=ctd_intecmar.ria&featureTypeName=...&…
+      checked.forEach((cb) => {
+        const st = cb.dataset.start || "";
+        const en = cb.dataset.end   || "";
+        if (!st || !en) {
+          console.error("Falta data-start o data-end en:", cb);
+          alert("Error interno: faltan datos de fecha en alguna fila seleccionada.");
+          return;
+        }
+        startTimes.push(st);
+        endTimes.push(en);
+      });
+
+      // Si no se recogió nada válido:
+      if (startTimes.length === 0 || endTimes.length === 0) {
+        alert("No se pudo extraer fechas válidas.");
+        return;
+      }
+
+      // 3) Calcular startGlobal = fecha máxima de startTimes
+      //    y endGlobal = fecha mínima de endTimes
+      //    (comparar strings ISO es válido)
+      const maxStart = startTimes.reduce((prev, cur) => (prev > cur ? prev : cur));
+      const minEnd   = endTimes.reduce((prev, cur) => (prev < cur ? prev : cur));
+
+      // 4) Construir URL: view.html?startTime=<maxStart>&endTime=<minEnd>
       const params = new URLSearchParams();
-      featureTypes.forEach((ft) => params.append("featureTypeName", ft));
+      params.append("startTime", maxStart);
+      params.append("endTime",   minEnd);
 
       window.open(`view.html?${params.toString()}`, "_blank");
     };
