@@ -16,14 +16,54 @@ const AUTH_HEADER = {
 }; 
 
 
-// Configura la política de seguridad de contenido (CSP) para limitar las fuentes de contenido permitidas
+// Configura la política de seguridad de contenido (CSP) para permitir Leaflet y Leaflet Draw desde CDN
 app.use((req, res, next) => {
   res.setHeader(
     "Content-Security-Policy",
-    "default-src 'self'; font-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline';"
+    [
+      // 1) default-src 'self' → todo lo que no esté explicitado
+      "default-src 'self';",
+
+      // 2) font-src: permitimos fuentes locales y datos embebidos (ej. Data URLs)
+      "font-src 'self' data:;",
+
+      // 3) style-src:
+      //    - 'self'       → tus propios CSS (base.css, components.css, view.css, filter.css…)
+      //    - 'unsafe-inline' → si tienes <style> inline o necesitas permitir ciertos estilos inline
+      //    - https://unpkg.com        → para leaflet.css
+      //    - https://cdnjs.cloudflare.com → para leaflet.draw.css
+      //    - http://maxcdn.bootstrapcdn.com → para font-awesome
+      "style-src 'self' 'unsafe-inline' https://unpkg.com https://cdnjs.cloudflare.com http://maxcdn.bootstrapcdn.com;",
+
+      // 4) script-src:
+      //    - 'self'       → tus propios JS (main.js, filter.js, view.js…)
+      //    - 'unsafe-inline' → si usas <script> inline o event handlers en línea (por ejemplo onsubmit="…")
+      //    - https://unpkg.com        → leaflet.js
+      //    - https://cdnjs.cloudflare.com → leaflet.draw.js
+      //    - http://maxcdn.bootstrapcdn.com → font-awesome (solo CSS, pero por si acaso)
+      "script-src 'self' 'unsafe-inline' https://unpkg.com https://cdnjs.cloudflare.com http://maxcdn.bootstrapcdn.com;",
+
+      // 5) img-src: si usas íconos o marcadores externos (puedes agregar dominios aquí si hiciera falta)
+      //    - 'self'  → imágenes locales
+      //    - data:   → marcadores en base64
+      "img-src 'self' data:;",
+
+      // 6) connect-src: si más adelante haces fetch() a otros orígenes
+      "connect-src 'self';",
+
+      // 7) object-src: negar objetos externos
+      "object-src 'none';",
+
+      // 8) base-uri: evitar que <base> cambie el origen
+      "base-uri 'self';",
+
+      // 9) frame-ancestors: evitar clickjacking
+      "frame-ancestors 'none';",
+    ].join(" ")
   );
-  next(); // Continúa con la siguiente middleware o ruta
+  next();
 });
+
 
 
 // Sirve archivos estáticos desde la carpeta "public"
