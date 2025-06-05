@@ -2,60 +2,63 @@
    view.css — Estilos específicos para view.html
    ========================================= */
 
+body {
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+  font-family: 'Inter', sans-serif;
+  text-align: center;
+}
+
 .view-container {
   width: 90%;
-  max-width: 1000px;
+  max-width: 1200px;
   margin: 2rem auto;
-  background: var(--card-bg);
+  background: #f9fafb; /* color suave de fondo para el contenedor */
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   padding: 1.5rem;
-  font-family: 'Inter', sans-serif;
 }
 
 .view-container header h1 {
-  text-align: center;
-  color: var(--primary-color);
-  margin-bottom: 1rem;
-}
-
-/* Mensaje de error */
-.error-msg {
-  color: var(--secondary-color);
+  margin: 0 0 1rem;
+  font-size: 1.75rem;
+  color: #4f46e5; /* color primario */
   font-weight: 600;
-  margin-bottom: 1rem;
-  text-align: center;
 }
 
-/* Mapa Leaflet */
 #map {
-  height: 500px;
   width: 100%;
-  margin-bottom: 1rem;
-  border: 1px solid var(--border-color);
+  height: 500px;    /* Imprescindible para que Leaflet pinte */
+  margin-top: 1rem;
+  border: 1px solid #e5e7eb; /* color borde */
   border-radius: 4px;
   box-sizing: border-box;
 }
 
-/* Contenedor de JSON */
-.json-output {
-  background: var(--primary-light);
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  padding: 1rem;
-  font-family: monospace;
+#bbox-coordinates {
+  margin-top: 1rem;
   font-size: 0.9rem;
-  max-height: 400px;
-  overflow: auto;
+  color: #1f2937; /* color texto oscuro */
 }
 
-/* Adaptaciones para móviles */
+.coordinate-label {
+  font-weight: bold;
+}
+
+/* Sección Results (vacía por ahora) */
+.results-list {
+  margin-top: 1rem;
+  /* Lista preparada para llenarse dinámicamente */
+}
+
+/* Responsive */
 @media (max-width: 768px) {
-  #map {
-    height: 300px;
-  }
   .view-container {
     width: 95%;
     padding: 1rem;
+  }
+  #map {
+    height: 300px;
   }
 }

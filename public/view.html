@@ -3,47 +3,50 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CTD Viewer – Feature of Interest</title>
+  <title>Prueba Leaflet + Draw</title>
 
-  <!-- CSS globales (base y components) -->
-  <link rel="stylesheet" href="css/index/base.css" />
-  <link rel="stylesheet" href="css/index/components.css" />
+  <!-- Leaflet core -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
 
-  <!-- CSS específico para esta vista -->
+  <!-- Leaflet.draw -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+
+  <!-- ZoomHome plugin -->
+  <link rel="stylesheet" href="/lib/leaflet.zoomhome.css" />
+  <script src="/lib/leaflet.zoomhome.min.js"></script>
+
+  <!-- 4) Tus estilos específicos para view -->
   <link rel="stylesheet" href="css/view/view.css" />
-
-  <!-- Leaflet CSS (CDN) -->
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    integrity="sha256-o9N1j6aA7/x4b7z2fcMk7ZVH1vC0HE/wb5AyFf1yDMI="
-    crossorigin=""
-  />
 </head>
 <body>
+
   <div class="view-container">
     <header>
-      <h1 id="viewTitle">Feature of Interest</h1>
+      <h1>Mapa de Prueba - Leaflet + Draw</h1>
     </header>
 
-    <!-- Mensaje de error -->
-    <div id="viewError" class="error-msg"></div>
-
-    <!-- Mapa Leaflet -->
     <div id="map"></div>
+    <div id="bbox-coordinates"></div>
 
-    <!-- Contenedor donde se imprimirá el JSON devuelto -->
-    <div id="jsonOutput" class="json-output"></div>
+    <section class="results-list">
+      <!-- Aquí podrás volcar resultados en el futuro -->
+    </section>
   </div>
 
-  <!-- Leaflet JS (CDN) -->
+  <!-- 5) Leaflet JS (CDN) -->
   <script
-    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-    integrity="sha256-eTgcAtMwMHd3VNLjx0c3YhSo0lSWT6B+vKZCKad+vKk="
-    crossorigin=""
+    src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"
   ></script>
 
-  <!-- Nuestro JS de View -->
-  <script type="module" src="js/view/view.js"></script>
+  <!-- 6) Leaflet Draw JS (CDN) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+
+  <!-- 7) zoomHome JS (local en public/lib/) -->
+  <script src="lib/leaflet.zoomhome.min.js"></script>
+
+  <!-- 8) Tu JS personalizado para inicializar el mapa -->
+  <script src="js/view/view.js"></script>
 </body>
 </html>
