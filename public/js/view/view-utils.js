@@ -17,16 +17,30 @@ export async function fetchFilterFeatureOfInterest(featureTypeName, geometryFilt
  * Dibuja marcadores en el mapa para cada elemento de 'featuresArr'.
  * Cada feature debe tener: feature.spatialSamplingFeature.shape.coordinates = [lng, lat]
  */
-export function drawPointFeaturesOnMap(map, featuresArr) {
-  featuresArr.forEach((feat) => {
-    const shape = feat.spatialSamplingFeature?.shape;
-    if (shape?.type === "Point" && Array.isArray(shape.coordinates)) {
-      const [lng, lat] = shape.coordinates;
-      L.marker([lat, lng])
+export function drawPointFeaturesOnMap(map, features) {
+  // Definimos un icono pequeño:
+  const smallIcon = L.icon({
+    iconUrl: "https://unpkg.com/leaflet@1.9.3/dist/images/marker-icon.png",
+    iconRetinaUrl:
+      "https://unpkg.com/leaflet@1.9.3/dist/images/marker-icon-2x.png",
+    shadowUrl:
+      "https://unpkg.com/leaflet@1.9.3/dist/images/marker-shadow.png",
+    iconSize:     [16, 26],  // ancho, alto en píxeles
+    iconAnchor:   [8, 26],   // punto del icono que corresponde a la posición geográfica
+    shadowSize:   [30, 30],  // puedes ajustarlo o dejar el original
+    shadowAnchor: [8, 30]
+  });
+
+  features.forEach((feat) => {
+    // cada feat tiene .spatialSamplingFeature.shape.coordinates = [lng, lat]
+    const coords = feat.spatialSamplingFeature?.shape?.coordinates;
+    if (coords && coords.length === 2) {
+      const [lng, lat] = coords;
+      L.marker([lat, lng], { icon: smallIcon })
         .addTo(map)
         .bindPopup(
-          `<strong>${feat.nombre || feat.featureId}</strong><br>` +
-          `(${lat.toFixed(6)}, ${lng.toFixed(6)})`
+          `<strong>${feat.nombre || feat.codigo || "Estación"}</strong><br>` +
+          `ID: ${feat.featureId}`
         );
     }
   });
