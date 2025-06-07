@@ -16,16 +16,16 @@ const AUTH_HEADER = {
 }; 
 
 
-// Configura la política de seguridad de contenido (CSP) para permitir Leaflet y Leaflet Draw desde CDN
+// Configura la política de seguridad de contenido (CSP) para permitir Leaflet, Font-Awesome y Leaflet Draw desde CDN
 app.use((req, res, next) => {
   res.setHeader(
     "Content-Security-Policy",
     [
       "default-src 'self';",
-      "font-src 'self' data:;",
-      "style-src 'self' 'unsafe-inline' https://unpkg.com https://cdnjs.cloudflare.com http://maxcdn.bootstrapcdn.com;",
-      "script-src 'self' 'unsafe-inline' https://unpkg.com https://cdnjs.cloudflare.com http://maxcdn.bootstrapcdn.com;",
-      "img-src 'self' data: https://tile.openstreetmap.org https://a.tile.openstreetmap.org https://b.tile.openstreetmap.org https://c.tile.openstreetmap.org https://cdnjs.cloudflare.com;",
+      "font-src 'self' data: https://maxcdn.bootstrapcdn.com;",
+      "style-src 'self' 'unsafe-inline' https://unpkg.com https://cdnjs.cloudflare.com https://maxcdn.bootstrapcdn.com;",
+      "script-src 'self' 'unsafe-inline' https://unpkg.com https://cdnjs.cloudflare.com https://maxcdn.bootstrapcdn.com;",
+      "img-src 'self' data: https://tile.openstreetmap.org https://a.tile.openstreetmap.org https://b.tile.openstreetmap.org https://c.tile.openstreetmap.org https://cdnjs.cloudflare.com https://maxcdn.bootstrapcdn.com https://unpkg.com;",
       "connect-src 'self';",
       "object-src 'none';",
       "base-uri 'self';",
@@ -34,6 +34,7 @@ app.use((req, res, next) => {
   );
   next();
 });
+
 
 
 
