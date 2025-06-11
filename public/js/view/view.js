@@ -104,7 +104,21 @@ document.addEventListener("DOMContentLoaded", async () => {
     console.error("Error al cargar features:", err);
   }
 
-  // Vaciar el área de Results (pendiente de desarrollo)
+  // Botón Search: muestra JSON en Results
   const resultsDiv = document.getElementById("resultsList");
+  const searchBtn  = document.getElementById("searchBtn");
+  if (searchBtn) {
+    searchBtn.addEventListener("click", async () => {
+      resultsDiv.innerHTML = "Cargando…";
+      try {
+        const data = await fetchFilterFeatureOfInterest(featureTypeName);
+        resultsDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+      } catch (err) {
+        resultsDiv.innerHTML = `<div class="error-msg">Error: ${err.message}</div>`;
+      }
+    });
+  }
+
+  // Vaciar el área de Results (pendiente de desarrollo)
   resultsDiv.innerHTML = "";
 });
