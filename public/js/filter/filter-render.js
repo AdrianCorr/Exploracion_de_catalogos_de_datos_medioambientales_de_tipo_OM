@@ -75,6 +75,7 @@ export function renderResults(data) {
       // RELLENAR data-start y data-end
       checkbox.dataset.start = desc.validTimeStart || "";
       checkbox.dataset.end   = desc.validTimeEnd   || "";
+      checkbox.dataset.procedure = processId           || "";
 
       // Evitar que el checkbox dispare la apertura del detalle
       checkbox.addEventListener("click", (e) => e.stopPropagation());

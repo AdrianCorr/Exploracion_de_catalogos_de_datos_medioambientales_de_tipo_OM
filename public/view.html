@@ -37,17 +37,30 @@
   <section class="view-container">
     <!--  ──────────────── Map Section ────────────────  -->
     <details open class="view-section">
-      <summary class="view-summary">Map</summary>
+      <summary class="view-summary">Filters</summary>
       <div id="map"></div>
       <div id="bbox-coordinates" class="bbox-coordinates"></div>
+
+      <!-- Temporal Filter -->
+      <div class="filter-time">
+        <label for="startDate">Start Date</label>
+        <input type="datetime-local" id="startDate" name="startDate" />
+
+        <label for="endDate">End Date</label>
+        <input type="datetime-local" id="endDate" name="endDate" />
+      </div>
+
+      <!-- Procedure -->
+      <div class="filter-procedure">
+        <label for="procedure">Procedure</label>
+        <input type="text" id="procedure" name="procedure" readonly />
+      </div>
     </details>
 
     <!--  ─────────────── Results Section ──────────────  -->
     <details open class="view-section">
       <summary class="view-summary">Results</summary>
-      <div id="resultsList" class="results-list">
-        <!-- Aquí se irá rellenando la lista de IDs o datos extraídos -->
-      </div>
+      
     </details>
   </section>
 

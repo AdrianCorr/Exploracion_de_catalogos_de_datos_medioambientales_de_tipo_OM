@@ -24,8 +24,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     params.get("featureTypeName") || "ctd_intecmar.estacion";
 
   // 2) Inicializar mapa
-  const galiciaCenter = [42.5, -8.0];
-  const map = L.map("map").setView(galiciaCenter, 8);
+  const galiciaCenter = [42.7, -8.0];
+  const map = L.map("map").setView(galiciaCenter, 7);
 
   // 3) Capa base
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
