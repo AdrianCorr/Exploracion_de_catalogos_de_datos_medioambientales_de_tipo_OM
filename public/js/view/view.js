@@ -155,11 +155,62 @@ document.addEventListener("DOMContentLoaded", async () => {
         const response = await fetch(localUrl);
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const json = await response.json();
+        
         if (json.features && json.features.length > 0) {
-          resultsDiv.innerHTML = `<pre>${JSON.stringify(json, null, 2)}</pre>`;
-        } else {
-          resultsDiv.innerHTML = `<div class="no-results-msg">No results found.</div>`;
-        }
+        const tableHeader = `
+          <table class="results-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Procedure</th>
+                <th>Result time</th>
+                <th>Phenomenon Time</th>
+                <th>Depth</th>
+                <th>Details</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${json.features.map((f, index) => {
+                const props = f.properties || {};
+                const name = props.name || "—";
+                const procedure = props.procedure || "—";
+                const resultTime = props.result_time || "—";
+                const phenomenonTime = props.phenomenon_time || "—";
+                const depth = props.depth || "—";
+
+                return `
+                  <tr>
+                    <td>${name}</td>
+                    <td>${procedure}</td>
+                    <td>${resultTime}</td>
+                    <td>${phenomenonTime}</td>
+                    <td>${depth}</td>
+                    <td>
+                      <button class="show-json-btn" data-index="${index}">Show JSON</button>
+                      <button disabled>Show Chart</button>
+                    </td>
+                  </tr>
+                `;
+              }).join("")}
+            </tbody>
+          </table>
+          <pre id="jsonOutput" class="json-output"></pre>
+        `;
+        resultsDiv.innerHTML = tableHeader;
+
+        // Listener para botones "Show JSON"
+        document.querySelectorAll(".show-json-btn").forEach(btn => {
+          btn.addEventListener("click", () => {
+            const index = btn.getAttribute("data-index");
+            const selectedFeature = json.features[index];
+            const jsonOutput = document.getElementById("jsonOutput");
+            jsonOutput.textContent = JSON.stringify(selectedFeature, null, 2);
+          });
+        });
+
+      } else {
+        resultsDiv.innerHTML = `No results found.`;
+      }
       } catch (err) {
         resultsDiv.innerHTML = `<div class="error-msg">Error al consultar Geoserver: ${err.message}</div>`;
       }

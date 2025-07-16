@@ -261,7 +261,7 @@ app.get("/api/geoserver-data", async (req, res) => {
     version: "1.0.0",
     request: "GetFeature",
     typeName: typeName,
-    maxFeatures: "50",
+    maxFeatures: "2000",
     outputFormat: "application/json",
     cql_filter: `BBOX(shape, ${bbox}) AND phenomenon_time >= '${startTime}' AND phenomenon_time <= '${endTime}' AND procedure = ${procedure}`
   });
