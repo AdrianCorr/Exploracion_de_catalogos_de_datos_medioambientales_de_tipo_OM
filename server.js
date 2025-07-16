@@ -246,6 +246,46 @@ app.get("/api/feature-of-interest-by-id", async (req, res) => {
 
 
 ////////////////////////////////////////////////////////////////////////////
+// Ruta API para consultar Geoserver (proxy)
+app.get("/api/geoserver-data", async (req, res) => {
+  const { typeName, procedure, startTime, endTime, bbox } = req.query;
+
+  if (!typeName || !procedure || !startTime || !endTime || !bbox) {
+    return res.status(400).json({ error: "Faltan parámetros requeridos." });
+  }
+
+  // Construcción de la URL del Geoserver
+  const baseUrl = "https://tec.citius.usc.es/ccmm/geoserver/ccmm/ows";
+  const params = new URLSearchParams({
+    service: "WFS",
+    version: "1.0.0",
+    request: "GetFeature",
+    typeName: typeName,
+    maxFeatures: "50",
+    outputFormat: "application/json",
+    cql_filter: `BBOX(shape, ${bbox}) AND phenomenon_time >= '${startTime}' AND phenomenon_time <= '${endTime}' AND procedure = ${procedure}`
+  });
+
+  const url = `${baseUrl}?${params.toString()}`;
+
+  console.log(url);
+
+  try {
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`Error al consultar Geoserver: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
+////////////////////////////////////////////////////////////////////////////
 // Inicia el servidor en el puerto 3000
 app.listen(3000, () => {
   console.log("http://localhost:3000"); // Muestra la URL en la consola cuando el servidor arranca

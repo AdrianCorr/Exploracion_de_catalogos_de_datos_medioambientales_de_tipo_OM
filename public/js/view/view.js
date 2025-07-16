@@ -110,11 +110,58 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (searchBtn) {
     searchBtn.addEventListener("click", async () => {
       resultsDiv.innerHTML = "Cargando…";
+
+      // Leer valores actualizados por el usuario
+      const procedureVal = document.getElementById("procedure")?.value || "";
+      const startVal     = document.getElementById("startDate")?.value || "";
+      const endVal       = document.getElementById("endDate")?.value || "";
+
+      // Validación básica
+      if (!procedureVal || !startVal || !endVal) {
+        resultsDiv.innerHTML = `<div class="error-msg">Faltan valores de fecha o procedimiento.</div>`;
+        return;
+      }
+
+      // Leer bbox si existe
+      const bboxLayer = drawnItems.getLayers()[0];
+      if (!bboxLayer) {
+        resultsDiv.innerHTML = `<div class="error-msg">Dibuja primero un área sobre el mapa.</div>`;
+        return;
+      }
+
+      const bounds = bboxLayer.getBounds();
+      const sw = bounds.getSouthWest();
+      const ne = bounds.getNorthEast();
+
+      // Formato de fechas
+      const startDateISO = new Date(startVal).toISOString();
+      const endDateISO   = new Date(endVal).toISOString();
+
+      // Construir BBOX string
+      const bboxString = `${sw.lng},${sw.lat},${ne.lng},${ne.lat}`;
+
+      // Construir URL al servidor local (proxy)
+      const localUrl = `/api/geoserver-data?` + new URLSearchParams({
+        typeName: "ccmm:observacion_ctd_wfs",
+        procedure: procedureVal,
+        startTime: startDateISO,
+        endTime: endDateISO,
+        bbox: bboxString
+      });
+
+      console.log("URL local al backend:", localUrl);
+
       try {
-        const data = await fetchFilterFeatureOfInterest(featureTypeName);
-        resultsDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+        const response = await fetch(localUrl);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const json = await response.json();
+        if (json.features && json.features.length > 0) {
+          resultsDiv.innerHTML = `<pre>${JSON.stringify(json, null, 2)}</pre>`;
+        } else {
+          resultsDiv.innerHTML = `<div class="no-results-msg">No results found.</div>`;
+        }
       } catch (err) {
-        resultsDiv.innerHTML = `<div class="error-msg">Error: ${err.message}</div>`;
+        resultsDiv.innerHTML = `<div class="error-msg">Error al consultar Geoserver: ${err.message}</div>`;
       }
     });
   }
