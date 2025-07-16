@@ -107,57 +107,67 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Botón Search: muestra JSON en Results
   const resultsDiv = document.getElementById("resultsList");
   const searchBtn  = document.getElementById("searchBtn");
+
   if (searchBtn) {
     searchBtn.addEventListener("click", async () => {
       resultsDiv.innerHTML = "Cargando…";
 
-      // Leer valores actualizados por el usuario
       const procedureVal = document.getElementById("procedure")?.value || "";
-      const startVal     = document.getElementById("startDate")?.value || "";
-      const endVal       = document.getElementById("endDate")?.value || "";
+      const startVal = document.getElementById("startDate")?.value || "";
+      const endVal = document.getElementById("endDate")?.value || "";
 
-      // Validación básica
-      if (!procedureVal || !startVal || !endVal) {
-        resultsDiv.innerHTML = `<div class="error-msg">Faltan valores de fecha o procedimiento.</div>`;
-        return;
-      }
+      const queryParams = new URLSearchParams({ typeName: "ccmm:observacion_ctd_wfs" });
 
-      // Leer bbox si existe
+      if (procedureVal) queryParams.append("procedure", procedureVal);
+      if (startVal) queryParams.append("startTime", new Date(startVal).toISOString());
+      if (endVal) queryParams.append("endTime", new Date(endVal).toISOString());
+
       const bboxLayer = drawnItems.getLayers()[0];
-      if (!bboxLayer) {
-        resultsDiv.innerHTML = `<div class="error-msg">Dibuja primero un área sobre el mapa.</div>`;
-        return;
+      if (bboxLayer) {
+        const bounds = bboxLayer.getBounds();
+        const sw = bounds.getSouthWest();
+        const ne = bounds.getNorthEast();
+        const bboxString = `${sw.lng},${sw.lat},${ne.lng},${ne.lat}`;
+        queryParams.append("bbox", bboxString);
       }
 
-      const bounds = bboxLayer.getBounds();
-      const sw = bounds.getSouthWest();
-      const ne = bounds.getNorthEast();
-
-      // Formato de fechas
-      const startDateISO = new Date(startVal).toISOString();
-      const endDateISO   = new Date(endVal).toISOString();
-
-      // Construir BBOX string
-      const bboxString = `${sw.lng},${sw.lat},${ne.lng},${ne.lat}`;
-
-      // Construir URL al servidor local (proxy)
-      const localUrl = `/api/geoserver-data?` + new URLSearchParams({
-        typeName: "ccmm:observacion_ctd_wfs",
-        procedure: procedureVal,
-        startTime: startDateISO,
-        endTime: endDateISO,
-        bbox: bboxString
-      });
-
-      console.log("URL local al backend:", localUrl);
+      const localUrl = `/api/geoserver-data?${queryParams.toString()}`;
 
       try {
         const response = await fetch(localUrl);
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const json = await response.json();
+
+        const features = json.features || [];
+
+        if (features.length === 0) {
+          resultsDiv.innerHTML = `<div>No results found.</div>`;
+          return;
+        }
         
-        if (json.features && json.features.length > 0) {
-        const tableHeader = `
+        // Agrupar por 'nombre'
+        const grouped = {};
+        for (const f of features) {
+          const props = f.properties;
+          const nombre = props.nombre || "Sin nombre";
+
+          if (!grouped[nombre]) {
+            grouped[nombre] = {
+              observations: [],
+              resultTime: props.result_time,
+              procedure: props.procedure
+            };
+          }
+
+          grouped[nombre].observations.push({
+            phenomenon_time: props.phenomenon_time,
+            profundidad: props.profundidad,
+            full: f
+          });
+        }
+
+        // Construir tabla
+        let tableHTML = `
           <table class="results-table">
             <thead>
               <tr>
@@ -170,47 +180,44 @@ document.addEventListener("DOMContentLoaded", async () => {
               </tr>
             </thead>
             <tbody>
-              ${json.features.map((f, index) => {
-                const props = f.properties || {};
-                const name = props.name || "—";
-                const procedure = props.procedure || "—";
-                const resultTime = props.result_time || "—";
-                const phenomenonTime = props.phenomenon_time || "—";
-                const depth = props.depth || "—";
-
-                return `
-                  <tr>
-                    <td>${name}</td>
-                    <td>${procedure}</td>
-                    <td>${resultTime}</td>
-                    <td>${phenomenonTime}</td>
-                    <td>${depth}</td>
-                    <td>
-                      <button class="show-json-btn" data-index="${index}">Show JSON</button>
-                      <button disabled>Show Chart</button>
-                    </td>
-                  </tr>
-                `;
-              }).join("")}
-            </tbody>
-          </table>
-          <pre id="jsonOutput" class="json-output"></pre>
         `;
-        resultsDiv.innerHTML = tableHeader;
 
-        // Listener para botones "Show JSON"
-        document.querySelectorAll(".show-json-btn").forEach(btn => {
-          btn.addEventListener("click", () => {
-            const index = btn.getAttribute("data-index");
-            const selectedFeature = json.features[index];
-            const jsonOutput = document.getElementById("jsonOutput");
-            jsonOutput.textContent = JSON.stringify(selectedFeature, null, 2);
-          });
-        });
+        for (const nombre in grouped) {
+          const { observations, resultTime, procedure } = grouped[nombre];
 
-      } else {
-        resultsDiv.innerHTML = `No results found.`;
-      }
+          const phenomenonTimes = observations.map(o => new Date(o.phenomenon_time).getTime()).filter(Boolean);
+          const depths = observations.map(o => parseFloat(o.profundidad)).filter(n => !isNaN(n));
+
+          const phenomenonMin = new Date(Math.min(...phenomenonTimes));
+          const phenomenonMax = new Date(Math.max(...phenomenonTimes));
+          const depthMin = Math.min(...depths);
+          const depthMax = Math.max(...depths);
+
+          const pTimeRange = `[${phenomenonMin.toISOString().slice(0,16).replace("T", " ")}, ${phenomenonMax.toISOString().slice(0,16).replace("T", " ")}]`;
+          const depthRange = `[${depthMin}, ${depthMax}]`;
+
+          const jsonStr = JSON.stringify(observations.map(o => o.full), null, 2);
+          const jsonId = `json-${nombre.replace(/\s+/g, "_")}`;
+
+          tableHTML += `
+            <tr>
+              <td>${nombre}</td>
+              <td>${procedure}</td>
+              <td>${resultTime || "-"}</td>
+              <td>${pTimeRange}</td>
+              <td>${depthRange}</td>
+              <td>
+                <button onclick="document.getElementById('${jsonId}').style.display = (document.getElementById('${jsonId}').style.display === 'none' ? 'block' : 'none')">Show JSON</button>
+                <button disabled>Show Chart</button>
+                <pre id="${jsonId}" style="display:none; white-space:pre-wrap; max-height:300px; overflow:auto; background:#f4f4f4; padding:0.5em;">${jsonStr}</pre>
+              </td>
+            </tr>
+          `;
+        }
+
+        tableHTML += `</tbody></table>`;
+        resultsDiv.innerHTML = tableHTML;
+
       } catch (err) {
         resultsDiv.innerHTML = `<div class="error-msg">Error al consultar Geoserver: ${err.message}</div>`;
       }

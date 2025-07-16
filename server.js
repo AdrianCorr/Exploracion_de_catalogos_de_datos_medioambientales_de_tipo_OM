@@ -250,11 +250,28 @@ app.get("/api/feature-of-interest-by-id", async (req, res) => {
 app.get("/api/geoserver-data", async (req, res) => {
   const { typeName, procedure, startTime, endTime, bbox } = req.query;
 
-  if (!typeName || !procedure || !startTime || !endTime || !bbox) {
-    return res.status(400).json({ error: "Faltan parámetros requeridos." });
+  if (!typeName) {
+    return res.status(400).json({ error: "Faltan parámetro typeName." });
   }
 
-  // Construcción de la URL del Geoserver
+  // Construcción dinámica del filtro CQL
+  let cqlParts = [];
+
+  if (bbox) {
+    cqlParts.push(`BBOX(shape, ${bbox})`);
+  }
+  if (startTime) {
+    cqlParts.push(`phenomenon_time >= '${startTime}'`);
+  }
+  if (endTime) {
+    cqlParts.push(`phenomenon_time <= '${endTime}'`);
+  }
+  if (procedure) {
+    cqlParts.push(`procedure = ${procedure}`);
+  }
+
+  const cqlFilter = cqlParts.length > 0 ? cqlParts.join(" AND ") : null;
+
   const baseUrl = "https://tec.citius.usc.es/ccmm/geoserver/ccmm/ows";
   const params = new URLSearchParams({
     service: "WFS",
@@ -263,20 +280,19 @@ app.get("/api/geoserver-data", async (req, res) => {
     typeName: typeName,
     maxFeatures: "2000",
     outputFormat: "application/json",
-    cql_filter: `BBOX(shape, ${bbox}) AND phenomenon_time >= '${startTime}' AND phenomenon_time <= '${endTime}' AND procedure = ${procedure}`
   });
+
+  if (cqlFilter) {
+    params.append("cql_filter", cqlFilter);
+  }
 
   const url = `${baseUrl}?${params.toString()}`;
 
-  console.log(url);
-
   try {
     const response = await fetch(url);
-
     if (!response.ok) {
       throw new Error(`Error al consultar Geoserver: ${response.statusText}`);
     }
-
     const data = await response.json();
     res.json(data);
   } catch (error) {
