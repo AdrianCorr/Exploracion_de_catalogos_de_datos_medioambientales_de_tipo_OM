@@ -8,13 +8,13 @@
  *  • createTitleWithSpan: crea <h4>Label: <span>texto</span></h4>
  */
 
-export async function filterProcesses(typeName, keyword, startTime, endTime) {
+export async function filterProcesses(typeName, keyword, startDate, endDate) {
   if (!typeName) throw new Error("Por favor, introduzca un nombre de tipo de proceso.");
 
   const params = new URLSearchParams({ processTypeName: typeName });
   if (keyword) params.append("keywordFilter", keyword);
-  if (startTime) params.append("startTime", startTime);
-  if (endTime) params.append("endTime", endTime);
+  if (startDate) params.append("startDate", startDate);
+  if (endDate) params.append("endDate", endDate);
 
   const resp = await fetch(`/api/filter-process?${params.toString()}`);
   if (!resp.ok) throw new Error(`Error HTTP ${resp.status}: ${resp.statusText}`);

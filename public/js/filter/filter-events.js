@@ -23,11 +23,11 @@ export function setupEventListeners() {
 
     const typeName  = document.getElementById("processType").value.trim();
     const keyword   = document.getElementById("keywords").value.trim();
-    const startTime = document.getElementById("startDate").value;
-    const endTime   = document.getElementById("endDate").value;
+    const startDate = document.getElementById("startDate").value;
+    const endDate   = document.getElementById("endDate").value;
 
     try {
-      const data = await filterProcesses(typeName, keyword, startTime, endTime);
+      const data = await filterProcesses(typeName, keyword, startDate, endDate);
       renderResults(data);
     } catch (err) {
       const errorMsg = document.createElement("div");
@@ -99,8 +99,8 @@ export function setupResultInteractions() {
       // 4) Construir URL: view.html?processTypeName=xxx&startTime=<maxStart>&endTime=<minEnd>
       const params = new URLSearchParams();
       params.append("procedure", procedureIds.join(","));
-      params.append("startTime", maxStart);
-      params.append("endTime",   minEnd);
+      params.append("startDate", maxStart);
+      params.append("endDate",   minEnd);
 
       window.open(`view.html?${params.toString()}`, "_blank");
     };
