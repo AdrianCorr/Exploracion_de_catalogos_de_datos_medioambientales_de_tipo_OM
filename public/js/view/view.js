@@ -5,6 +5,102 @@ import {
   drawPointFeaturesOnMap
 } from "./view-utils.js";
 
+function createJsonModal() {
+  if (document.getElementById("jsonModal")) return; // Ya existe
+
+  const modal = document.createElement("div");
+  modal.id = "jsonModal";
+  modal.style.cssText = `
+    display: none;
+    position: fixed;
+    top: 10%;
+    left: 10%;
+    max-width: 80vw;
+    max-height: 80vh;
+    background: white;
+    border: 1px solid #ccc;
+    padding: 1em;
+    overflow: auto;
+    z-index: 10001;
+    box-shadow: 0 0 15px rgba(0,0,0,0.3);
+    white-space: pre-wrap;
+    font-family: monospace;
+    font-size: 0.9em;
+  `;
+
+  modal.innerHTML = `
+    <h3>JSON Data</h3>
+    <pre id="jsonContent" style="max-height: 70vh; overflow: auto; background: #f4f4f4; padding: 1em;"></pre>
+    <button id="closeJsonBtn">Cerrar</button>
+  `;
+
+  document.body.appendChild(modal);
+
+  document.getElementById("closeJsonBtn").addEventListener("click", () => {
+    modal.style.display = "none";
+  });
+}
+
+// Crear modal JSON al inicio
+createJsonModal();
+
+
+function createChartModal() {
+  if (document.getElementById("chartModal")) return; // Ya existe
+
+  const modal = document.createElement("div");
+  modal.id = "chartModal";
+  modal.style.cssText = `
+    display: none;
+    position: fixed;
+    top: 10%;
+    left: 10%;
+    max-width: 80vw;
+    max-height: 80vh;
+    background: white;
+    border: 1px solid #ccc;
+    padding: 1em;
+    overflow: auto;
+    z-index: 10000;
+    box-shadow: 0 0 15px rgba(0,0,0,0.3);
+  `;
+
+  modal.innerHTML = `
+    <h3>Selecciona variables para el gráfico:</h3>
+    <div id="chartVariables" style="max-height: 150px; overflow-y: auto; margin-bottom: 1em;">
+      <label><input type="checkbox" value="temperatura_its90"> temperatura_its90</label><br>
+      <label><input type="checkbox" value="salinidad"> salinidad</label><br>
+      <label><input type="checkbox" value="presion"> presion</label><br>
+      <label><input type="checkbox" value="ph"> ph</label><br>
+      <label><input type="checkbox" value="oxigeno"> oxigeno</label><br>
+      <label><input type="checkbox" value="transmitancia"> transmitancia</label><br>
+      <label><input type="checkbox" value="irradiancia"> irradiancia</label><br>
+      <label><input type="checkbox" value="fluorescencia_uv"> fluorescencia_uv</label><br>
+      <label><input type="checkbox" value="fluorescencia"> fluorescencia</label><br>
+      <label><input type="checkbox" value="densidad"> densidad</label><br>
+      <label><input type="checkbox" value="profundidad"> profundidad</label><br>
+      <label><input type="checkbox" value="temperatura-its68"> temperatura-its68</label><br>
+      <label><input type="checkbox" value="conductividad"> conductividad</label><br>
+    </div>
+    <canvas id="chartCanvas" width="800" height="500"></canvas><br>
+    <button id="closeChartBtn">Cerrar</button>
+  `;
+
+  document.body.appendChild(modal);
+
+  document.getElementById("closeChartBtn").addEventListener("click", () => {
+    modal.style.display = "none";
+    if (currentChart) {
+      currentChart.destroy();
+      currentChart = null;
+    }
+  });
+}
+
+// Llamar esta función al inicio para crear el modal vacío
+createChartModal();
+
+
 document.addEventListener("DOMContentLoaded", async () => {
   // Leer parámetros de la URL: procedure, startDate, endDate y featureTypeName
   const params          = new URLSearchParams(window.location.search);
@@ -207,8 +303,8 @@ document.addEventListener("DOMContentLoaded", async () => {
               <td>${pTimeRange}</td>
               <td>${depthRange}</td>
               <td>
-                <button onclick="document.getElementById('${jsonId}').style.display = (document.getElementById('${jsonId}').style.display === 'none' ? 'block' : 'none')">Show JSON</button>
-                <button disabled>Show Chart</button>
+                <button onclick='showJsonModal(${JSON.stringify(observations.map(o => o.full))})'>Show JSON</button>
+                <button onclick='showChartForStation(${JSON.stringify(observations.map(o => o.full))})'>Show Chart</button>
                 <pre id="${jsonId}" style="display:none; white-space:pre-wrap; max-height:300px; overflow:auto; background:#f4f4f4; padding:0.5em;">${jsonStr}</pre>
               </td>
             </tr>
@@ -227,3 +323,87 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Vaciar el área de Results (pendiente de desarrollo)
   resultsDiv.innerHTML = "";
 });
+
+let currentChart = null;
+
+function showChartForStation(data) {
+  const modal = document.getElementById("chartModal");
+  const canvas = document.getElementById("chartCanvas");
+  const checkboxes = document.querySelectorAll("#chartVariables input[type=checkbox]");
+
+  modal.style.display = "block";
+
+  // Seleccionar siempre el primer checkbox y desmarcar los demás
+  checkboxes.forEach((cb, i) => {
+    cb.checked = (i === 0);
+  });
+
+  function updateChart() {
+    const selected = Array.from(checkboxes).filter(c => c.checked).map(c => c.value);
+
+    if (currentChart) currentChart.destroy();
+
+    const datasets = selected.map((field, i) => ({
+      label: field,
+      data: data
+        .filter(d => d.properties[field] != null && d.properties.profundidad != null)
+        .map(d => ({
+          x: d.properties[field],
+          y: parseFloat(d.properties.profundidad)
+        })),
+      showLine: false,
+      pointRadius: 4,
+      backgroundColor: getColor(i)
+    }));
+
+    currentChart = new Chart(canvas, {
+      type: 'scatter',
+      data: { datasets },
+      options: {
+        responsive: true,
+        scales: {
+          x: {
+            title: { display: true, text: 'Value' },
+            beginAtZero: false
+          },
+          y: {
+            title: { display: true, text: 'Depth (m)' },
+            reverse: true
+          }
+        }
+      }
+    });
+  }
+
+  checkboxes.forEach(cb => cb.addEventListener("change", updateChart));
+  updateChart();
+}
+
+function getColor(i) {
+  const colors = [
+    "#3366cc", "#dc3912", "#ff9900", "#109618", "#990099",
+    "#0099c6", "#dd4477", "#66aa00", "#b82e2e", "#316395",
+    "#994499", "#22aa99", "#aaaa11"
+  ];
+  return colors[i % colors.length];
+}
+
+document.getElementById("closeChartBtn").addEventListener("click", () => {
+  document.getElementById("chartModal").style.display = "none";
+  if (currentChart) {
+    currentChart.destroy();
+    currentChart = null;
+  }
+});
+
+window.showChartForStation = showChartForStation;
+
+
+function showJsonModal(data) {
+  const modal = document.getElementById("jsonModal");
+  const content = document.getElementById("jsonContent");
+  content.textContent = JSON.stringify(data, null, 2);
+  modal.style.display = "block";
+}
+
+window.showJsonModal = showJsonModal;
