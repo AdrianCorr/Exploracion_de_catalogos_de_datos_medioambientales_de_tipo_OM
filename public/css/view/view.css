@@ -1,9 +1,7 @@
 /* ============================================================
    view.css — Estilos específicos para el visor de datos CTD
-   Basado en base.css y components.css
    ============================================================ */
 
-/* Hereda las variables de base.css si están disponibles */
 :root {
   --primary-color:     #4f46e5;
   --primary-light:     #eef2ff;
@@ -43,7 +41,7 @@ body {
   margin: 0 auto;
 }
 
-/* Estilo de cada <details> */
+/* Cada sección (<details>) */
 .view-section {
   background-color: var(--card-bg);
   border: 1px solid var(--border-color);
@@ -52,8 +50,6 @@ body {
   overflow: hidden;
   box-shadow: 0 4px 8px rgba(0,0,0,0.05);
 }
-
-/* <summary> estilizado como header de sección */
 .view-summary {
   background-color: var(--primary-light);
   padding: 1rem 1.5rem;
@@ -64,7 +60,7 @@ body {
   border-bottom: 1px solid var(--border-color);
 }
 
-/* Área del mapa */
+/* Mapa */
 #map {
   height: 400px;
   border: 1px solid var(--border-color);
@@ -72,14 +68,13 @@ body {
   margin: 1rem 1.5rem;
 }
 
-/* Coordenadas del bbox */
+/* Coordenadas del BBox */
 .bbox-coordinates {
   margin: 0 1.5rem 1rem;
   background: var(--primary-light);
   padding: 0.75rem 1rem;
   border-radius: 6px;
   font-size: 0.9rem;
-  color: var(--text-light);
 }
 .coordinate-label {
   font-weight: 500;
@@ -96,13 +91,11 @@ body {
   gap: 1rem;
   align-items: center;
 }
-
 .filter-time label,
 .filter-procedure label {
   font-weight: 500;
   width: 100%;
 }
-
 .filter-time input,
 .filter-procedure input {
   flex: 1;
@@ -112,7 +105,6 @@ body {
   border-radius: 6px;
   font-size: 1rem;
 }
-
 .filter-actions button {
   background-color: var(--primary-color);
   color: white;
@@ -132,7 +124,6 @@ body {
   margin: 1rem 1.5rem;
   overflow-x: auto;
 }
-
 .results-table {
   width: 100%;
   border-collapse: collapse;
@@ -164,37 +155,62 @@ body {
   background-color: var(--secondary-color);
 }
 
-/* Modal JSON y Chart (consistentes con otros modales del sitio) */
-#jsonModal,
-#chartModal {
-  border-radius: 8px;
-  font-family: 'Inter', sans-serif;
-  font-size: 0.95rem;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
+/* Previsualización JSON dentro de la tabla */
+.json-pre {
+  display: none;
+  white-space: pre-wrap;
+  max-height: 300px;
+  overflow: auto;
+  background: #f4f4f4;
+  padding: 0.5em;
+}
+
+/* Modal JSON */
+.json-modal {
+  display: none;
+  position: fixed;
+  top: 10%;
+  left: 10%;
+  max-width: 80vw;
+  max-height: 80vh;
+  background: var(--card-bg);
   border: 1px solid var(--border-color);
-  padding: 1.5rem;
-  background-color: var(--card-bg);
-  z-index: 1000;
+  padding: 1em;
+  overflow: auto;
+  z-index: 10001;
+  box-shadow: 0 0 15px rgba(0,0,0,0.3);
+  white-space: pre-wrap;
+  font-family: monospace;
+  font-size: 0.9em;
 }
-#jsonModal h3,
-#chartModal h3 {
-  color: var(--primary-color);
-  margin-bottom: 1rem;
+.json-modal pre {
+  max-height: 70vh;
+  overflow: auto;
+  background: #f4f4f4;
+  padding: 1em;
 }
-#closeJsonBtn,
-#closeChartBtn {
-  margin-top: 1rem;
-  background: var(--primary-color);
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  cursor: pointer;
+
+/* Modal Chart */
+.chart-modal {
+  display: none;
+  position: fixed;
+  top: 10%;
+  left: 10%;
+  max-width: 80vw;
+  max-height: 80vh;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  padding: 1em;
+  overflow: auto;
+  z-index: 10000;
+  box-shadow: 0 0 15px rgba(0,0,0,0.3);
 }
-#closeJsonBtn:hover,
-#closeChartBtn:hover {
-  background: var(--secondary-color);
+#chartVariables {
+  max-height: 150px;
+  overflow-y: auto;
+  margin-bottom: 1em;
 }
+/* Botones de cierre de modales ya están cubiertos por #closeJsonBtn y #closeChartBtn */
 
 /* Gráfico */
 #chartVariables label {
@@ -213,11 +229,9 @@ body {
     flex-direction: column;
     gap: 0.5rem;
   }
-
   .results-table {
     font-size: 0.85rem;
   }
-
   #map {
     height: 300px;
   }
