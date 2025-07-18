@@ -88,18 +88,24 @@ function hideModal(modalEl) {
 
 // Abre el JSON modal con los datos formateados
 function showJsonModal(data) {
-  const modal = document.getElementById("jsonModal");
-  // 1) Actualiza contador
-  document.getElementById("jsonCountNum").textContent = data.length;
-  // 2) Pinta JSON con spans en keys
-  const raw = JSON.stringify(data, null, 2)
-    // cada "key": se convierte en "<span class='json-key'>key</span>":
+  // 1) Extraemos solo properties de cada feature
+  const propsArray = data.map(feature => feature.properties);
+
+  // 2) Actualizamos el contador con el número de elementos
+  document.getElementById("jsonCountNum").textContent = propsArray.length;
+
+  // 3) Serializamos y coloreamos las claves
+  const raw = JSON.stringify(propsArray, null, 2)
     .replace(/"([^"]+)":/g, '"<span class="json-key">$1</span>":');
+
+  // 4) Inyectamos el HTML formateado
   const content = document.getElementById("jsonContent");
   content.innerHTML = raw;
-  // 3) Muestra modal y overlay
-  showModal(modal);
+
+  // 5) Mostramos el modal
+  showModal(document.getElementById("jsonModal"));
 }
+
 
 
 // Genera y muestra el chart modal
