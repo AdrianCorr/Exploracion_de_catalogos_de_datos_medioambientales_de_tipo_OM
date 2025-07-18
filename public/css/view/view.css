@@ -33,6 +33,7 @@ body {
 }
 .view-header h1 {
   font-size: 1.75rem;
+  margin: 0;
 }
 
 /* Contenedor general */
@@ -58,6 +59,15 @@ body {
   cursor: pointer;
   color: var(--text-dark);
   border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+}
+
+/* Contador junto al título de Results */
+.results-counter {
+  font-size: 0.9rem;
+  color: var(--text-light);
+  margin-left: 0.5rem;
 }
 
 /* Mapa */
@@ -142,7 +152,8 @@ body {
   font-weight: 600;
 }
 .results-table td button {
-  margin-right: 0.25rem;
+  margin-right: 0.15rem;
+  margin-bottom: 0.25rem;
   background-color: var(--primary-color);
   color: white;
   border: none;
@@ -150,6 +161,7 @@ body {
   border-radius: 4px;
   cursor: pointer;
   font-size: 0.75rem;
+  transition: background 0.2s;
 }
 .results-table td button:hover {
   background-color: var(--secondary-color);
@@ -176,7 +188,7 @@ body {
   z-index: 9999;
 }
 
-/* Modales elevados sobre el overlay */
+/* Modales base (JSON y Chart) */
 .json-modal,
 .chart-modal {
   display: none;
@@ -187,14 +199,19 @@ body {
   max-height: 80vh;
   background: var(--card-bg);
   border: 1px solid var(--border-color);
-  padding: 1.5rem;
-  overflow: visible; /* ya no scroll en todo el cuadro */
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.2);
   z-index: 10000;
-  box-shadow: 0 0 15px rgba(0,0,0,0.3);
-  border-radius: 8px;
+  overflow: auto;
 }
 
-/* Cruz de cierre en esquina */
+/* JSON Modal específico */
+.json-modal {
+  width: 90%;
+}
+
+/* Cerrar modales */
 .modal-close {
   position: absolute;
   top: 0.5rem;
@@ -210,18 +227,52 @@ body {
   color: var(--text-dark);
 }
 
-/* Área de JSON scrollable */
+/* Cabecera del JSON Modal */
+.json-modal .modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.75rem;
+  margin-bottom: 1rem;
+}
+.json-modal .modal-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: var(--text-dark);
+}
+
+/* Cuerpo del JSON Modal */
+.json-modal .modal-body {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+/* Contador de items en el JSON modal */
+.json-modal .modal-body #jsonCount {
+  font-size: 0.9rem;
+  color: var(--text-light);
+  margin-bottom: 0.75rem;
+}
+
+/* Contenido formateado del JSON */
 #jsonContent {
   max-height: calc(80vh - 4rem);
-  overflow-y: auto;
-  background: #f4f4f4;
+  background: #fafafa;
+  border: 1px solid var(--border-color);
   padding: 1rem;
   border-radius: 6px;
   font-family: 'Fira Code', monospace;
-  font-size: 0.9em;
+  font-size: 0.9rem;
   line-height: 1.4;
   white-space: pre-wrap;
   word-break: break-word;
+}
+
+/* Color para las keys del JSON */
+.json-key {
+  color: var(--secondary-color);
+  font-weight: 500;
 }
 
 /* Variables del chart en fila */
@@ -254,89 +305,4 @@ body {
   #map {
     height: 300px;
   }
-}
-
-/* ─── Estilos mejorados para el JSON Modal ─── */
-.json-modal {
-  /* Aumentamos padding y suavizamos bordes */
-  padding: 2rem;
-  border-radius: 12px;
-  max-width: 600px;
-  width: 90%;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-  background: var(--card-bg);
-}
-
-/* Cabecera del modal con separación y línea inferior */
-.json-modal .modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid var(--border-color);
-  padding-bottom: 0.75rem;
-  margin-bottom: 1rem;
-}
-
-/* Título más destacado */
-.json-modal .modal-header h3 {
-  margin: 0;
-  font-size: 1.25rem;
-  color: var(--text-dark);
-}
-
-/* Botón de cierre más visible */
-.json-modal .modal-close {
-  font-size: 1.5rem;
-  color: var(--text-light);
-  background: transparent;
-  border: none;
-  cursor: pointer;
-}
-.json-modal .modal-close:hover {
-  color: var(--text-dark);
-}
-
-/* Cuerpo con scroll y fondo tenúe */
-.json-modal .modal-body {
-  max-height: 60vh;
-  overflow-y: auto;
-}
-
-/* Preformato más legible */
-#jsonContent {
-  background: #fafafa;
-  border: 1px solid var(--border-color);
-  padding: 1rem;
-  border-radius: 6px;
-  font-family: 'Fira Code', monospace;
-  font-size: 0.9rem;
-  line-height: 1.4;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-
-
-
-
-
-/* ─── Contador de items en el JSON modal ─── */
-.json-modal .modal-body #jsonCount {
-  font-size: 0.9rem;
-  color: var(--text-light);
-  margin-bottom: 0.75rem;
-}
-
-/* ─── Color para las keys (nombres) del JSON ─── */
-.json-key {
-  /* puedes usar var(--secondary-color) si prefieres */
-  color: #ec4899;
-  font-weight: 500;
-}
-
-
-/* ─── Contador de resultados junto al título ─── */
-.results-counter {
-  font-size: 0.9rem;
-  color: var(--text-light);
-  margin-left: 0.5rem;
 }

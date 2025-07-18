@@ -286,7 +286,6 @@ app.get("/api/geoserver-data", async (req, res) => {
     if (cqlFilter) hitsParams.append("cql_filter", cqlFilter);
 
     const hitsUrl  = `${baseUrl}?${hitsParams.toString()}`;
-    console.log("➤ HITS URL:", hitsUrl);
     const hitsResp = await fetch(hitsUrl);
     if (!hitsResp.ok) throw new Error(`Hits HTTP ${hitsResp.status}`);
     const hitsText = await hitsResp.text();
@@ -307,7 +306,6 @@ app.get("/api/geoserver-data", async (req, res) => {
     if (cqlFilter) dataParams.append("cql_filter", cqlFilter);
 
     const dataUrl  = `${baseUrl}?${dataParams.toString()}`;
-    console.log("➤ DATA URL:", dataUrl);
     const dataResp = await fetch(dataUrl);
     if (!dataResp.ok) throw new Error(`Data HTTP ${dataResp.status}`);
     const dataJson = await dataResp.json();
