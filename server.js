@@ -249,54 +249,87 @@ app.get("/api/feature-of-interest-by-id", async (req, res) => {
 // Ruta API para consultar Geoserver (proxy)
 app.get("/api/geoserver-data", async (req, res) => {
   const { typeName, procedure, startTime, endTime, bbox } = req.query;
-
   if (!typeName) {
-    return res.status(400).json({ error: "Faltan parámetro typeName." });
+    return res.status(400).json({ error: "Falta parámetro typeName." });
   }
 
-  // Construcción dinámica del filtro CQL
-  let cqlParts = [];
-
-  if (bbox) {
-    cqlParts.push(`BBOX(shape, ${bbox})`);
-  }
-  if (startTime) {
-    cqlParts.push(`phenomenon_time >= '${startTime}'`);
-  }
-  if (endTime) {
-    cqlParts.push(`phenomenon_time <= '${endTime}'`);
-  }
+  // 1) Montar filtro CQL (procedure sin comillas)
+  const cql = [];
+  if (bbox)      cql.push(`BBOX(shape, ${bbox})`);
+  if (startTime) cql.push(`phenomenon_time >= '${startTime}'`);
+  if (endTime)   cql.push(`phenomenon_time <= '${endTime}'`);
+  // Múltiples procedure
   if (procedure) {
-    cqlParts.push(`procedure = ${procedure}`);
+    // separamos por coma y quitamos espacios
+    const procs = procedure.split(",").map(s => s.trim());
+    if (procs.length > 1) {
+      // IN para varios valores
+      cql.push(`procedure IN (${procs.join(",")})`);
+    } else {
+      // igualdad para uno solo
+      cql.push(`procedure = ${procs[0]}`);
+    }
   }
-
-  const cqlFilter = cqlParts.length > 0 ? cqlParts.join(" AND ") : null;
+  const cqlFilter = cql.length ? cql.join(" AND ") : null;
 
   const baseUrl = "https://tec.citius.usc.es/ccmm/geoserver/ccmm/ows";
-  const params = new URLSearchParams({
-    service: "WFS",
-    version: "1.0.0",
-    request: "GetFeature",
-    typeName: typeName,
-    maxFeatures: "2000",
-    outputFormat: "application/json",
-  });
-
-  if (cqlFilter) {
-    params.append("cql_filter", cqlFilter);
-  }
-
-  const url = `${baseUrl}?${params.toString()}`;
 
   try {
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`Error al consultar Geoserver: ${response.statusText}`);
+    // 2) PETICIÓN HITS → solo para total real
+    const hitsParams = new URLSearchParams({
+      service:    "WFS",
+      version:    "1.0.0",
+      request:    "GetFeature",
+      typeName,
+      resultType: "hits"
+    });
+    if (cqlFilter) hitsParams.append("cql_filter", cqlFilter);
+
+    const hitsUrl  = `${baseUrl}?${hitsParams.toString()}`;
+    console.log("➤ HITS URL:", hitsUrl);
+    const hitsResp = await fetch(hitsUrl);
+    if (!hitsResp.ok) throw new Error(`Hits HTTP ${hitsResp.status}`);
+    const hitsText = await hitsResp.text();
+    let totalCount = (() => {
+      const m = hitsText.match(/numberOfFeatures="(\d+)"/);
+      return m ? Number(m[1]) : 0;
+    })();
+
+    // 3) PETICIÓN DATOS → hasta 2000 features
+    const dataParams = new URLSearchParams({
+      service:      "WFS",
+      version:      "1.0.0",
+      request:      "GetFeature",
+      typeName,
+      maxFeatures:  "2000",
+      outputFormat: "application/json"
+    });
+    if (cqlFilter) dataParams.append("cql_filter", cqlFilter);
+
+    const dataUrl  = `${baseUrl}?${dataParams.toString()}`;
+    console.log("➤ DATA URL:", dataUrl);
+    const dataResp = await fetch(dataUrl);
+    if (!dataResp.ok) throw new Error(`Data HTTP ${dataResp.status}`);
+    const dataJson = await dataResp.json();
+
+    // 4) Fallback si hits devolvió 0
+    if (totalCount === 0) {
+      if (typeof dataJson.totalFeatures === "number") {
+        totalCount = dataJson.totalFeatures;
+      } else if (Array.isArray(dataJson.features)) {
+        totalCount = dataJson.features.length;
+      }
     }
-    const data = await response.json();
-    res.json(data);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+
+    // 5) Responder total real y features
+    res.json({
+      totalCount,
+      features: dataJson.features || []
+    });
+
+  } catch (err) {
+    console.error("❌ Error en /api/geoserver-data:", err);
+    res.status(500).json({ error: err.message });
   }
 });
 

@@ -332,3 +332,11 @@ body {
   color: #ec4899;
   font-weight: 500;
 }
+
+
+/* ─── Contador de resultados junto al título ─── */
+.results-counter {
+  font-size: 0.9rem;
+  color: var(--text-light);
+  margin-left: 0.5rem;
+}

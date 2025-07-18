@@ -254,45 +254,53 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // Lógica de búsqueda y resultados
   const resultsDiv = document.getElementById("resultsList");
+
   document.getElementById("searchBtn").addEventListener("click", async () => {
+    const resultsDiv = document.getElementById("resultsList");
+    const counterSpan = document.getElementById("resultsCounter");
+
+    // Estado inicial
     resultsDiv.innerHTML = "Cargando…";
+    counterSpan.textContent = `(0/0)`;
 
+    // Parámetros de filtro
     const procedureVal = document.getElementById("procedure").value;
-    const startVal     = document.getElementById("startDate").value;
-    const endVal       = document.getElementById("endDate").value;
-    const queryParams  = new URLSearchParams({ typeName: "ccmm:observacion_ctd_wfs" });
+    const startVal = document.getElementById("startDate").value;
+    const endVal = document.getElementById("endDate").value;
+    const params = new URLSearchParams({ typeName: "ccmm:observacion_ctd_wfs" });
+    if (procedureVal) params.append("procedure", procedureVal);
+    if (startVal) params.append("startTime", new Date(startVal).toISOString());
+    if (endVal) params.append("endTime", new Date(endVal).toISOString());
 
-    if (procedureVal) queryParams.append("procedure", procedureVal);
-    if (startVal)     queryParams.append("startTime", new Date(startVal).toISOString());
-    if (endVal)       queryParams.append("endTime",   new Date(endVal).toISOString());
-
+    // Añadir bbox si existe
     const bboxLayer = drawnItems.getLayers()[0];
     if (bboxLayer) {
       const b = bboxLayer.getBounds();
-      queryParams.append("bbox",
+      params.append("bbox",
         `${b.getSouthWest().lng},${b.getSouthWest().lat},` +
         `${b.getNorthEast().lng},${b.getNorthEast().lat}`
       );
     }
 
-    const localUrl = `/api/geoserver-data?${queryParams.toString()}`;
-
     try {
-      const response = await fetch(localUrl);
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const json = await response.json();
+      const resp = await fetch(`/api/geoserver-data?${params.toString()}`);
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const json = await resp.json();
+
+      // Total real recibido del servidor o, si no existiera, fallback
+      const itemsTotal = Number.isInteger(json.totalCount)
+        ? json.totalCount
+        : (json.features || []).length;
+
+      // Array de features para mostrar (hasta 2000)
       const features = json.features || [];
 
-      if (features.length === 0) {
-        resultsDiv.innerHTML = `<div>No results found.</div>`;
-        return;
-      }
-
-      // Agrupar por nombre
+      // Agrupar por estación
       const grouped = {};
       for (const f of features) {
         const props = f.properties;
-        const name  = props.nombre || "Sin nombre";
+        const name = props.nombre || "Sin nombre";
+
         if (!grouped[name]) {
           grouped[name] = {
             observations: [],
@@ -300,46 +308,53 @@ document.addEventListener("DOMContentLoaded", async () => {
             procedure: props.procedure
           };
         }
-        grouped[name].observations.push({
-          phenomenon_time: props.phenomenon_time,
-          profundidad: props.profundidad,
-          full: f
-        });
+        grouped[name].observations.push(f);
       }
 
-      // Construir tabla HTML
-      let tableHTML = `
+      // Total de observaciones mostradas (suma de longitudes de cada grupo)
+      const itemsShown = Object.values(grouped).reduce((sum, g) => sum + g.observations.length, 0);
+
+      // Actualiza el contador con mostrados/total
+      counterSpan.textContent = `(${itemsShown}/${itemsTotal})`;
+
+      // Si no hay resultados
+      if (itemsTotal === 0) {
+        resultsDiv.innerHTML = `<div>No results found.</div>`;
+        return;
+      }
+
+      // Construir la tabla HTML
+      let html = `
         <table class="results-table">
           <thead>
-          <tr>
-            <th>Name</th>
-            <th>Procedure</th>
-            <th>Result time</th>
-            <th>Phenomenon Time</th>
-            <th>Depth</th>
-            <th>Details</th>
-          </tr>
+            <tr>
+              <th>Name</th><th>Procedure</th><th>Result time</th>
+              <th>Phenomenon Time</th><th>Depth</th><th>Details</th>
+            </tr>
           </thead>
           <tbody>
       `;
-
-      for (const name in grouped) {
-        const { observations, resultTime, procedure } = grouped[name];
-        const times  = observations.map(o => new Date(o.phenomenon_time).getTime()).filter(Boolean);
-        const depths = observations.map(o => parseFloat(o.profundidad)).filter(n => !isNaN(n));
-
-        const pMin = new Date(Math.min(...times));
-        const pMax = new Date(Math.max(...times));
-        const dMin = Math.min(...depths);
-        const dMax = Math.max(...depths);
-
+      for (const [name, grp] of Object.entries(grouped)) {
+        const { observations, resultTime, procedure } = grp;
+        // Calcular rango de phenomenon_time y profundidad
+        const times  = observations
+                        .map(o => new Date(o.properties.phenomenon_time).getTime())
+                        .filter(Boolean);
+        const depths = observations
+                        .map(o => parseFloat(o.properties.profundidad))
+                        .filter(n => !isNaN(n));
+        const pMin   = new Date(Math.min(...times));
+        const pMax   = new Date(Math.max(...times));
+        const dMin   = Math.min(...depths);
+        const dMax   = Math.max(...depths);
         const pRange = `[${pMin.toISOString().slice(0,16).replace("T"," ")}, ${pMax.toISOString().slice(0,16).replace("T"," ")}]`;
         const dRange = `[${dMin}, ${dMax}]`;
 
-        const jsonButtonData = JSON.stringify(observations.map(o=>o.full));
-        const chartButtonData = JSON.stringify(observations.map(o=>o.full));
+        // Datos para los botones
+        const jsonData  = JSON.stringify(observations);
+        const chartData = JSON.stringify(observations);
 
-        tableHTML += `
+        html += `
           <tr>
             <td>${name}</td>
             <td>${procedure}</td>
@@ -347,24 +362,18 @@ document.addEventListener("DOMContentLoaded", async () => {
             <td>${pRange}</td>
             <td>${dRange}</td>
             <td>
-              <button onclick='showJsonModal(${jsonButtonData})'>
-                Show JSON
-              </button>
-              <button onclick='showChartForStation(${chartButtonData})'>
-                Show Chart
-              </button>
+              <button onclick='showJsonModal(${jsonData})'>Show JSON</button>
+              <button onclick='showChartForStation(${chartData})'>Show Chart</button>
             </td>
           </tr>
         `;
       }
-
-      tableHTML += `</tbody></table>`;
-      resultsDiv.innerHTML = tableHTML;
+      html += `</tbody></table>`;
+      resultsDiv.innerHTML = html;
 
     } catch (err) {
-      resultsDiv.innerHTML = `<div class="error-msg">
-        Error al consultar Geoserver: ${err.message}
-      </div>`;
+      resultsDiv.innerHTML    = `<div class="error-msg">Error al consultar Geoserver: ${err.message}</div>`;
+      counterSpan.textContent = `(0/0)`;
     }
   });
 
