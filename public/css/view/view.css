@@ -319,3 +319,16 @@ body {
 
 
 
+/* ─── Contador de items en el JSON modal ─── */
+.json-modal .modal-body #jsonCount {
+  font-size: 0.9rem;
+  color: var(--text-light);
+  margin-bottom: 0.75rem;
+}
+
+/* ─── Color para las keys (nombres) del JSON ─── */
+.json-key {
+  /* puedes usar var(--secondary-color) si prefieres */
+  color: #ec4899;
+  font-weight: 500;
+}
