@@ -1,0 +1,58 @@
+/* base.css — Variables, Reset y Layout común */
+:root {
+  --primary-color:     #4f46e5;
+  --primary-light:     #eef2ff;
+  --secondary-color:   #ec4899;
+  --background-color:  #f3f4f6;
+  --card-bg:           #ffffff;
+  --text-dark:         #1f2937;
+  --text-light:        #4b5563;
+  --border-color:      #e5e7eb;
+}
+
+/* Reset y tipografía */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+html, body {
+  height: 100%;
+}
+body {
+  background: var(--background-color);
+  color: var(--text-dark);
+  font-family: 'Inter', sans-serif;
+  line-height: 1.6;
+  padding: 20px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+/* Contenedor genérico */
+.container {
+  background: var(--card-bg);
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  overflow: hidden;
+  margin: auto;
+}
+
+/* Header común */
+header {
+  background: var(--primary-color);
+  color: #fff;
+  text-align: center;
+  padding: 1.5rem;
+}
+header h1 {
+  font-size: 1.75rem;
+}
+
+/* “Cargando…” */
+.loading-text {
+  text-align: center;
+  font-style: italic;
+  color: var(--text-light);
+  margin: 1rem 0;
+}

@@ -1,5 +1,8 @@
 node_modules/
 public/snippets
+public/css/filter
+public/css/index
+public/css/view
 .env
 .DS_Store
 *.log
