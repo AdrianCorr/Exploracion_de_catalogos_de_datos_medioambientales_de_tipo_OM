@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Buscador de Procesos y Tipos de Datos</title>
+
+  <!-- Estilos de la aplicación -->
   <link rel="stylesheet" href="css/base.css" />
   <link rel="stylesheet" href="css/index.css" />
 </head>
@@ -13,29 +15,35 @@
       <h1>Endpoints y Métodos</h1>
     </header>
 
+    <!-- Panel de búsqueda: seleccionar idioma y término -->
     <div class="search-container">
-      <!-- Búsqueda de procesos por vocabulario y término -->
       <div class="search-row">
-        <!-- Vocabulario con tres idiomas -->
+        <!-- Selector de vocabulario (idioma de la búsqueda) -->
         <select id="vocabulary" title="Idioma">
           <option value="es">ES</option>
           <option value="gl">GL</option>
           <option value="en">EN</option>
         </select>
 
-        <input type="text" id="searchTerm" placeholder="searchTerm" />
-        <button id="searchProcess">Buscar Procesos</button>
+        <!-- Término de búsqueda para filtrar procesos -->
+        <input type="text" id="searchTerm" placeholder="Introduzca palabra clave" />
+
+        <!-- Botón que lanza la búsqueda de procesos -->
+        <button id="searchProcess">Buscar procesos</button>
       </div>
     </div>
 
+    <!-- Panel de resultados: aquí se muestran los procesos obtenidos -->
     <div class="result-container">
       <h2>Resultados</h2>
       <div id="resultDisplay" class="results">
+        <!-- Lugar donde se inyectan dinámicamente los resultados vía JS -->
         Los resultados aparecerán aquí.
       </div>
     </div>
   </div>
 
+  <!-- Lógica de aplicación: maneja la búsqueda y renderizado -->
   <script type="module" src="js/index/main.js"></script>
 </body>
 </html>

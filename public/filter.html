@@ -4,56 +4,84 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Filtrar Proceso</title>
+
+  <!-- Estilos de la aplicación -->
   <link rel="stylesheet" href="css/base.css" />
   <link rel="stylesheet" href="css/filter.css" />
 </head>
 <body>
+  <!-- Encabezado de la sección de filtrado -->
   <header class="filter-header">
-    <h1>Process type filter</h1>
+    <h1>Filtrar tipo de proceso</h1>
   </header>
 
   <div class="filter-container">
+    <!-- Mensajes de error de validación o de la petición -->
+    <div id="filterError" class="filter-error"></div>
 
-    <!-- Contenedor donde mostraremos errores de validación o de la llamada -->
-    <div id="filterError" style="color: var(--secondary-color); margin-bottom: 0.5rem;"></div>
-
+    <!-- Formulario de filtros: tipo de proceso, palabras clave y rango temporal -->
     <form id="filterForm" action="#">
-      <!-- Process Type (readonly, se rellenará desde la querystring) -->
-      <label for="processType">Process Type</label>
+      <!-- Tipo de proceso (solo lectura, proviene de la query string) -->
+      <label for="processType">Tipo de proceso</label>
       <input type="text" id="processType" name="processType" readonly />
 
-      <!-- Keywords -->
-      <label for="keywords">Keywords</label>
-      <input type="text" id="keywords" name="keywords" placeholder="Introduce palabras clave" />
+      <!-- Filtrar por palabras clave -->
+      <label for="keywords">Palabras clave</label>
+      <input
+        type="text"
+        id="keywords"
+        name="keywords"
+        placeholder="Introduce palabras clave"
+      />
 
-      <!-- Start Date -->
-      <label for="startDate">Start Date</label>
-      <input type="datetime-local" id="startDate" name="startDate" step="1" />
+      <!-- Rango temporal -->
+      <label for="startDate">Fecha inicio</label>
+      <input
+        type="datetime-local"
+        id="startDate"
+        name="startDate"
+        step="1"
+      />
 
-      <!-- End Date -->
-      <label for="endDate">End Date</label>
-      <input type="datetime-local" id="endDate" name="endDate" step="1" />
+      <label for="endDate">Fecha fin</label>
+      <input
+        type="datetime-local"
+        id="endDate"
+        name="endDate"
+        step="1"
+      />
 
-      <!-- Botón de “Aplicar Filtro” -->
-      <button type="submit">Aplicar Filtro</button>
+      <!-- Botón para aplicar el filtro -->
+      <button type="submit">Aplicar filtro</button>
     </form>
 
-    <!-- Contenedor de botón “Seleccionar todo”, “View Observations” y contador -->
+    <!-- Controles sobre los resultados: selección masiva, visualización y contador -->
     <div class="results-header" style="display: none;">
       <div class="results-header-buttons">
-        <!-- Botón pequeño para seleccionar todo -->
-        <button id="selectAllButton" class="select-all-btn-small">Seleccionar todo</button>
-        <!-- Nuevo botón View Observations -->
-        <button id="viewObservationsButton" class="view-obs-btn-small">View Observations</button>
+        <button
+          id="selectAllButton"
+          class="select-all-btn-small"
+          title="Seleccionar o deseleccionar todos"
+        >
+          Seleccionar todo
+        </button>
+        <button
+          id="viewObservationsButton"
+          class="view-obs-btn-small"
+          title="Ver observaciones de las filas seleccionadas"
+        >
+          Ver observaciones
+        </button>
       </div>
-      
+      <!-- Contador de resultados encontrados -->
       <div id="resultsCount" class="results-count"></div>
     </div>
 
-    <!-- Contenedor donde mostraremos resultados o errores -->
+    <!-- Aquí se inyectan los resultados del filtro -->
     <div id="filterResults" class="filter-results"></div>
   </div>
 
-  <script src="js/filter/filter.js" type="module"></script>
+  <!-- Lógica del módulo de filtrado -->
+  <script type="module" src="js/filter/filter.js"></script>
 </body>
 </html>
