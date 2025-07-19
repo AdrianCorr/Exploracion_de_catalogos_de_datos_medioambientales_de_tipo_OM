@@ -46,12 +46,3 @@ export function showModal(titleText, contentElement) {
   // 6) Insertamos el overlay al final de <body>
   document.body.appendChild(overlay);
 }
-
-/**
- * Función auxiliar que cierra TODOS los modales creados (quita todos los overlays).
- * Útil para un futuro “Cerrar todo”.
- */
-
-/*export function hideAllModals() {
-  document.querySelectorAll(".modal-overlay").forEach((overlay) => overlay.remove());
-}*/

@@ -466,14 +466,8 @@ export function renderResults(data) {
       const url = `filter.html?processType=${encodeURIComponent(process.name)}`;
       window.open(url, "_blank");
     });
-
-    // Si prefieres, puedes colocar el botón dentro del detalle en lugar
-    // de fuera; aquí lo agregamos al final de la sección para que siempre
-    // sea visible (o modifícalo según tu diseño).
+    // Añadimos el botón al header del proceso
     section.appendChild(filterBtn);
-
-    // Finalmente, añadimos la sección completa al contenedor de resultados
-    container.appendChild(section);
 
     // Finalmente, añadimos la sección completa al contenedor de resultados
     container.appendChild(section);
