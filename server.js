@@ -1,22 +1,27 @@
-const express = require("express"); // Importa el framework Express para crear el servidor web
-const fetch = require("node-fetch"); // Importa node-fetch para realizar solicitudes HTTP
-const cors = require("cors"); // Importa CORS para permitir solicitudes desde otros dominios
-const path = require("path"); // Importa path para manejar rutas de archivos y directorios
+/**
+ * Módulos principales:
+ * - express: servidor HTTP
+ * - node-fetch: cliente HTTP para llamadas a APIs externas
+ * - cors: habilita CORS en todas las rutas
+ * - path: gestión de rutas de ficheros
+ */
+const express = require("express");
+const fetch = require("node-fetch");
+const cors = require("cors");
+const path = require("path");
 
+// Crea una instancia de la aplicación Express
+const app = express();
 
-const app = express(); // Crea una instancia de la aplicación Express
-
-
-app.use(cors()); // Habilita CORS para permitir peticiones desde cualquier origen
-
+// Permitir que nuestro frontend (en otro origen) haga llamadas a esta API
+app.use(cors());
 
 // Configura las credenciales de autorización en Base64 para las solicitudes a la API externa
 const AUTH_HEADER = {
   Authorization: "Basic " + Buffer.from("ccmm:ccmm2024").toString("base64")
 }; 
 
-
-// Configura la política de seguridad de contenido (CSP) para permitir Leaflet, Font-Awesome y Leaflet Draw desde CDN
+// Política CSP: permitimos recursos solo de nuestro servidor y de estos CDNs
 app.use((req, res, next) => {
   res.setHeader(
     "Content-Security-Policy",
@@ -35,23 +40,26 @@ app.use((req, res, next) => {
   next();
 });
 
-
-
-
-// Sirve archivos estáticos desde la carpeta "public"
+/**
+ * Contenido público:
+ * - Archivos estáticos en /public
+ * - index.html en la raíz
+ */
 app.use(express.static(path.join(__dirname, "public")));
-
-
-// Ruta principal que sirve el archivo index.html
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
 
-////////////////////////////////////////////////////////////////////////////
-// Ruta API para obtener tipos de procesos desde una API externa
+/**
+ * GET /api/process-types
+ * Proxy a https://tec.citius.usc.es/ccmm/api/process-types
+ * Query params:
+ *  - vocabulary (string)
+ *  - searchTerm (string)
+ */
 app.get("/api/process-types", async (req, res) => {
-  const { vocabulary, searchTerm } = req.query; // Obtiene los parámetros 'vocabulary' y 'searchTerm' de la URL
+  const { vocabulary, searchTerm } = req.query;
 
   try {
     const response = await fetch(
@@ -59,18 +67,22 @@ app.get("/api/process-types", async (req, res) => {
       { headers: AUTH_HEADER }
     );
 
-    const data = await response.json(); // Convierte la respuesta en JSON
-    res.json(data); // Devuelve los datos obtenidos como respuesta
+    const data = await response.json();
+    res.json(data);
   } catch (error) {
-    res.status(500).json({ error: error.message }); // Manejo de errores en caso de fallo en la solicitud
+    res.status(500).json({ error: error.message });
   }
 });
 
 
-////////////////////////////////////////////////////////////////////////////
-// Nueva ruta API para obtener un tipo de dato por nombre
+/**
+ * GET /api/data-type-by-name
+ * Proxy a https://tec.citius.usc.es/ccmm/api/data-type-by-name
+ * Query params:
+ *  - dataTypeName (string)
+ */
 app.get("/api/data-type-by-name", async (req, res) => {
-  const dataTypeName = req.query.dataTypeName; // Obtiene el parámetro 'dataTypeName' de la URL
+  const dataTypeName = req.query.dataTypeName;
 
   if (!dataTypeName) {
     return res.status(400).json({ error: "El parámetro 'dataTypeName' es requerido." });
@@ -86,18 +98,22 @@ app.get("/api/data-type-by-name", async (req, res) => {
       throw new Error(`Error en la solicitud: ${response.statusText}`);
     }
 
-    const data = await response.json(); // Convierte la respuesta en JSON
-    res.json(data); // Devuelve los datos obtenidos como respuesta
+    const data = await response.json();
+    res.json(data);
   } catch (error) {
-    res.status(500).json({ error: error.message }); // Manejo de errores en caso de fallo en la solicitud
+    res.status(500).json({ error: error.message });
   }
 });
 
 
-////////////////////////////////////////////////////////////////////////////
-// Nueva ruta API para obtener un tipo de dato por nombre
+/**
+ * GET /api/feature-type-by-name
+ * Proxy a https://tec.citius.usc.es/ccmm/api/feature-type-by-name
+ * Query params:
+ *  - featureTypeName (string)
+ */
 app.get("/api/feature-type-by-name", async (req, res) => {
-  const featureTypeName = req.query.featureTypeName; // Obtiene el parámetro 'featureTypeName' de la URL
+  const featureTypeName = req.query.featureTypeName;
 
   if (!featureTypeName) {
     return res.status(400).json({ error: "El parámetro 'featureTypeName' es requerido." });
@@ -113,16 +129,23 @@ app.get("/api/feature-type-by-name", async (req, res) => {
       throw new Error(`Error en la solicitud: ${response.statusText}`);
     }
 
-    const data = await response.json(); // Convierte la respuesta en JSON
-    res.json(data); // Devuelve los datos obtenidos como respuesta
+    const data = await response.json();
+    res.json(data);
   } catch (error) {
-    res.status(500).json({ error: error.message }); // Manejo de errores en caso de fallo en la solicitud
+    res.status(500).json({ error: error.message });
   }
 });
 
 
-////////////////////////////////////////////////////////////////////////////
-// Filtrar procesos según criterios
+/**
+ * GET /api/filter-process
+ * Proxy a https://tec.citius.usc.es/ccmm/api/filter-process
+ * Query params:
+ *  - processTypeName (string)
+ *  - keywordFilter (string)
+ *  - startTime (string)
+ *  - endTime (string)
+ */
 app.get("/api/filter-process", async (req, res) => {
   const { processTypeName, keywordFilter, startTime, endTime } = req.query;
 
@@ -153,10 +176,16 @@ app.get("/api/filter-process", async (req, res) => {
 });
 
 
-////////////////////////////////////////////////////////////////////////////
-// Nueva ruta API para filtrar Feature Types mediante criterios
+/**
+ * GET /api/filter-feature-of-interest
+ * Proxy a https://tec.citius.usc.es/ccmm/api/filter-feature-of-interest
+ * Query params:
+ *  - featureTypeName (string)
+ *  - keywordFilter (string)
+ *  - geometryFilter (string)
+ */
 app.get("/api/filter-feature-of-interest", async (req, res) => {
-  const { featureTypeName, keywordFilter, geometryFilter } = req.query; // Obtiene los parámetros 'featureTypeName', 'keywordFilter' y 'geometryFilter' de la URL
+  const { featureTypeName, keywordFilter, geometryFilter } = req.query;
 
   if (!featureTypeName) {
     return res.status(400).json({ error: "El parámetro 'featureTypeName' es requerido." });
@@ -169,23 +198,29 @@ app.get("/api/filter-feature-of-interest", async (req, res) => {
 
   try {
     const response = await fetch(url.toString(), {
-      headers: AUTH_HEADER, // Autenticación en base64
+      headers: AUTH_HEADER,
     });
 
     if (!response.ok) {
       throw new Error(`Error en la solicitud: ${response.statusText}`);
     }
 
-    const data = await response.json(); // Convierte la respuesta en JSON
-    res.json(data); // Devuelve los datos obtenidos como respuesta
+    const data = await response.json();
+    res.json(data);
   } catch (error) {
-    res.status(500).json({ error: error.message }); // Manejo de errores en caso de fallo en la solicitud
+    res.status(500).json({ error: error.message });
   }
 });
 
 
-////////////////////////////////////////////////////////////////////////////
-// Ruta API para obtener un proceso por ID
+/**
+ * GET /api/process-by-id
+ * Proxy a https://tec.citius.usc.es/ccmm/api/process-by-id
+ * Query params:
+ *  - processTypeName (string)
+ *  - id (string)
+ * - timeFilter (string, opcional)
+ */
 app.get("/api/process-by-id", async (req, res) => {
   const { processTypeName, id, timeFilter } = req.query;
 
@@ -215,8 +250,13 @@ app.get("/api/process-by-id", async (req, res) => {
 });
 
 
-////////////////////////////////////////////////////////////////////////////
-// Ruta API para obtener un Feature of Interest por su ID
+/**
+ * GET /api/feature-of-interest-by-id
+ * Proxy a https://tec.citius.usc.es/ccmm/api/feature-of-interest-by-id
+ * Query params:
+ *  - featureTypeName (string)
+ *  - fid (string)
+ */
 app.get("/api/feature-of-interest-by-id", async (req, res) => {
   const { featureTypeName, fid } = req.query;
 
@@ -245,95 +285,110 @@ app.get("/api/feature-of-interest-by-id", async (req, res) => {
 });
 
 
-////////////////////////////////////////////////////////////////////////////
-// Ruta API para consultar Geoserver (proxy)
+/**
+ * GET /api/geoserver-data
+ * Proxy a Geoserver WFS para obtener features filtrados.
+ * Query params:
+ *  - typeName (string)
+ *  - procedure (string)
+ *  - startTime (string)
+ *  - endTime (string)
+ *  - bbox (string)
+ */
 app.get("/api/geoserver-data", async (req, res) => {
   const { typeName, procedure, startTime, endTime, bbox } = req.query;
+
   if (!typeName) {
-    return res.status(400).json({ error: "Falta parámetro typeName." });
+    return res
+      .status(400)
+      .json({ error: "El parámetro 'typeName' es requerido." });
   }
 
-  // 1) Montar filtro CQL (procedure sin comillas)
-  const cql = [];
-  if (bbox)      cql.push(`BBOX(shape, ${bbox})`);
-  if (startTime) cql.push(`phenomenon_time >= '${startTime}'`);
-  if (endTime)   cql.push(`phenomenon_time <= '${endTime}'`);
-  // Múltiples procedure
-  if (procedure) {
-    // separamos por coma y quitamos espacios
-    const procs = procedure.split(",").map(s => s.trim());
-    if (procs.length > 1) {
-      // IN para varios valores
-      cql.push(`procedure IN (${procs.join(",")})`);
-    } else {
-      // igualdad para uno solo
-      cql.push(`procedure = ${procs[0]}`);
+  // Construye la expresión CQL a partir de los parámetros recibidos
+  function buildCqlFilter({ bbox, startTime, endTime, procedure }) {
+    const filters = [];
+
+    if (bbox) {
+      filters.push(`BBOX(shape, ${bbox})`);
     }
-  }
-  const cqlFilter = cql.length ? cql.join(" AND ") : null;
+    if (startTime) {
+      filters.push(`phenomenon_time >= '${startTime}'`);
+    }
+    if (endTime) {
+      filters.push(`phenomenon_time <= '${endTime}'`);
+    }
+    if (procedure) {
+      const procs = procedure.split(",").map((p) => p.trim());
+      if (procs.length > 1) {
+        filters.push(`procedure IN (${procs.join(",")})`);
+      } else {
+        filters.push(`procedure = ${procs[0]}`);
+      }
+    }
 
-  const baseUrl = "https://tec.citius.usc.es/ccmm/geoserver/ccmm/ows";
+    return filters.length ? filters.join(" AND ") : null;
+  }
+
+  const cqlFilter = buildCqlFilter({ bbox, startTime, endTime, procedure });
+  const GEOSERVER_WFS_URL = "https://tec.citius.usc.es/ccmm/geoserver/ccmm/ows";
 
   try {
-    // 2) PETICIÓN HITS → solo para total real
+    // 1. Obtener total real de features (WFS GetFeature?resultType=hits)
     const hitsParams = new URLSearchParams({
-      service:    "WFS",
-      version:    "1.0.0",
-      request:    "GetFeature",
+      service: "WFS",
+      version: "1.0.0",
+      request: "GetFeature",
       typeName,
-      resultType: "hits"
+      resultType: "hits",
+      ...(cqlFilter && { cql_filter: cqlFilter }),
     });
-    if (cqlFilter) hitsParams.append("cql_filter", cqlFilter);
-
-    const hitsUrl  = `${baseUrl}?${hitsParams.toString()}`;
-    const hitsResp = await fetch(hitsUrl);
-    if (!hitsResp.ok) throw new Error(`Hits HTTP ${hitsResp.status}`);
+    const hitsResp = await fetch(`${GEOSERVER_WFS_URL}?${hitsParams}`);
+    if (!hitsResp.ok) {
+      throw new Error(`Hits request failed (${hitsResp.status})`);
+    }
     const hitsText = await hitsResp.text();
-    let totalCount = (() => {
-      const m = hitsText.match(/numberOfFeatures="(\d+)"/);
-      return m ? Number(m[1]) : 0;
-    })();
+    let totalCount =
+      Number((hitsText.match(/numberOfFeatures="(\d+)"/) || [])[1]) || 0;
 
-    // 3) PETICIÓN DATOS → hasta 2000 features
+    // 2. Obtener hasta 2000 features en JSON
     const dataParams = new URLSearchParams({
-      service:      "WFS",
-      version:      "1.0.0",
-      request:      "GetFeature",
+      service: "WFS",
+      version: "1.0.0",
+      request: "GetFeature",
       typeName,
-      maxFeatures:  "2000",
-      outputFormat: "application/json"
+      maxFeatures: "2000",
+      outputFormat: "application/json",
+      ...(cqlFilter && { cql_filter: cqlFilter }),
     });
-    if (cqlFilter) dataParams.append("cql_filter", cqlFilter);
-
-    const dataUrl  = `${baseUrl}?${dataParams.toString()}`;
-    const dataResp = await fetch(dataUrl);
-    if (!dataResp.ok) throw new Error(`Data HTTP ${dataResp.status}`);
+    const dataResp = await fetch(`${GEOSERVER_WFS_URL}?${dataParams}`);
+    if (!dataResp.ok) {
+      throw new Error(`Data request failed (${dataResp.status})`);
+    }
     const dataJson = await dataResp.json();
 
-    // 4) Fallback si hits devolvió 0
+    // 3. Si la petición de hits devolvió 0, usar fallback desde el JSON
     if (totalCount === 0) {
-      if (typeof dataJson.totalFeatures === "number") {
+      if (Number.isInteger(dataJson.totalFeatures)) {
         totalCount = dataJson.totalFeatures;
       } else if (Array.isArray(dataJson.features)) {
         totalCount = dataJson.features.length;
       }
     }
 
-    // 5) Responder total real y features
-    res.json({
+    // 4. Responder con el total real y el array de features
+    return res.json({
       totalCount,
-      features: dataJson.features || []
+      features: dataJson.features || [],
     });
-
-  } catch (err) {
-    console.error("❌ Error en /api/geoserver-data:", err);
-    res.status(500).json({ error: err.message });
+  } catch (error) {
+    console.error("Error en /api/geoserver-data:", error);
+    return res.status(500).json({ error: error.message });
   }
 });
 
-
-////////////////////////////////////////////////////////////////////////////
-// Inicia el servidor en el puerto 3000
+/* * Inicia el servidor en el puerto 3000
+ * Muestra la URL en la consola cuando el servidor arranca
+ */
 app.listen(3000, () => {
-  console.log("http://localhost:3000"); // Muestra la URL en la consola cuando el servidor arranca
+  console.log("http://localhost:3000");
 });
