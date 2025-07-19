@@ -16,7 +16,7 @@ export function setupEventListeners() {
 
     document.getElementById("filterError").textContent = "";
     const resultsContainer = document.getElementById("filterResults");
-    resultsContainer.innerHTML = "";
+    resultsContainer.innerHTML = "<p class='loading-text'>Cargando...</p>";
 
     // Ocultar cabecera mientras no haya datos
     document.querySelector(".results-header").style.display = "none";

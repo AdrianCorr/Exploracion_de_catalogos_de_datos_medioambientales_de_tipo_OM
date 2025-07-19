@@ -17,6 +17,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // 2) Listener del botón “Buscar Procesos”
   const btn = document.getElementById("searchProcess");
   btn.addEventListener("click", async () => {
+    const resultsContainer = document.getElementById("resultDisplay");
+    resultsContainer.innerHTML = `<p class="loading-text">Cargando…</p>`;
     const vocabulary = document.getElementById("vocabulary").value;
     const searchTerm = document.getElementById("searchTerm").value;
 
