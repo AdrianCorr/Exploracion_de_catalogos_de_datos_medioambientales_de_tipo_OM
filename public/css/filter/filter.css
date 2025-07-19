@@ -45,7 +45,7 @@ body {
 
 /* Contenedor principal de FILTER */
 .filter-container {
-  width: 80%;
+  width: 90%;
   max-width: 1000px;
   margin: 0 auto;
   background: var(--card-bg);
@@ -258,9 +258,6 @@ body {
 
 /* Responsive ajustes */
 @media (max-width: 768px) {
-  .filter-container {
-    width: 90%;
-  }
   .results-header {
     flex-wrap: nowrap;
     flex-direction: row;
