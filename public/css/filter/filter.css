@@ -33,7 +33,7 @@ body {
   border-radius: 12px;
   margin-bottom: 0;
   box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-  width: 80%;
+  width: 90%;
   max-width: 1000px;
   margin-left: auto;
   margin-right: auto;
@@ -80,14 +80,9 @@ body {
   cursor: pointer;
   transition: background 0.2s;
 }
-.view-obs-btn-small {
-  background: var(--secondary-color);
-}
-.select-all-btn-small:hover {
-  background: var(--secondary-color);
-}
+.select-all-btn-small:hover,
 .view-obs-btn-small:hover {
-  background: var(--primary-color);
+  background: var(--secondary-color);
 }
 .select-all-btn-small.active {
   background: var(--secondary-color);
