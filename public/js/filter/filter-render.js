@@ -7,9 +7,12 @@ import {
   formatDate,
   formatDateWithSeconds,
 } from "./filter-utils.js";
-
 import { setupResultInteractions } from "./filter-events.js";
 
+/**
+ * Renderiza los resultados del filtro en forma de tabla.
+ * @param {Array} data - Array de objetos con processId y processDescription.
+ */
 export function renderResults(data) {
   const container = document.getElementById("filterResults");
   container.innerHTML = "";
@@ -17,7 +20,7 @@ export function renderResults(data) {
   const countContainer = document.getElementById("resultsCount");
   const headerContainer = document.querySelector(".results-header");
 
-  // Si no hay datos o array vacío
+  // Si no hay resultados, mostrar mensaje y ocultar controles
   if (!Array.isArray(data) || data.length === 0) {
     headerContainer.style.display = "none";
     countContainer.textContent = "0 resultados encontrados";
@@ -29,25 +32,26 @@ export function renderResults(data) {
     return;
   }
 
-  // Mostrar cabecera (contador + botones)
+  // Mostrar cabecera con botones y contador
   headerContainer.style.display = "flex";
 
-  // Calcular total de descripciones
+  // Calcular número total de descripciones de proceso
   const total = data.reduce(
-    (acc, item) =>
-      acc + (Array.isArray(item.processDescription) ? item.processDescription.length : 0),
+    (acum, item) =>
+      acum + (Array.isArray(item.processDescription) ? item.processDescription.length : 0),
     0
   );
-  countContainer.textContent = `${total} resultado${total !== 1 ? "s" : ""} encontrado${total !== 1 ? "s" : ""}`;
+  countContainer.textContent =
+    `${total} resultado${total !== 1 ? "s" : ""} encontrado${total !== 1 ? "s" : ""}`;
 
-  // Crear tabla
+  // Crear tabla de resultados
   const table = document.createElement("table");
   table.className = "filter-table";
 
-  // THEAD con columna vacía para checkbox
+  // Cabecera de la tabla
   const thead = document.createElement("thead");
   const headerRow = document.createElement("tr");
-  ["", "Process ID", "Ship", "Valid Interval"].forEach((col) => {
+  ["", "ID de Proceso", "Barco", "Intervalo válido"].forEach((col) => {
     headerRow.appendChild(createHeading("th", col));
   });
   thead.appendChild(headerRow);
@@ -55,41 +59,37 @@ export function renderResults(data) {
 
   const tbody = document.createElement("tbody");
 
+  // Construir filas por cada descripción de proceso
   data.forEach(({ processId, processDescription }) => {
     if (!Array.isArray(processDescription)) return;
 
     processDescription.forEach((desc) => {
-      const barco = desc.barco || "";
-      const validInterval = `${formatDateWithSeconds(desc.validTimeStart)} – ${formatDateWithSeconds(desc.validTimeEnd)}`;
-
-      // Fila principal
+      // Fila principal con checkbox y datos básicos
       const rowMain = document.createElement("tr");
       rowMain.className = "row-main";
 
-      // Celda con checkbox
       const tdCheckbox = document.createElement("td");
       const checkbox = document.createElement("input");
       checkbox.type = "checkbox";
       checkbox.className = "result-checkbox";
-
-      // RELLENAR data-start y data-end
       checkbox.dataset.start = desc.validTimeStart || "";
-      checkbox.dataset.end   = desc.validTimeEnd   || "";
-      checkbox.dataset.procedure = processId           || "";
-
-      // Evitar que el checkbox dispare la apertura del detalle
+      checkbox.dataset.end = desc.validTimeEnd || "";
+      checkbox.dataset.procedure = processId || "";
       checkbox.addEventListener("click", (e) => e.stopPropagation());
       tdCheckbox.appendChild(checkbox);
       rowMain.appendChild(tdCheckbox);
 
-      // Celdas con Process ID, Ship, Valid Interval
-      [processId, barco, validInterval].forEach((val) => {
+      // Celdas con información del proceso
+      const barco = desc.barco || "";
+      const validInterval =
+        `${formatDateWithSeconds(desc.validTimeStart)} – ${formatDateWithSeconds(desc.validTimeEnd)}`;
+      [processId, barco, validInterval].forEach((valor) => {
         const td = document.createElement("td");
-        td.textContent = val;
+        td.textContent = valor;
         rowMain.appendChild(td);
       });
 
-      // Fila de detalle (oculta inicialmente)
+      // Fila de detalle oculta inicialmente
       const rowDetail = document.createElement("tr");
       rowDetail.className = "row-detail hidden";
       const detailCell = document.createElement("td");
@@ -99,36 +99,46 @@ export function renderResults(data) {
       const detailContainer = document.createElement("div");
       detailContainer.className = "detail-content";
 
-      // Card de medición
+      // Tarjeta de datos de la medición
       const card = document.createElement("div");
       card.className = "measurement-card";
-      card.appendChild(createTitleWithSpan("Name", desc.nombre || "", "measurement-title-secondary"));
-
+      card.appendChild(
+        createTitleWithSpan("Nombre", desc.nombre || "", "measurement-title-secondary")
+      );
       if (desc.observaciones) {
-        card.appendChild(createTitleWithSpan("Observations", desc.observaciones, "measurement-title-secondary"));
+        card.appendChild(
+          createTitleWithSpan(
+            "Observaciones",
+            desc.observaciones,
+            "measurement-title-secondary"
+          )
+        );
       }
+      card.appendChild(createHeading("h3", "Equipo", "measurement-title"));
 
-      card.appendChild(createHeading("h3", "Equipment", "measurement-title"));
-
+      // Detalles del equipo
       if (desc.equipo) {
         const equipFields = [
           ["ID", desc.equipo.id],
-          ["Name", desc.equipo.nombre],
-          ["Manufacturer", desc.equipo.fabricante],
-          ["Responsible", desc.equipo.responsable],
-          ["Serial Number", desc.equipo.numero_serie],
-          ["Maintenance PNT", desc.equipo.pnt_mantenimiento],
-          ["Service Date", formatDate(desc.equipo.fecha_servicio)],
-          ["Reception Date", formatDate(desc.equipo.fecha_recepcion)],
-          ["Maintenance Period", `${desc.equipo.periodo_mantenimiento} months`],
+          ["Nombre", desc.equipo.nombre],
+          ["Fabricante", desc.equipo.fabricante],
+          ["Responsable", desc.equipo.responsable],
+          ["Número de serie", desc.equipo.numero_serie],
+          ["PNT mantenimiento", desc.equipo.pnt_mantenimiento],
+          ["Fecha servicio", formatDate(desc.equipo.fecha_servicio)],
+          ["Fecha recepción", formatDate(desc.equipo.fecha_recepcion)],
+          ["Período mantenimiento", `${desc.equipo.periodo_mantenimiento} meses`],
         ];
-        equipFields.forEach(([k, v]) => card.appendChild(createLabeledParagraph(k, v, "measurement-text")));
+        equipFields.forEach(([clave, valor]) =>
+          card.appendChild(createLabeledParagraph(clave, valor, "measurement-text"))
+        );
       }
-
       detailContainer.appendChild(card);
 
-      // Sección “Associated Sensors”
-      detailContainer.appendChild(createHeading("h3", "Associated Sensors", "measurement-title"));
+      // Sección de sensores asociados
+      detailContainer.appendChild(
+        createHeading("h3", "Sensores asociados", "measurement-title")
+      );
       const sensorContainer = document.createElement("div");
       sensorContainer.className = "sensor-cards-container";
 
@@ -136,34 +146,37 @@ export function renderResults(data) {
         desc.sensores.forEach((sensor) => {
           const sensorCard = document.createElement("div");
           sensorCard.className = "sensor-card";
-
-          sensorCard.appendChild(createHeading("h5", sensor.nombre || sensor.id, "sensor-name"));
+          sensorCard.appendChild(
+            createHeading("h5", sensor.nombre || sensor.id, "sensor-name")
+          );
 
           const fields = [
-            ["Serial Number", sensor.numero_serie],
-            ["Range", sensor.rango_medida],
-            ["Scale Division", sensor.division_escala],
-            ["Service Date", formatDate(sensor.fecha_servicio)],
-            ["Reception Date", formatDate(sensor.fecha_recepcion)],
-            ["Calibration PNT", sensor.pnt_calibracion],
-            ["Maintenance PNT", sensor.pnt_mantenimiento],
-            ["Calibration Period", sensor.periodo_calibracion],
-            ["Maintenance Period", sensor.periodo_mantenimiento],
+            ["Número de serie", sensor.numero_serie],
+            ["Rango", sensor.rango_medida],
+            ["División de escala", sensor.division_escala],
+            ["Fecha servicio", formatDate(sensor.fecha_servicio)],
+            ["Fecha recepción", formatDate(sensor.fecha_recepcion)],
+            ["PNT calibración", sensor.pnt_calibracion],
+            ["PNT mantenimiento", sensor.pnt_mantenimiento],
+            ["Período calibración", sensor.periodo_calibracion],
+            ["Período mantenimiento", sensor.periodo_mantenimiento],
           ];
 
           const fieldsContainer = document.createElement("div");
           fieldsContainer.className = "sensor-fields";
-          fields.forEach(([k, v]) => fieldsContainer.appendChild(createLabeledParagraph(k, v)));
+          fields.forEach(([clave, valor]) =>
+            fieldsContainer.appendChild(createLabeledParagraph(clave, valor))
+          );
           sensorCard.appendChild(fieldsContainer);
           sensorContainer.appendChild(sensorCard);
         });
       }
-
       detailContainer.appendChild(sensorContainer);
+
       detailCell.appendChild(detailContainer);
       rowDetail.appendChild(detailCell);
 
-      // Solo abrir/cerrar detalle al hacer clic en la fila (no en checkbox)
+      // Toggle de detalle al hacer clic en la fila principal
       rowMain.addEventListener("click", () => rowDetail.classList.toggle("hidden"));
 
       tbody.appendChild(rowMain);
@@ -174,6 +187,6 @@ export function renderResults(data) {
   table.appendChild(tbody);
   container.appendChild(table);
 
-  // Activar interacciones en botones/checkboxes
+  // Habilitar selección y visualización tras el renderizado
   setupResultInteractions();
 }

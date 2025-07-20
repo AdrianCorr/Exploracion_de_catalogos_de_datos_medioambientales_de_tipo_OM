@@ -143,11 +143,11 @@ app.get("/api/feature-type-by-name", async (req, res) => {
  * Query params:
  *  - processTypeName (string)
  *  - keywordFilter (string)
- *  - startTime (string)
- *  - endTime (string)
+ *  - startDate (string)
+ *  - endDate (string)
  */
 app.get("/api/filter-process", async (req, res) => {
-  const { processTypeName, keywordFilter, startTime, endTime } = req.query;
+  const { processTypeName, keywordFilter, startDate, endDate } = req.query;
 
   if (!processTypeName) {
     return res.status(400).json({ error: "El parámetro 'processTypeName' es requerido." });
@@ -156,8 +156,8 @@ app.get("/api/filter-process", async (req, res) => {
   const url = new URL("https://tec.citius.usc.es/ccmm/api/filter-process");
   url.searchParams.append("processTypeName", processTypeName);
   if (keywordFilter) url.searchParams.append("keywordFilter", keywordFilter);
-  if (startTime) url.searchParams.append("startTime", startTime);
-  if (endTime) url.searchParams.append("endTime", endTime);
+  if (startDate) url.searchParams.append("startTime", startDate);
+  if (endDate) url.searchParams.append("endTime", endDate);
 
   try {
     const response = await fetch(url.toString(), {
