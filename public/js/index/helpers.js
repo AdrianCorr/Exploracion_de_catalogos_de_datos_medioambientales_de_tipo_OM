@@ -1,6 +1,12 @@
 // public/js/helpers.js
 
-// Mapa de vocabularios para traducciones
+/**
+ * Mapa de códigos de idioma a nombres de vocabulario para traducciones.
+ * @type {{[code: string]: string}}
+ * - es: "castellano"
+ * - gl: "galego"
+ * - en: "english"
+ */
 export const vocabMap = {
   es: "castellano",
   gl: "galego",

@@ -1,23 +1,32 @@
 // public/js/observer.js
 
 /**
- * Inicializa un MutationObserver que vigila cambios en #resultDisplay.
- * onJsonChangeCallback: función que recibirá el JSON parseado cada vez
- *                     que cambie el contenido del div.
+ * Inicializa un MutationObserver para detectar cambios en el contenedor de resultados.
+ * Cuando el texto interno cambia y es JSON válido, invoca la función de callback con el objeto parseado.
+ *
+ * @param {function(Object): void} onJsonChangeCallback  Función que recibe el JSON parseado.
  */
 export function initResultObserver(onJsonChangeCallback) {
-  const disp = document.getElementById("resultDisplay");
-  const obs = new MutationObserver((mutations) => {
-    mutations.forEach((m) => {
-      if (["childList", "characterData"].includes(m.type)) {
+  const targetNode = document.getElementById("resultDisplay");
+
+  // Crear observer que vigila adición/eliminación de nodos y cambios de texto
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      if (mutation.type === "childList" || mutation.type === "characterData") {
         try {
-          const json = JSON.parse(disp.textContent);
+          const json = JSON.parse(targetNode.textContent);
           onJsonChangeCallback(json);
         } catch {
-          // Si el contenido no es JSON válido, simplemente ignorar.
+          // Ignorar contenido no JSON
         }
       }
     });
   });
-  obs.observe(disp, { childList: true, subtree: true, characterData: true });
+
+  // Iniciar la observación en el contenedor, incluyendo cambios en nodos y texto
+  observer.observe(targetNode, {
+    childList: true,
+    subtree: true,
+    characterData: true,
+  });
 }
