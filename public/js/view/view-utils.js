@@ -53,3 +53,69 @@ export function drawPointFeaturesOnMap(map, features) {
     }
   });
 }
+
+/**
+ * Extrae los parámetros de la URL para filtrar vistas.
+ * Devuelve un objeto con los parámetros:
+ * - procedure: Nombre del procedimiento (vacío si no se especifica).
+ * - startDate: Fecha de inicio (vacío si no se especifica).
+ * - endDate: Fecha de fin (vacío si no se especifica).
+ * - featureTypeName: Nombre del tipo de feature (por defecto "ctd_intecmar.estacion").
+ */
+export function parseViewParams() {
+  const p = new URLSearchParams(window.location.search);
+  return {
+    procedure:      p.get("procedure")       || "",
+    startDate:      p.get("startDate")       || "",
+    endDate:        p.get("endDate")         || "",
+    featureTypeName:p.get("featureTypeName") || "ctd_intecmar.estacion"
+  };
+}
+
+
+/**
+ * Devuelve un color de la paleta según índice.
+ * La paleta tiene hasta 13 colores; cicla si i >= length.
+ * @param {number} i Índice de dataset.
+ * @returns {string} Color en hex.
+ */
+export function getColor(i) {
+  const colors = [
+    "#3366cc","#dc3912","#ff9900","#109618","#990099",
+    "#0099c6","#dd4477","#66aa00","#b82e2e","#316395",
+    "#994499","#22aa99","#aaaa11"
+  ];
+  return colors[i % colors.length];
+}
+
+/**
+ * Agrupa un array de GeoJSON Features por su nombre (propiedad `properties.nombre`),
+ * calculando además campos auxiliares (resultTime, procedure).
+ * @param {Object[]} features Array de GeoJSON Features
+ * @returns {Record<string, { observations: Object[], resultTime: string, procedure: string }>}
+ */
+export function groupByStation(features) {
+  return features.reduce((acc, f) => {
+    const { nombre, result_time, procedure } = f.properties;
+    const key = nombre || "Sin nombre";
+    if (!acc[key]) acc[key] = { observations: [], resultTime: result_time, procedure };
+    acc[key].observations.push(f);
+    return acc;
+  }, {});
+}
+
+/**
+ * Convierte un array de objetos en un string CSV.
+ * Usa la primera fila como cabecera con todas las claves.
+ */
+export function toCSV(arr) {
+  if (!arr.length) return "";
+  const keys = Object.keys(arr[0]);
+  const lines = [
+    keys.join(","), ...arr.map(obj => keys.map(k => {
+      const cell = obj[k] != null ? String(obj[k]) : "";
+      return `"${cell.replace(/"/g, '""')}"`;
+    }).join(","))
+  ];
+  return lines.join("\r\n");
+}

@@ -2,7 +2,11 @@
 
 import {
   fetchFilterFeatureOfInterest,
-  drawPointFeaturesOnMap
+  drawPointFeaturesOnMap,
+  getColor,
+  toCSV,
+  groupByStation,
+  parseViewParams
 } from "./view-utils.js";
 
 let currentChart = null;
@@ -34,12 +38,17 @@ function createJsonModal() {
   modal.innerHTML = `
     <div class="modal-header">
       <h3>JSON Data</h3>
+      <!-- Contador de elementos -->
+      <div id="jsonCount">Items: <span id="jsonCountNum">0</span></div>
       <button class="modal-close" aria-label="Cerrar">&times;</button>
     </div>
     <div class="modal-body">
-      <!-- Contador de elementos -->
-      <div id="jsonCount">Items: <span id="jsonCountNum">0</span></div>
       <pre id="jsonContent"></pre>
+    </div>
+    <!-- Acciones de descarga: siempre visibles -->
+    <div class="modal-actions">
+      <button id="downloadJsonBtn">Descargar JSON</button>
+      <button id="downloadCsvBtn">Descargar CSV</button>
     </div>
   `;
   document.body.appendChild(modal);
@@ -122,8 +131,34 @@ function showJsonModal(data) {
 
   const raw = JSON.stringify(propsArray, null, 2).replace(/"([^"]+)":/g, '"<span class="json-key">$1</span>":');
   const content = document.getElementById("jsonContent");
-
   content.innerHTML = raw;
+
+  // Botones de descarga
+  const btnJson = document.getElementById("downloadJsonBtn");
+  const btnCsv  = document.getElementById("downloadCsvBtn");
+
+  // Descargar JSON puro
+  btnJson.onclick = () => {
+    const blob = new Blob([JSON.stringify(propsArray, null, 2)], { type: "application/json" });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement("a");
+    a.href     = url;
+    a.download = "data.json";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // Descargar CSV
+  btnCsv.onclick = () => {
+    const csv = toCSV(propsArray);
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement("a");
+    a.href     = url;
+    a.download = "data.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   showModal(document.getElementById("jsonModal"));
 }
@@ -175,21 +210,6 @@ function showChartForStation(data) {
   updateChart();
 }
 
-/**
- * Devuelve un color de la paleta según índice.
- * La paleta tiene hasta 13 colores; cicla si i >= length.
- * @param {number} i Índice de dataset.
- * @returns {string} Color en hex.
- */
-function getColor(i) {
-  const colors = [
-    "#3366cc","#dc3912","#ff9900","#109618","#990099",
-    "#0099c6","#dd4477","#66aa00","#b82e2e","#316395",
-    "#994499","#22aa99","#aaaa11"
-  ];
-  return colors[i % colors.length];
-}
-
 // Inicialización de modales
 createJsonModal();
 createChartModal();
@@ -203,11 +223,7 @@ createChartModal();
  */
 document.addEventListener("DOMContentLoaded", async () => {
   // 1. Parsear parámetros de la URL y asignarlos a variables
-  const params          = new URLSearchParams(window.location.search);
-  const procedure       = params.get("procedure")        || "";
-  const startDate       = params.get("startDate")        || "";
-  const endDate         = params.get("endDate")          || "";
-  const featureTypeName = params.get("featureTypeName")  || "ctd_intecmar.estacion";
+  const { procedure, startDate, endDate, featureTypeName } = parseViewParams();
 
   // 2. Rellenar los inputs del formulario con los valores obtenidos
   document.getElementById("procedure").value = procedure;
@@ -294,7 +310,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // Indicar estado de “cargando”
     resultsDiv.innerHTML = "Cargando…";
-    counterSpan.textContent = `(0/0)`;
+    counterSpan.textContent = "Resultados mostrados: 0 Resultados encontrados: 0";
 
     // Recoger valores del formulario y construir query params
     const procedureVal = document.getElementById("procedure").value;
@@ -326,23 +342,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         ? json.totalCount
         : (json.features || []).length;
       const features = json.features || [];
-      const grouped = {};
-      for (const f of features) {
-        const props = f.properties;
-        const name = props.nombre || "Sin nombre";
-        if (!grouped[name]) {
-          grouped[name] = {
-            observations: [],
-            resultTime: props.result_time,
-            procedure: props.procedure
-          };
-        }
-        grouped[name].observations.push(f);
-      }
+      const grouped = groupByStation(json.features || []);
 
       // Actualizar contador y mostrar tabla o mensaje de “no resultados”
       const itemsShown = Object.values(grouped).reduce((sum, g) => sum + g.observations.length, 0);
-      counterSpan.textContent = `(${itemsShown}/${itemsTotal})`;
+      counterSpan.textContent = `Resultados mostrados: ${itemsShown} Resultados encontrados: ${itemsTotal}`;
 
       if (itemsTotal === 0) {
         resultsDiv.innerHTML = `<div>No results found.</div>`;
@@ -362,12 +366,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       for (const [name, grp] of Object.entries(grouped)) {
         const { observations, resultTime, procedure } = grp;
         // Calcular rango de tiempo y profundidad
-        const times  = observations
-                        .map(o => new Date(o.properties.phenomenon_time).getTime())
-                        .filter(Boolean);
-        const depths = observations
-                        .map(o => parseFloat(o.properties.profundidad))
-                        .filter(n => !isNaN(n));
+        const times  = observations.map(o => new Date(o.properties.phenomenon_time).getTime()).filter(Boolean);
+        const depths = observations.map(o => parseFloat(o.properties.profundidad)).filter(n => !isNaN(n));
         const pMin   = new Date(Math.min(...times));
         const pMax   = new Date(Math.max(...times));
         const dMin   = Math.min(...depths);
@@ -398,7 +398,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     } catch (err) {
       resultsDiv.innerHTML    = `<div class="error-msg">Error al consultar Geoserver: ${err.message}</div>`;
-      counterSpan.textContent = `(0/0)`;
+      counterSpan.textContent = `Resultados mostrados: 0 Resultados encontrados: 0`;
     }
   });
 
