@@ -145,7 +145,7 @@ export function setupResultInteractions() {
 
       // Calcular fecha máxima de inicio y mínima de fin
       const minStart = startTimes.reduce((a, b) => a < b ? a : b);
-      const maxEnd = endTimes.reduce((a, b) => a > b ? a : b);
+      const maxEnd = endTimes.map(ts => ts.split('.')[0]).reduce((a, b) => a > b ? a : b);
 
       // Eliminar duplicados de procedureIds
       const uniqueProcedures = Array.from(new Set(procedureIds.filter(id => id)));
