@@ -115,18 +115,29 @@ export function setupResultInteractions() {
         return;
       }
 
+      const processType = document.getElementById("processType").value;
       const startTimes = [];
       const endTimes = [];
       const procedureIds = [];
 
       checked.forEach(cb => {
         const st = cb.dataset.start || "";
-        const en = cb.dataset.end || "";
+        let en = cb.dataset.end || "";
         const id = cb.dataset.procedure || "";
-        if (!st || !en) {
-          console.error("Falta data-start o data-end en:", cb);
+        if (!st) {
+          console.error("Falta data-start en:", cb);
           alert("Error interno: faltan datos de fecha en alguna fila seleccionada.");
           return;
+        }
+        // Para WRF/ROMS asumimos fin = ahora
+        if (!en) {
+          if (processType === "wrf_meteogalicia.modelo_wrf" || processType === "roms_meteogalicia.modelo_roms") {
+            en = new Date().toISOString();
+          } else {
+            console.error("Falta data-end en:", cb);
+            alert("Error interno: faltan datos de fecha en alguna fila seleccionada.");
+            return;
+          }
         }
         startTimes.push(st);
         endTimes.push(en);
