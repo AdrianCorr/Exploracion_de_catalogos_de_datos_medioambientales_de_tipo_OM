@@ -139,14 +139,17 @@ export function setupResultInteractions() {
       }
 
       // Calcular fecha máxima de inicio y mínima de fin
-      const maxStart = startTimes.reduce((a, b) => a < b ? a : b);
-      const minEnd = endTimes.reduce((a, b) => a > b ? a : b);
+      const minStart = startTimes.reduce((a, b) => a < b ? a : b);
+      const maxEnd = endTimes.reduce((a, b) => a > b ? a : b);
+
+      // Eliminar duplicados de procedureIds
+      const uniqueProcedures = Array.from(new Set(procedureIds.filter(id => id)));
 
       // Abrir nueva ventana con parámetros filtrados
       const params = new URLSearchParams({
-        procedure: procedureIds.join(","),
-        startDate: maxStart,
-        endDate: minEnd
+        procedure: uniqueProcedures.join(","),
+        startDate: minStart,
+        endDate: maxEnd
       });
       window.open(`view.html?${params.toString()}`, "_blank");
     };
