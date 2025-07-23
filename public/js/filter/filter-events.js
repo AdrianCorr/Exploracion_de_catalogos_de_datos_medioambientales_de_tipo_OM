@@ -139,8 +139,8 @@ export function setupResultInteractions() {
       }
 
       // Calcular fecha máxima de inicio y mínima de fin
-      const maxStart = startTimes.reduce((a, b) => a > b ? a : b);
-      const minEnd = endTimes.reduce((a, b) => a < b ? a : b);
+      const maxStart = startTimes.reduce((a, b) => a < b ? a : b);
+      const minEnd = endTimes.reduce((a, b) => a > b ? a : b);
 
       // Abrir nueva ventana con parámetros filtrados
       const params = new URLSearchParams({
