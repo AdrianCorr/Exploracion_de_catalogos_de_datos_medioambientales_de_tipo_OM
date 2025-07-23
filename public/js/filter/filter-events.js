@@ -129,15 +129,9 @@ export function setupResultInteractions() {
           alert("Error interno: faltan datos de fecha en alguna fila seleccionada.");
           return;
         }
-        // Para WRF/ROMS asumimos fin = ahora
+        // En caso de no haber fecha de fin, usar la actual
         if (!en) {
-          if (processType === "wrf_meteogalicia.modelo_wrf" || processType === "roms_meteogalicia.modelo_roms") {
-            en = new Date().toISOString();
-          } else {
-            console.error("Falta data-end en:", cb);
-            alert("Error interno: faltan datos de fecha en alguna fila seleccionada.");
-            return;
-          }
+          en = new Date().toISOString();
         }
         startTimes.push(st);
         endTimes.push(en);
@@ -160,7 +154,8 @@ export function setupResultInteractions() {
       const params = new URLSearchParams({
         procedure: uniqueProcedures.join(","),
         startDate: minStart,
-        endDate: maxEnd
+        endDate: maxEnd,
+        model: processType
       });
       window.open(`view.html?${params.toString()}`, "_blank");
     };

@@ -4,13 +4,13 @@
  * Solicita features de interés al servidor.
  * Si no se proporciona geometryFilter, devuelve todas las features del tipo.
  *
- * @param {string} featureTypeName   Nombre del tipo de feature.
+ * @param {string} model   Nombre del tipo de feature.
  * @param {string} [geometryFilter]  Filtro de geometría (GeoJSON, WKT).
  * @returns {Promise<Object[]>}      Array de features filtradas.
  * @throws {Error}                  Si la respuesta HTTP no es exitosa.
  */
-export async function fetchFilterFeatureOfInterest(featureTypeName, geometryFilter = "") {
-  const params = new URLSearchParams({ featureTypeName });
+export async function fetchFilterFeatureOfInterest(model, geometryFilter = "") {
+  const params = new URLSearchParams({ model });
   if (geometryFilter) {
     params.append("geometryFilter", geometryFilter);
   }
@@ -60,7 +60,7 @@ export function drawPointFeaturesOnMap(map, features) {
  * - procedure: Nombre del procedimiento (vacío si no se especifica).
  * - startDate: Fecha de inicio (vacío si no se especifica).
  * - endDate: Fecha de fin (vacío si no se especifica).
- * - featureTypeName: Nombre del tipo de feature (por defecto "ctd_intecmar.estacion").
+ * - model: Nombre del tipo de feature
  */
 export function parseViewParams() {
   const p = new URLSearchParams(window.location.search);
@@ -68,7 +68,7 @@ export function parseViewParams() {
     procedure:      p.get("procedure")       || "",
     startDate:      p.get("startDate")       || "",
     endDate:        p.get("endDate")         || "",
-    featureTypeName:p.get("featureTypeName") || "ctd_intecmar.estacion"
+    model:p.get("model") || "ctd_intecmar."
   };
 }
 

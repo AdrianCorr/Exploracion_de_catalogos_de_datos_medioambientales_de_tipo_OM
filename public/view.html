@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CTD Viewer</title>
+  <title>Viewer</title>
 
   <!-- CSS de terceros: Leaflet, Leaflet Draw, Font Awesome y ZoomHome -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
@@ -19,7 +19,7 @@
 <body>
   <!-- Cabecera de la aplicación -->
   <header class="view-header">
-    <h1>CTD Viewer</h1>
+    <h1 id="pageTitle">CTD Viewer</h1>
   </header>
 
   <section class="view-container">
@@ -27,10 +27,13 @@
     <details open class="view-section">
       <summary class="view-summary">Filtros</summary>
 
-      <!-- Mapa interactivo -->
-      <div id="map"></div>
-      <!-- Coordenadas del cuadro delimitador (BBox) -->
-      <div id="bbox-coordinates" class="bbox-coordinates"></div>
+      <!-- Agrupamos mapa y coords en un wrapper para poder ocultarlos -->
+      <div id="mapFilter">
+        <!-- Mapa interactivo -->
+        <div id="map"></div>
+        <!-- Coordenadas del cuadro delimitador (BBox) -->
+        <div id="bbox-coordinates" class="bbox-coordinates"></div>
+      </div>
 
       <!-- Filtros temporales -->
       <div class="filter-time">
@@ -42,7 +45,7 @@
       </div>
 
       <!-- Filtro de procedimiento -->
-      <div class="filter-procedure">
+      <div id="procedureFilter" class="filter-procedure">
         <label for="procedure"><strong>Procedure</strong></label>
         <input type="text" id="procedure" name="procedure" />
       </div>

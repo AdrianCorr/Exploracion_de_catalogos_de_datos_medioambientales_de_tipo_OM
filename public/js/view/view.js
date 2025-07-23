@@ -11,6 +11,31 @@ import {
 
 let currentChart = null;
 
+// Extraemos los parámetros de la URL
+const { procedure, startDate, endDate, model } = parseViewParams();
+
+/**
+ * Oculta mapa y filtro de procedure si no estamos en CTD.
+ */
+function configureFilters() {
+  if (model !== 'ctd_intecmar.configuracion_ctd') {
+    document.getElementById('mapFilter').style.display = 'none';
+    document.getElementById('procedureFilter').style.display = 'none';
+  }
+}
+
+/**
+ * Ajusta el <h1> según el modelo: CTD, WRF o ROMS.
+ */
+function setPageTitle() {
+  const titles = {
+    'ctd_intecmar.configuracion_ctd': 'CTD Viewer',
+    'wrf_meteogalicia.modelo_wrf':     'WRF Viewer',
+    'roms_meteogalicia.modelo_roms':   'ROMS Viewer'
+  };
+  document.getElementById('pageTitle').textContent = titles[model] || 'Viewer';
+}
+
 /**
  * Overlay compartido para todos los modales.
  * Al hacer click sobre él, cierra el modal JSON y el modal Chart.
@@ -55,7 +80,6 @@ function createJsonModal() {
   modal.querySelector(".modal-close")
        .addEventListener("click", () => hideModal(modal));
 }
-
 
 /**
  * Inicializa en el DOM un modal con:
@@ -216,14 +240,16 @@ createChartModal();
 
 /**
  * Punto de entrada principal.
- * - Lee parámetros de la URL (procedure, fechas, featureTypeName).
+ * - Lee parámetros de la URL (procedure, fechas, model).
  * - Inicializa el mapa Leaflet con herramientas de dibujo de BBox.
  * - Carga y dibuja las features iniciales.
  * - Configura el handler de búsqueda y renderizado de resultados.
  */
 document.addEventListener("DOMContentLoaded", async () => {
-  // 1. Parsear parámetros de la URL y asignarlos a variables
-  const { procedure, startDate, endDate, featureTypeName } = parseViewParams();
+
+  // 1. Configurar título de la página y los filtros
+  setPageTitle();
+  configureFilters();
 
   // 2. Rellenar los inputs del formulario con los valores obtenidos
   document.getElementById("procedure").value = procedure;
@@ -295,7 +321,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // 7. Cargar y dibujar marcadores iniciales sin filtro de geometría
   try {
-    const features = await fetchFilterFeatureOfInterest(featureTypeName);
+    const features = await fetchFilterFeatureOfInterest(model);
     drawPointFeaturesOnMap(map, features);
   } catch (err) {
     console.error("Error al cargar features:", err);
