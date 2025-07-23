@@ -311,12 +311,17 @@ app.get("/api/geoserver-data", async (req, res) => {
     if (bbox) {
       filters.push(`BBOX(shape, ${bbox})`);
     }
+
+    // Elegimos el campo temporal según el layer
+   const timeField = typeName === 'ccmm:observacion_ctd_wfs' ? 'phenomenon_time' : 'result_time';
+
     if (startTime) {
-      filters.push(`phenomenon_time >= '${startTime}'`);
+      filters.push(`${timeField} >= '${startTime}'`);
     }
     if (endTime) {
-      filters.push(`phenomenon_time <= '${endTime}'`);
+      filters.push(`${timeField} <= '${endTime}'`);
     }
+    
     if (procedure) {
       const procs = procedure.split(",").map((p) => p.trim());
       if (procs.length > 1) {

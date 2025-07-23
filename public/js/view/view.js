@@ -14,6 +14,14 @@ let currentChart = null;
 // Extraemos los parámetros de la URL
 const { procedure, startDate, endDate, featureTypeName } = parseViewParams();
 
+// Mapea featureTypeName al layer WFS correcto
+const wfsLayerMap = {
+  'ctd_intecmar.estacion':             'ccmm:observacion_ctd_wfs',
+  'wrf_meteogalicia.grid_modelo_wrf':  'ccmm:prediccion_diaria_wrf_wfs',
+  'roms_meteogalicia.grid_modelo_roms':'ccmm:prediccion_diaria_roms_wfs'
+};
+const wfsTypeName = wfsLayerMap[featureTypeName];
+
 /**
  * Oculta mapa y filtro de procedure si no estamos en CTD.
  */
@@ -340,46 +348,108 @@ document.addEventListener("DOMContentLoaded", async () => {
     resultsDiv.innerHTML = "Cargando…";
     counterSpan.textContent = "Resultados mostrados: 0 Resultados encontrados: 0";
 
-    // Recoger valores del formulario y construir query params
-    const procedureVal = document.getElementById("procedure").value;
+    // Recoger filtros de tiempo
     const startVal = document.getElementById("startDate").value;
-    const endVal = document.getElementById("endDate").value;
-    const params = new URLSearchParams({ typeName: "ccmm:observacion_ctd_wfs" });
-    if (procedureVal) params.append("procedure", procedureVal);
-    if (startVal) params.append("startTime", new Date(startVal).toISOString());
-    if (endVal) params.append("endTime", new Date(endVal).toISOString());
+    const endVal   = document.getElementById("endDate").value;
 
-    // Agregar filtro BBox si existe
-    const bboxLayer = drawnItems.getLayers()[0];
-    if (bboxLayer) {
-      const b = bboxLayer.getBounds();
-      params.append("bbox",
-        `${b.getSouthWest().lng},${b.getSouthWest().lat},` +
-        `${b.getNorthEast().lng},${b.getNorthEast().lat}`
-      );
+    const params = new URLSearchParams({ typeName: wfsTypeName });
+    if (startVal) params.append("startTime", new Date(startVal).toISOString());
+    if (endVal)   params.append("endTime",   new Date(endVal).toISOString());
+
+    // Para CTD, añadimos también procedure y bbox
+    if (featureTypeName === "ctd_intecmar.estacion") {
+      const procedureVal = document.getElementById("procedure").value;
+      if (procedureVal) params.append("procedure", procedureVal);
+
+      const bboxLayer = drawnItems.getLayers()[0];
+      if (bboxLayer) {
+        const b = bboxLayer.getBounds();
+        params.append("bbox",
+          `${b.getSouthWest().lng},${b.getSouthWest().lat},` +
+          `${b.getNorthEast().lng},${b.getNorthEast().lat}`
+        );
+      }
     }
 
     // Realizar fetch y procesar respuesta
     try {
-      const resp = await fetch(`/api/geoserver-data?${params.toString()}`);
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const url = `/api/geoserver-data?${params.toString()}`;
+      console.log("🔎 Fetching Geoserver WFS:", url);
+
+      const resp = await fetch(url);
+
+      if (!resp.ok) {
+        // Leer cuerpo para entender el 500
+        const body = await resp.text();
+        console.error("❌ Geoserver 500 body:", body);
+        throw new Error(`HTTP ${resp.status}`);
+      }
       const json = await resp.json();
 
-      // Calcular total real y agrupar por nombre de estación
-      const itemsTotal = Number.isInteger(json.totalCount)
-        ? json.totalCount
-        : (json.features || []).length;
-      const features = json.features || [];
-      const grouped = groupByStation(json.features || []);
+      // WRF/ROMS: tabla simple con Name, Phenomenon Time, Result Time, Details
+      if (featureTypeName !== "ctd_intecmar.estacion") {
+        const features = json.features || [];
+        const total = features.length;
+        counterSpan.textContent =
+          `Resultados mostrados: ${total} Resultados encontrados: ${total}`;
 
-      // Actualizar contador y mostrar tabla o mensaje de “no resultados”
-      const itemsShown = Object.values(grouped).reduce((sum, g) => sum + g.observations.length, 0);
-      counterSpan.textContent = `Resultados mostrados: ${itemsShown} Resultados encontrados: ${itemsTotal}`;
+        if (total === 0) {
+          resultsDiv.innerHTML = `<div>No results found.</div>`;
+          return;
+        }
 
-      if (itemsTotal === 0) {
-        resultsDiv.innerHTML = `<div>No results found.</div>`;
-        return;
-      }
+        // Construir tabla
+       let html = `
+         <table class="results-table">
+           <thead>
+             <tr>
+               <th>Name</th>
+               <th>Phenomenon Time</th>
+               <th>Result Time</th>
+               <th>Details</th>
+             </tr>
+           </thead>
+           <tbody>
+       `;
+       for (const feat of features) {
+         const p = feat.properties;
+         const name  = p.nombre || p.name || "—";
+         const pheno = (p.phenomenon_time_start && p.phenomenon_time_end) ? `[${p.phenomenon_time_start} - ${p.phenomenon_time_end}]` : (p.phenomenon_time || "—");
+         const result = p.result_time || "—";
+         const dataJson  = JSON.stringify([feat]);
+         const dataChart = JSON.stringify([feat]);
+
+         html += `
+           <tr>
+             <td>${name}</td>
+             <td>${pheno}</td>
+             <td>${result}</td>
+             <td>
+               <button onclick='showJsonModal(${dataJson})'>Show JSON</button>
+               <button onclick='showChartForStation(${dataChart})'>Show Chart</button>
+             </td>
+           </tr>
+         `;
+       }
+       html += `</tbody></table>`;
+       resultsDiv.innerHTML = html;
+       return;
+     }
+
+     // CTD: agrupar por estación y render completo…
+     const itemsTotal = Number.isInteger(json.totalCount)
+       ? json.totalCount
+       : (json.features || []).length;
+     const grouped = groupByStation(json.features || []);
+     const itemsShown = Object.values(grouped)
+       .reduce((sum, g) => sum + g.observations.length, 0);
+     counterSpan.textContent =
+       `Resultados mostrados: ${itemsShown} Resultados encontrados: ${itemsTotal}`;
+
+     if (itemsTotal === 0) {
+       resultsDiv.innerHTML = `<div>No results found.</div>`;
+       return;
+     }
 
       let html = `
         <table class="results-table">
