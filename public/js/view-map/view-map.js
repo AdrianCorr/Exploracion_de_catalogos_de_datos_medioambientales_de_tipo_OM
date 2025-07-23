@@ -4,12 +4,13 @@ import {
   parseViewParams
 } from '../view/view-utils.js';
 
-// Ejecutar cuando el DOM esté cargado
+// Ejecutar cuando el DOM esté completamente cargado
 document.addEventListener('DOMContentLoaded', async () => {
-  // Leer parámetros de la URL
+  // 1) Leer parámetros de la URL
   const { featureTypeName } = parseViewParams();
+  const coverageId = new URLSearchParams(window.location.search).get('coverageId');
 
-  // Ajustar título y profundidad
+  // 2) Ajustar título y mostrar/ocultar selector de profundidad
   const titleEl = document.getElementById('pageTitle');
   const depthControl = document.getElementById('depthControl');
   if (featureTypeName === 'wrf_meteogalicia.grid_modelo_wrf') {
@@ -23,35 +24,56 @@ document.addEventListener('DOMContentLoaded', async () => {
     depthControl.style.display = 'none';
   }
 
-  // ------ Código de inicialización de mapa tomado de view.js ------
-  // Ajustar las URLs de los iconos de Leaflet (workaround CDN)
-  delete L.Icon.Default.prototype._getIconUrl;
-  L.Icon.Default.mergeOptions({
-    iconRetinaUrl: "https://unpkg.com/leaflet@1.9.3/dist/images/marker-icon-2x.png",
-    iconUrl:       "https://unpkg.com/leaflet@1.9.3/dist/images/marker-icon.png",
-    shadowUrl:     "https://unpkg.com/leaflet@1.9.3/dist/images/marker-shadow.png"
+  /* --------------------------- MAPA PEQUEÑO --------------------------- */
+  const smallMap = L.map('smallMap').setView([43.05, -8.15], 6);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(smallMap);
+  const drawnItemsSmall = new L.FeatureGroup();
+  smallMap.addLayer(drawnItemsSmall);
+  smallMap.addControl(new L.Control.Draw({
+    draw: {
+      rectangle: { shapeOptions: { color: '#97009c' } },
+      polygon: false, polyline: false, circle: false,
+      marker: false, circlemarker: false
+    },
+    edit: { featureGroup: drawnItemsSmall, remove: true }
+  }));
+  let currentBBox = '';
+  smallMap.on('draw:created', e => {
+    drawnItemsSmall.clearLayers();
+    drawnItemsSmall.addLayer(e.layer);
+    const b = e.layer.getBounds();
+    currentBBox = `${b.getSouthWest().lng},${b.getSouthWest().lat},${b.getNorthEast().lng},${b.getNorthEast().lat}`;
+  });
+  smallMap.on('draw:deleted', () => {
+    drawnItemsSmall.clearLayers();
+    currentBBox = '';
   });
 
-  // Inicializar mapa centrado en Galicia y capa base OpenStreetMap
-  const galiciaCenter = [42.7, -8.0];
-  const map = L.map("map").setView(galiciaCenter, 7);
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    attribution: "© OpenStreetMap contributors"
+  /* --------------------------- MAPA GRANDE ---------------------------- */
+  delete L.Icon.Default.prototype._getIconUrl;
+  L.Icon.Default.mergeOptions({
+    iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.3/dist/images/marker-icon-2x.png',
+    iconUrl:       'https://unpkg.com/leaflet@1.9.3/dist/images/marker-icon.png',
+    shadowUrl:     'https://unpkg.com/leaflet@1.9.3/dist/images/marker-shadow.png'
+  });
+
+  const galiciaCenter = [43.05, -8.15];
+  const map = L.map('map').setView(galiciaCenter, 7);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors'
   }).addTo(map);
 
-  // Configurar controles de zoom y “home” si está disponible
   map.zoomControl.remove();
   if (L.Control && L.Control.zoomHome) {
     new L.Control.zoomHome({
-      position: "topleft",
+      position: 'topleft',
       homeCoordinates: galiciaCenter,
       homeZoom: 8,
-      zoomHomeIcon: "home",
-      zoomHomeTitle: "Volver al inicio"
+      zoomHomeIcon: 'home',
+      zoomHomeTitle: 'Volver al inicio'
     }).addTo(map);
   }
 
-  // Añadir herramienta de dibujo de BBox y elemento para mostrar coordenadas
   const drawnItems = new L.FeatureGroup();
   map.addLayer(drawnItems);
   map.addControl(new L.Control.Draw({
@@ -61,41 +83,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       circle: false,
       circlemarker: false,
       marker: false,
-      rectangle: { shapeOptions: { color: "#97009c" } }
+      rectangle: { shapeOptions: { color: '#97009c' } }
     },
     edit: { featureGroup: drawnItems, edit: true, remove: true }
   }));
-
-  const coordsDiv = document.getElementById("bbox-coordinates");
-  const emptyHTML = `
-    <span class="coordinate-label">Coordenadas del BBox:</span><br>
-    <span class="coordinate-label">SW:</span><br>
-    <span class="coordinate-label">NE:</span>
-  `;
-  coordsDiv.innerHTML = emptyHTML;
-
-  map.on("draw:created", e => {
-    drawnItems.clearLayers();
-    drawnItems.addLayer(e.layer);
-    const b = e.layer.getBounds();
-    coordsDiv.innerHTML = `
-      <span class="coordinate-label">Coordenadas del BBox:</span><br>
-      <span class="coordinate-label">SW:</span> ${b.getSouthWest().lat.toFixed(6)} ${b.getSouthWest().lng.toFixed(6)}<br>
-      <span class="coordinate-label">NE:</span> ${b.getNorthEast().lat.toFixed(6)} ${b.getNorthEast().lng.toFixed(6)}
-    `;
-  });
-  map.on("draw:deleted", () => {
-    coordsDiv.innerHTML = emptyHTML;
-  });
-
-  // Cargar y dibujar marcadores iniciales sin filtro de geometría
-  try {
-    const features = await fetchFilterFeatureOfInterest(featureTypeName, '');
-    drawPointFeaturesOnMap(map, features);
-  } catch (err) {
-    console.error("Error al cargar features en view-map:", err);
-  }
-  // ----------------------------------------------------------------
-
-  // Aquí puedes continuar con el resto de lógica de selectores y updateDisplay...
 });

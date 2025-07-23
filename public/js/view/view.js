@@ -275,7 +275,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   // 4. Inicializar mapa centrado en Galicia y capa base OpenStreetMap
-  const galiciaCenter = [42.7, -8.0];
+  const galiciaCenter = [43.05, -8.15];
   const map = L.map("map").setView(galiciaCenter, 7);
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: "© OpenStreetMap contributors"
