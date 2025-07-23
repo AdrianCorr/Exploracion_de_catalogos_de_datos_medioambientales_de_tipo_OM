@@ -35,8 +35,8 @@ export function drawPointFeaturesOnMap(map, features) {
     iconUrl: "https://unpkg.com/leaflet@1.9.3/dist/images/marker-icon.png",
     iconRetinaUrl: "https://unpkg.com/leaflet@1.9.3/dist/images/marker-icon-2x.png",
     shadowUrl: "https://unpkg.com/leaflet@1.9.3/dist/images/marker-shadow.png",
-    iconSize: [16, 26],        // ancho, alto en píxeles
-    iconAnchor: [8, 26],        // punto de anclaje en el icono
+    iconSize: [16, 26],
+    iconAnchor: [8, 26],
     shadowSize: [30, 30],
     shadowAnchor: [8, 30]
   });

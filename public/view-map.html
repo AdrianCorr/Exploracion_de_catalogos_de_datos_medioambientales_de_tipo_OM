@@ -4,17 +4,17 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Model Data Viewer</title>
-  <!-- Reutilizamos estilos globales -->
+
+  <!-- CSS de terceros: Leaflet, Leaflet Draw, Font Awesome y ZoomHome -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
+  <link rel="stylesheet" href="lib/leaflet.zoomhome.css" />
+
+  <!-- CSS de la aplicación: estilos globales y específicos de esta vista -->
   <link rel="stylesheet" href="css/base.css" />
-  <!-- Estilos específicos de view-map -->
+  <link rel="stylesheet" href="css/view.css" />
   <link rel="stylesheet" href="css/view-map.css" />
-  <!-- Leaflet CSS -->
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
-    integrity="sha256-sA+e2XZpJ1AJs914O2G4Z+dkW4+MIMPi5igFZi3rYXY="
-    crossorigin=""
-  />
 </head>
 <body>
   <header>
@@ -24,6 +24,8 @@
     <aside class="left-panel">
       <!-- 1) Mapa pequeño para dibujar BBox -->
       <div id="smallMap"></div>
+      <!-- Coordenadas del BBox (lo usa el JS) -->
+      <div id="bbox-coordinates" class="coordinate-container"></div>
       <!-- 2) Selección de variable -->
       <div class="control-group">
         <label for="variableSelect">Selección de variable:</label>
@@ -51,13 +53,13 @@
     </section>
   </main>
 
-  <!-- Leaflet JS -->
-  <script
-    src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"
-    integrity="sha256-o9N1j7f2sEoFhKwHRVYjYXQ3F5s98rTJT4c1Yw9l+3s="
-    crossorigin=""
-  ></script>
-  <!-- Lógica dinámica para view-map -->
+  <!-- Scripts de terceros: Leaflet, Leaflet Draw, ZoomHome, Chart.js -->
+  <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+  <script src="lib/leaflet.zoomhome.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Lógica de la aplicación: módulo de visualización -->
   <script type="module" src="js/view-map/view-map.js"></script>
 </body>
 </html>
