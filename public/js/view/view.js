@@ -12,15 +12,17 @@ import {
 let currentChart = null;
 
 // Extraemos los parámetros de la URL
-const { procedure, startDate, endDate, model } = parseViewParams();
+const { procedure, startDate, endDate, featureTypeName } = parseViewParams();
 
 /**
  * Oculta mapa y filtro de procedure si no estamos en CTD.
  */
 function configureFilters() {
-  if (model !== 'ctd_intecmar.configuracion_ctd') {
-    document.getElementById('mapFilter').style.display = 'none';
-    document.getElementById('procedureFilter').style.display = 'none';
+  if (featureTypeName !== 'ctd_intecmar.estacion') {
+    const mapF = document.getElementById('mapFilter');
+    const procF = document.getElementById('procedureFilter');
+    if (mapF)  mapF.style.display  = 'none';
+    if (procF) procF.style.display = 'none';
   }
 }
 
@@ -29,11 +31,11 @@ function configureFilters() {
  */
 function setPageTitle() {
   const titles = {
-    'ctd_intecmar.configuracion_ctd': 'CTD Viewer',
-    'wrf_meteogalicia.modelo_wrf':     'WRF Viewer',
-    'roms_meteogalicia.modelo_roms':   'ROMS Viewer'
+    'ctd_intecmar.estacion': 'CTD Viewer',
+    'wrf_meteogalicia.grid_modelo_wrf':     'WRF Viewer',
+    'roms_meteogalicia.grid_modelo_roms':   'ROMS Viewer'
   };
-  document.getElementById('pageTitle').textContent = titles[model] || 'Viewer';
+  document.getElementById('pageTitle').textContent = titles[featureTypeName];
 }
 
 /**
@@ -240,7 +242,7 @@ createChartModal();
 
 /**
  * Punto de entrada principal.
- * - Lee parámetros de la URL (procedure, fechas, model).
+ * - Lee parámetros de la URL (procedure, fechas, featureTypeName).
  * - Inicializa el mapa Leaflet con herramientas de dibujo de BBox.
  * - Carga y dibuja las features iniciales.
  * - Configura el handler de búsqueda y renderizado de resultados.
@@ -321,7 +323,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // 7. Cargar y dibujar marcadores iniciales sin filtro de geometría
   try {
-    const features = await fetchFilterFeatureOfInterest(model);
+    const features = await fetchFilterFeatureOfInterest(featureTypeName);
     drawPointFeaturesOnMap(map, features);
   } catch (err) {
     console.error("Error al cargar features:", err);

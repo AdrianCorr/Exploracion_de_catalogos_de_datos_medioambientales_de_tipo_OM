@@ -4,13 +4,13 @@
  * Solicita features de interés al servidor.
  * Si no se proporciona geometryFilter, devuelve todas las features del tipo.
  *
- * @param {string} model   Nombre del tipo de feature.
+ * @param {string} featureTypeName    Nombre del tipo de feature.
  * @param {string} [geometryFilter]  Filtro de geometría (GeoJSON, WKT).
  * @returns {Promise<Object[]>}      Array de features filtradas.
  * @throws {Error}                  Si la respuesta HTTP no es exitosa.
  */
-export async function fetchFilterFeatureOfInterest(model, geometryFilter = "") {
-  const params = new URLSearchParams({ model });
+export async function fetchFilterFeatureOfInterest(featureTypeName , geometryFilter = "") {
+  const params = new URLSearchParams({ featureTypeName  });
   if (geometryFilter) {
     params.append("geometryFilter", geometryFilter);
   }
@@ -60,15 +60,25 @@ export function drawPointFeaturesOnMap(map, features) {
  * - procedure: Nombre del procedimiento (vacío si no se especifica).
  * - startDate: Fecha de inicio (vacío si no se especifica).
  * - endDate: Fecha de fin (vacío si no se especifica).
- * - model: Nombre del tipo de feature
+ * - featureTypeName : Nombre del tipo de feature
  */
 export function parseViewParams() {
   const p = new URLSearchParams(window.location.search);
+  const model = p.get("featureTypeName") || "";
+  let featureTypeName;
+
+  if (model === "ctd_intecmar.configuracion_ctd") {
+    featureTypeName = "ctd_intecmar.estacion";
+  } else if (model === "wrf_meteogalicia.modelo_wrf") {
+    featureTypeName = "wrf_meteogalicia.grid_modelo_wrf";
+  } else if (model === "roms_meteogalicia.modelo_roms") {
+    featureTypeName = "roms_meteogalicia.grid_modelo_roms";
+  }
   return {
     procedure:      p.get("procedure")       || "",
     startDate:      p.get("startDate")       || "",
     endDate:        p.get("endDate")         || "",
-    model:p.get("model") || "ctd_intecmar."
+    featureTypeName
   };
 }
 

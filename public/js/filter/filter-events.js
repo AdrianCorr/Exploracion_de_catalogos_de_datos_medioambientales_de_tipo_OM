@@ -155,7 +155,7 @@ export function setupResultInteractions() {
         procedure: uniqueProcedures.join(","),
         startDate: minStart,
         endDate: maxEnd,
-        model: processType
+        featureTypeName: processType
       });
       window.open(`view.html?${params.toString()}`, "_blank");
     };
