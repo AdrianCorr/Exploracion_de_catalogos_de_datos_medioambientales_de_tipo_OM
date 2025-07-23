@@ -399,7 +399,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
 
         // Construir tabla
-       let html = `
+        let html = `
          <table class="results-table">
            <thead>
              <tr>
@@ -410,8 +410,8 @@ document.addEventListener("DOMContentLoaded", async () => {
              </tr>
            </thead>
            <tbody>
-       `;
-       for (const feat of features) {
+        `;
+        for (const feat of features) {
          const p = feat.properties;
          const name  = p.nombre || p.name || "—";
          const pheno = (p.phenomenon_time_start && p.phenomenon_time_end) ? `[${p.phenomenon_time_start} - ${p.phenomenon_time_end}]` : (p.phenomenon_time || "—");
@@ -419,21 +419,37 @@ document.addEventListener("DOMContentLoaded", async () => {
          const dataJson  = JSON.stringify([feat]);
          const dataChart = JSON.stringify([feat]);
 
-         html += `
-           <tr>
-             <td>${name}</td>
-             <td>${pheno}</td>
-             <td>${result}</td>
-             <td>
-               <button onclick='showJsonModal(${dataJson})'>Show JSON</button>
-               <button onclick='showChartForStation(${dataChart})'>Show Chart</button>
-             </td>
-           </tr>
-         `;
-       }
-       html += `</tbody></table>`;
-       resultsDiv.innerHTML = html;
-       return;
+         // Generamos el botón correspondiente (Show Chart, WRF Viewer, ROMS Viewer)
+         let viewerBtn = `<button onclick='showChartForStation(${dataChart})'>Show Chart</button>`;
+          if (featureTypeName === 'wrf_meteogalicia.grid_modelo_wrf') {
+            viewerBtn = `
+              <button class="results-table--btn"
+                  onclick="window.open('view-map.html?coverageId=${encodeURIComponent(p.subsamples_coverage)}','_blank')">
+                  WRF Viewer
+              </button>`;
+          } else if (featureTypeName === 'roms_meteogalicia.grid_modelo_roms') {
+              viewerBtn = `
+                <button class="results-table--btn"
+                  onclick="window.open('view-map.html?coverageId=${encodeURIComponent(p.subsamples_coverage)}','_blank')">
+                  ROMS Viewer
+                </button>`;
+          }
+
+          html += `
+            <tr>
+              <td>${name}</td>
+              <td>${pheno}</td>
+              <td>${result}</td>
+              <td>
+                <button onclick='showJsonModal(${dataJson})'>Show JSON</button>
+                ${viewerBtn}
+              </td>
+            </tr>
+          `;
+        }
+        html += `</tbody></table>`;
+        resultsDiv.innerHTML = html;
+        return;
      }
 
      // CTD: agrupar por estación y render completo…

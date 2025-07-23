@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Model Viewer</title>
+  <!-- Estilos generales (puedes reutilizar view.css) -->
+    <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/view.css" />
+  <!-- Leaflet CSS -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
+    integrity="sha256-sA+e2XZpJ1AJs914O2G4Z+dkW4+MIMPi5igFZi3rYXY="
+    crossorigin=""
+  />
+  <!-- (Opcional) tus propios estilos para view-map -->
+  <style>
+    body { margin: 0; font-family: sans-serif; }
+    header { background: #f8f9fa; padding: 1rem; text-align: center; }
+    #map { width: 100%; height: calc(100vh - 3.5rem); }
+  </style>
+</head>
+<body>
+  <header>
+    <h1 id="pageTitle">Model Viewer</h1>
+  </header>
+  <div id="map"></div>
+
+  <!-- Leaflet JS -->
+  <script
+    src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"
+    integrity="sha256-o9N1j7f2sEoFhKwHRVYjYXQ3F5s98rTJT4c1Yw9l+3s="
+    crossorigin=""
+  ></script>
+  <!-- Tu script de inicialización para view-map -->
+  <script type="module" src="js/view-map.js"></script>
+</body>
+</html>
