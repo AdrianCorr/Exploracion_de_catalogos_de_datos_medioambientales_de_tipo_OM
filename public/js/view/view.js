@@ -373,17 +373,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // Realizar fetch y procesar respuesta
     try {
-      const url = `/api/geoserver-data?${params.toString()}`;
-      console.log("🔎 Fetching Geoserver WFS:", url);
+      const resp = await fetch(`/api/geoserver-data?${params.toString()}`);
 
-      const resp = await fetch(url);
-
-      if (!resp.ok) {
-        // Leer cuerpo para entender el 500
-        const body = await resp.text();
-        console.error("❌ Geoserver 500 body:", body);
-        throw new Error(`HTTP ${resp.status}`);
-      }
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
       const json = await resp.json();
 
       // WRF/ROMS: tabla simple con Name, Phenomenon Time, Result Time, Details
