@@ -145,37 +145,21 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // === Mapa pequeño (BBox) ===
-  const smallMap = L.map('smallMap').setView([43.05, -8.15], 6);
+  const smallMap = L.map('smallMap').setView([43.05, -8.15], 5);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(smallMap);
 
   const drawnItemsSmall = new L.FeatureGroup();
   smallMap.addLayer(drawnItemsSmall);
-  smallMap.addControl(new L.Control.Draw({
+
+  const drawControl = new L.Control.Draw({
     draw: {
       rectangle: { shapeOptions: { color: '#97009c' } },
       polygon: false, polyline: false, circle: false,
       marker: false, circlemarker: false
     },
     edit: { featureGroup: drawnItemsSmall, remove: true }
-  }));
-
-  let spatialFilter = null;
-  smallMap.on(L.Draw.Event.CREATED, e => {
-    drawnItemsSmall.clearLayers();
-    drawnItemsSmall.addLayer(e.layer);
-    const b = e.layer.getBounds();
-    spatialFilter = {
-      minLat: b.getSouth(),
-      maxLat: b.getNorth(),
-      minLon: b.getWest(),
-      maxLon: b.getEast()
-    };
-    updateMap();
   });
-  smallMap.on(L.Draw.Event.DELETED, () => {
-    spatialFilter = null;
-    updateMap();
-  });
+  smallMap.addControl(drawControl);
 
   // === Mapa grande (igual que en tu view.js) ===
   delete L.Icon.Default.prototype._getIconUrl;
@@ -191,7 +175,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     attribution: '© OpenStreetMap contributors'
   }).addTo(map);
 
-  map.zoomControl.remove();
   if (L.Control && L.Control.zoomHome) {
     new L.Control.zoomHome({
       position: 'topleft',
@@ -202,20 +185,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }).addTo(map);
   }
 
-  const drawnItemsBig = new L.FeatureGroup();
-  map.addLayer(drawnItemsBig);
-  map.addControl(new L.Control.Draw({
-    draw: {
-      polygon: false,
-      polyline: false,
-      circle: false,
-      circlemarker: false,
-      marker: false,
-      rectangle: { shapeOptions: { color: '#97009c' } }
-    },
-    edit: { featureGroup: drawnItemsBig, edit: true, remove: true }
-  }));
-
   // === Estado raster ===
   let geoRasterLayer = null;
   let currentGeoraster = null;
@@ -225,10 +194,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Variables (bandas) según modelo
   const bands = Object.keys(isWRF ? SCALES.WRF : SCALES.ROMS);
- const labels = isWRF ? WRF_BAND_LABELS : ROMS_BAND_LABELS;
-bands.forEach(band => {
-  varSelect.add(new Option(labels[band] || band, band));
-});
+  const labels = isWRF ? WRF_BAND_LABELS : ROMS_BAND_LABELS;
+  bands.forEach(band => {
+    varSelect.add(new Option(labels[band] || band, band));
+  });
   varSelect.value = bands[0];
 
   // Horas (1..96) como en tus ejemplos
@@ -374,6 +343,42 @@ bands.forEach(band => {
   varSelect.addEventListener('change', updateMap);
   if (isROMS) depthSelect.addEventListener('change', updateMap);
 
-  // === Primera render ===
+  // === Inicialización del mapa pequeño ===
+  const galiciaBounds = L.latLngBounds(
+    [41.8, -10.0],  // Suroeste: lat, lon
+    [44.5, -5.0]   // Noreste: lat, lon
+  );
+  const defaultBox = L.rectangle(galiciaBounds, { color: '#97009c', weight: 2 });
+  drawnItemsSmall.addLayer(defaultBox);
+
+  smallMap.fitBounds(galiciaBounds);
+
+  // Filtro spatial inicial:
+  let spatialFilter = {
+    minLat: galiciaBounds.getSouth(),
+    maxLat: galiciaBounds.getNorth(),
+    minLon: galiciaBounds.getWest(),
+    maxLon: galiciaBounds.getEast()
+  };
+
+  // Ahora sí, ¡ya puedes pintar!
   updateMap();
+
+  // --- EVENTOS DEL DRAW ---
+  smallMap.on(L.Draw.Event.CREATED, e => {
+    drawnItemsSmall.clearLayers();
+    drawnItemsSmall.addLayer(e.layer);
+    const b = e.layer.getBounds();
+    spatialFilter = {
+      minLat: b.getSouth(),
+      maxLat: b.getNorth(),
+      minLon: b.getWest(),
+      maxLon: b.getEast()
+    };
+    updateMap();
+  });
+  smallMap.on(L.Draw.Event.DELETED, () => {
+    spatialFilter = null;
+    updateMap();
+  });
 });
