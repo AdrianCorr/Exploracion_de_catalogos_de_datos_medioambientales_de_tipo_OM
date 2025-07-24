@@ -317,6 +317,9 @@ export function renderResults(data) {
             scrollContainer.classList.add("scrollable-table");
             if (Array.isArray(meta.fields)) {
               const tbl = document.createElement("table");
+              const headerRow = document.createElement("tr");
+              headerRow.innerHTML = `<th>Names</th><th>Type</th><th>Variable Name</th>`;
+              tbl.appendChild(headerRow);
               meta.fields.forEach((field) => {
                 const vocab = {};
                 (field.names || []).forEach((n) => (vocab[n.vocabulary] = n.term));
