@@ -15,10 +15,10 @@ header {
   background: var(--primary-color);
   color: #fff;
   text-align: center;
-  padding: 2.2rem 0 1.7rem 0;
+  padding: 1rem 0 1rem 0;
   border-radius: 16px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.10);
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
   max-width: 100%;
 }
 header h1 {
@@ -35,20 +35,6 @@ main {
   flex: 1 1 auto;
   min-height: 0;
   width: 100%;
-}
-
-/* Panel izquierdo */
-.left-panel {
-  min-width: 260px;
-  max-width: 340px;
-  width: 25vw;
-  background: var(--card-bg);
-  border-radius: 12px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
-  padding: 1.3rem 1.1rem 1.3rem 1.1rem;
-  margin-bottom: 0;
-  overflow-y: auto;
-  height: fit-content;
 }
 
 /* Controles dentro del panel */
@@ -121,27 +107,55 @@ main {
   transition: height 0.25s;
 }
 
-/* Responsive: menos espacio en pantallas pequeñas */
+.left-panel {
+  min-width: 180px;
+  max-width: 340px;
+  width: 25vw;
+  background: var(--card-bg);
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  padding: 1.3rem 1.1rem 1.3rem 1.1rem;
+  overflow-y: auto;
+  height: fit-content;
+  transition: width 0.2s, min-width 0.2s, max-width 0.2s;
+}
+
 @media (max-width: 900px) {
-  main {
-    flex-direction: column;
-    gap: 16px;
-  }
   .left-panel {
-    max-width: 100%;
-    width: 100%;
-    margin-bottom: 18px;
-    min-width: 0;
+    min-width: 140px;
+    max-width: 180px;
+    width: 24vw;
+    font-size: 0.98rem;
+    padding: 0.9rem 0.5rem 0.9rem 0.5rem;
   }
-  .map-panel {
-    min-width: 0;
+  .control-group label {
+    font-size: 0.90rem;
   }
-  #map {
-    min-height: 260px;
-    height: 45vh;
+  #smallMap {
+    height: 120px;
   }
-  header {
-    font-size: 1.2rem;
-    padding: 1.4rem 0;
+}
+
+@media (max-width: 700px) {
+  .left-panel {
+    min-width: 80px;
+    max-width: 110px;
+    width: 22vw;
+    padding: 0.5rem 0.2rem;
+  }
+  .control-group label {
+    font-size: 0.8rem;
+    margin-bottom: 0.08rem;
+  }
+  .control-group select {
+    font-size: 0.88rem;
+    padding: 0.12rem 0.2rem;
+  }
+  #smallMap {
+    height: 68px;
+  }
+  #infoBox {
+    font-size: 0.77rem;
+    padding: 0.2rem 0.4rem;
   }
 }
