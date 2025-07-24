@@ -1,69 +1,97 @@
 /* File: public/css/view-map.css */
 
-/* Layout principal */
+/* Layout principal (aprovecha el padding global y max-width de base.css) */
 body {
-  margin: 0;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  font-family: sans-serif;
+  background: var(--background-color);
+  color: var(--text-dark);
+  font-family: 'Inter', sans-serif;
 }
 
+/* Header (más grande y centrado) */
 header {
-  background-color: var(--primary-color);
-  color: white;
-  padding: 1rem;
+  background: var(--primary-color);
+  color: #fff;
   text-align: center;
-  border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
-  overflow: hidden;
+  padding: 2.2rem 0 1.7rem 0;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+  margin-bottom: 2rem;
+  max-width: 100%;
+}
+header h1 {
+  font-size: 2.4rem;
+  font-weight: 700;
+  letter-spacing: 1px;
 }
 
+/* Flex layout principal */
 main {
-  flex: 1;
   display: flex;
-  overflow: hidden;
+  flex-direction: row;
+  gap: 32px;
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
 }
 
 /* Panel izquierdo */
 .left-panel {
-  width: 300px;
-  padding: 1rem;
-  background: #f5f5f5;
+  min-width: 260px;
+  max-width: 340px;
+  width: 25vw;
+  background: var(--card-bg);
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  padding: 1.3rem 1.1rem 1.3rem 1.1rem;
+  margin-bottom: 0;
   overflow-y: auto;
-  box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+  height: fit-content;
 }
 
 /* Controles dentro del panel */
 .control-group {
-  margin-bottom: 1rem;
+  margin-bottom: 1.2rem;
 }
 .control-group label {
   display: block;
-  font-weight: bold;
-  margin-bottom: 0.25rem;
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+  color: var(--primary-color);
+  letter-spacing: 0.02em;
 }
 .control-group select {
   width: 100%;
-  padding: 0.25rem;
-  box-sizing: border-box;
+  padding: 0.3rem 0.6rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--primary-light);
+  font-size: 1rem;
+  color: var(--text-dark);
+  font-family: inherit;
 }
 
 /* Mapa pequeño para dibujar BBox */
 #smallMap {
   width: 100%;
-  height: 200px;
-  margin-bottom: 1rem;
-  border: 1px solid #ccc;
+  height: 210px;
+  margin-bottom: 1.3rem;
+  border: 1.5px solid var(--border-color);
+  border-radius: 10px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
 }
 
 /* Cuadro de información de fecha y píxel */
 #infoBox {
-  padding: 0.5rem;
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 0.9rem;
+  padding: 0.75rem 1rem;
+  background: var(--primary-light);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 0.98rem;
+  margin-top: 1rem;
+  color: var(--text-light);
 }
 
 /* Ocultar control de profundidad por defecto; JS lo mostrará solo en ROMS */
@@ -73,10 +101,47 @@ main {
 
 /* Panel de mapa grande */
 .map-panel {
-  flex: 1;
-  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: stretch;
 }
+
+/* Mapa grande adaptativo */
 #map {
   width: 100%;
-  height: 100%;
+  height: 70vh;
+  min-height: 480px;
+  max-height: 90vh;
+  border-radius: 16px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.10);
+  background: var(--card-bg);
+  transition: height 0.25s;
+}
+
+/* Responsive: menos espacio en pantallas pequeñas */
+@media (max-width: 900px) {
+  main {
+    flex-direction: column;
+    gap: 16px;
+  }
+  .left-panel {
+    max-width: 100%;
+    width: 100%;
+    margin-bottom: 18px;
+    min-width: 0;
+  }
+  .map-panel {
+    min-width: 0;
+  }
+  #map {
+    min-height: 260px;
+    height: 45vh;
+  }
+  header {
+    font-size: 1.2rem;
+    padding: 1.4rem 0;
+  }
 }

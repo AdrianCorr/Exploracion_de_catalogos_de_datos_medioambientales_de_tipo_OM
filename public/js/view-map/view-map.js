@@ -1,6 +1,23 @@
 // public/js/view-map/view-map.js
 
-import { parseViewParams } from '../view/view-utils.js';
+const WRF_BAND_LABELS = {
+  Band1: "Dirección del viento (°)",
+  Band2: "Velocidad del viento (m/s)",
+  Band3: "Presión (Pa)",
+  Band4: "Precipitación (kg/m²)",
+  Band5: "Humedad relativa (%)",
+  Band6: "Nieve acumulada (kg/m²)",
+  Band7: "Cota de nieve (m)",
+  Band8: "Temperatura (K)"
+};
+
+const ROMS_BAND_LABELS = {
+  Band1: "Salinidad (PSU)",
+  Band2: "Temperatura (K)",
+  Band3: "Velocidad U (m/s)",
+  Band4: "Velocidad V (m/s)",
+  Band5: "Altura superficial (m)"
+};
 
 // Intenta localizar la función de parseo en las distintas builds posibles
 function resolveParseGeoraster() {
@@ -95,7 +112,8 @@ const WCS_URL = 'https://tec.citius.usc.es/ccmm/geoserver/ows';
 
 document.addEventListener('DOMContentLoaded', async () => {
   // === Parámetros ===
-  const { featureTypeName } = parseViewParams();
+  const params = new URLSearchParams(window.location.search);
+  const featureTypeName = params.get('featureTypeName') || "";
   const isWRF  = featureTypeName === 'wrf_meteogalicia.grid_modelo_wrf';
   const isROMS = featureTypeName === 'roms_meteogalicia.grid_modelo_roms';
 
@@ -207,7 +225,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Variables (bandas) según modelo
   const bands = Object.keys(isWRF ? SCALES.WRF : SCALES.ROMS);
-  bands.forEach(b => varSelect.add(new Option(b, b)));
+ const labels = isWRF ? WRF_BAND_LABELS : ROMS_BAND_LABELS;
+bands.forEach(band => {
+  varSelect.add(new Option(labels[band] || band, band));
+});
   varSelect.value = bands[0];
 
   // Horas (1..96) como en tus ejemplos
