@@ -416,13 +416,13 @@ document.addEventListener("DOMContentLoaded", async () => {
           if (featureTypeName === 'wrf_meteogalicia.grid_modelo_wrf') {
             viewerBtn = `
               <button class="results-table--btn"
-                  onclick="window.open('view-map.html?coverageId=${encodeURIComponent(p.subsamples_coverage)}','_blank')">
+                  onclick="window.open('view-map.html?coverageId=${encodeURIComponent(p.subsamples_coverage)}&featureTypeName=${encodeURIComponent(featureTypeName)}','_blank')">
                   WRF Viewer
               </button>`;
           } else if (featureTypeName === 'roms_meteogalicia.grid_modelo_roms') {
               viewerBtn = `
                 <button class="results-table--btn"
-                  onclick="window.open('view-map.html?coverageId=${encodeURIComponent(p.subsamples_coverage)}','_blank')">
+                  onclick="window.open('view-map.html?coverageId=${encodeURIComponent(p.subsamples_coverage)}&featureTypeName=${encodeURIComponent(featureTypeName)}','_blank')">
                   ROMS Viewer
                 </button>`;
           }

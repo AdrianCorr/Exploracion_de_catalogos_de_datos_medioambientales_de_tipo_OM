@@ -28,10 +28,11 @@ app.use((req, res, next) => {
     [
       "default-src 'self';",
       "font-src 'self' data: https://maxcdn.bootstrapcdn.com;",
-      "style-src 'self' 'unsafe-inline' https://unpkg.com https://cdnjs.cloudflare.com https://maxcdn.bootstrapcdn.com;",
+      "style-src 'self' 'unsafe-inline' https://unpkg.com https://cdnjs.cloudflare.com https://maxcdn.bootstrapcdn.com https://cdn.jsdelivr.net;",
       "script-src 'self' 'unsafe-inline' https://unpkg.com https://cdnjs.cloudflare.com https://maxcdn.bootstrapcdn.com https://cdn.jsdelivr.net;",
+      "worker-src 'self' blob: data:;",
+      "connect-src 'self' https://tec.citius.usc.es https://unpkg.com https://cdn.jsdelivr.net;",
       "img-src 'self' data: https://tile.openstreetmap.org https://a.tile.openstreetmap.org https://b.tile.openstreetmap.org https://c.tile.openstreetmap.org https://cdnjs.cloudflare.com https://maxcdn.bootstrapcdn.com https://unpkg.com;",
-      "connect-src 'self';",
       "object-src 'none';",
       "base-uri 'self';",
       "frame-ancestors 'none';",
