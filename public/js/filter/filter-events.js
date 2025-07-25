@@ -27,7 +27,7 @@ export function setupEventListeners() {
       const resultsContainer = document.getElementById("filterResults");
       resultsContainer.innerHTML = `<div class='error-msg'>⚠️ Por favor, asegúrese de ingresar también la fecha de fin.</div>`;
       document.querySelector(".results-header").style.display = "none";
-      return; // No hacer fetch ni mostrar "Cargando..."
+      return;
     }
 
     // Borrar mensajes de error anteriores y centrar en resultados
@@ -60,7 +60,7 @@ export function setupEventListeners() {
     if (startDate && !endDate) {
       document.getElementById("filterError").textContent =
         "⚠️ Por favor, asegúrese de ingresar también la fecha de fin.";
-      return; // No mostrar "Cargando..." ni hacer fetch
+      return;
     }
 
     // Borrar mensajes anteriores y preparar contenedor de resultados
