@@ -107,9 +107,6 @@ const SCALES = {
 // Valores de profundidad típicos para ROMS (ajusta si quieres)
 const ROMS_DEPTHS = [0, 10, 20, 35, 75, 125, 150, 250, 400, 500, 1000, 1500, 2000, 3000, 4000];
 
-// Endpoint WCS (mismo que tus ejemplos)
-const WCS_URL = 'https://tec.citius.usc.es/ccmm/geoserver/ows';
-
 document.addEventListener('DOMContentLoaded', async () => {
   // === Parámetros ===
   const params = new URLSearchParams(window.location.search);
@@ -235,10 +232,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateRangeSubset();
 
     const urlParams = new URLSearchParams(wcsBaseParams);
-    // Añadimos el subset temporal:
+    
+    // Subset temporal
     urlParams.append('subset', `time("${fecha.toISOString()}")`);
 
-    // Añadimos espacial si existe
+    // Subset espacial
     if (spatialFilter) {
       urlParams.append('subset', `Long(${spatialFilter.minLon},${spatialFilter.maxLon})`);
       urlParams.append('subset', `Lat(${spatialFilter.minLat},${spatialFilter.maxLat})`);
@@ -252,11 +250,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     }
 
-    return `${WCS_URL}?${urlParams.toString()}`;
+    // Ahora devolvemos la URL del proxy
+    return `/api/wcs?${urlParams.toString()}`;
   }
 
   function updateMap() {
     const url = buildWcsUrl();
+    console.log("[DEBUG] URL al proxy:", url);
 
     // Mostrar fecha seleccionada
     dateSpan.textContent = fecha.toISOString();

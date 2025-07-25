@@ -392,7 +392,51 @@ app.get("/api/geoserver-data", async (req, res) => {
   }
 });
 
-/* * Inicia el servidor en el puerto 3000
+/**
+ * GET /api/wcs
+ * Proxy a GeoServer WCS
+ * Query params: se pasan directamente
+ */
+app.get("/api/wcs", async (req, res) => {
+  try {
+    const params = new URLSearchParams();
+
+    // Procesar cada parámetro
+    for (const [key, value] of Object.entries(req.query)) {
+      if (Array.isArray(value)) {
+        // Si es un array, añadimos cada valor por separado
+        value.forEach(v => params.append(key, v));
+      } else if (key === "subset" && value.includes(",")) {
+        // Si subset viene como string con comas, lo separamos
+        value.split(",").forEach(v => params.append(key, v));
+      } else {
+        params.append(key, value);
+      }
+    }
+
+    const finalUrl = `https://tec.citius.usc.es/ccmm/geoserver/ows?${params.toString()}`;
+    console.log("[DEBUG] Llamada a GeoServer (parámetros corregidos):", finalUrl);
+
+    const response = await fetch(finalUrl);
+
+    if (!response.ok) {
+      const text = await response.text();
+      console.error("[DEBUG] Respuesta GeoServer:", text);
+      throw new Error(`Error en WCS: ${response.statusText}`);
+    }
+
+    const buffer = await response.arrayBuffer();
+    res.setHeader("Content-Type", "application/octet-stream");
+    res.send(Buffer.from(buffer));
+  } catch (error) {
+    console.error("Error en /api/wcs:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
+/* 
+ * Inicia el servidor en el puerto 3000
  * Muestra la URL en la consola cuando el servidor arranca
  */
 app.listen(3000, () => {
