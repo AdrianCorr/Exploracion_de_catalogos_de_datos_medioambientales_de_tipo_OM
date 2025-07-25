@@ -415,7 +415,6 @@ app.get("/api/wcs", async (req, res) => {
     }
 
     const finalUrl = `https://tec.citius.usc.es/ccmm/geoserver/ows?${params.toString()}`;
-    console.log("[DEBUG] Llamada a GeoServer (parámetros corregidos):", finalUrl);
 
     const response = await fetch(finalUrl);
 

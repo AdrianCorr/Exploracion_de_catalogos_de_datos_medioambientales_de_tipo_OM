@@ -256,7 +256,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function updateMap() {
     const url = buildWcsUrl();
-    console.log("[DEBUG] URL al proxy:", url);
 
     // Mostrar fecha seleccionada
     dateSpan.textContent = fecha.toISOString();
