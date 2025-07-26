@@ -1,4 +1,4 @@
-// public/js/api.js
+// public/js/index-api.js
 
 /**
  * Módulo API: funciones para consumir los endpoints del servidor.

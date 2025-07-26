@@ -1,4 +1,4 @@
-// public/js/helpers.js
+// public/js/index-helpers.js
 
 /**
  * Mapa de códigos de idioma a nombres de vocabulario para traducciones.

@@ -1,4 +1,4 @@
-// public/js/observer.js
+// public/js/index-observe.js
 
 /**
  * Inicializa un MutationObserver para detectar cambios en el contenedor de resultados.

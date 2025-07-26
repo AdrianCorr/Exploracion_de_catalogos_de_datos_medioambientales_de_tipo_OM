@@ -1,9 +1,9 @@
-// public/js/main.js
+// public/js/index.js
 
-import { initResultObserver } from "./observer.js";
-import { renderResults } from "./renderer.js";
-import { showModal } from "./modal.js";
-import { fetchProcessTypes } from "./api.js";
+import { initResultObserver } from "./index-observe.js";
+import { renderResults } from "./index-render.js";
+import { showModal } from "./index-modal.js";
+import { fetchProcessTypes } from "./index-api.js";
 
 /**
  * Módulo principal: arranca la aplicación al cargar el DOM.

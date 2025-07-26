@@ -1,12 +1,12 @@
-// public/js/renderer.js
+// public/js/index-render.js
 
-import { showModal } from "./modal.js";
+import { showModal } from "./index-modal.js";
 import {
   fetchDataTypeByName,
   fetchFeatureTypeByName,
   fetchFilterFeatureOfInterest,
-} from "./api.js";
-import { vocabMap } from "./helpers.js";
+} from "./index-api.js";
+import { vocabMap } from "./index-helpers.js";
 
 /**
  * Crea una sección de lista con encabezado y elementos para mostrar en modal o acordeón.

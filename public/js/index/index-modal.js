@@ -1,4 +1,4 @@
-// public/js/modal.js
+// public/js/index-modal.js
 
 /**
  * Muestra un modal con overlay y contenido dinámico.
