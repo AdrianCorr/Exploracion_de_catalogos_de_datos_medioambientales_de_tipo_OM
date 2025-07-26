@@ -65,7 +65,7 @@ export function createChartModal() {
   modal.classList.add("chart-modal");
   modal.innerHTML = `
     <button class="modal-close" aria-label="Cerrar">&times;</button>
-    <h3>Selecciona variables para el gráfico:</h3>
+    <h3>Gráfico de Estación</h3>
     <div id="chartVariables">
       <label><input type="checkbox" value="temperatura_its90"> temperatura_its90</label>
       <label><input type="checkbox" value="salinidad"> salinidad</label>
@@ -166,38 +166,73 @@ export function showJsonModal(data) {
 export function showChartForStation(data) {
   const modal = document.getElementById("chartModal");
   const canvas = document.getElementById("chartCanvas");
+
+  // Obtenemos los checkboxes ya existentes en el modal
   const checkboxes = modal.querySelectorAll("input[type=checkbox]");
 
-  checkboxes.forEach((cb, i) => cb.checked = (i === 0));
+  // Marcamos el primero por defecto
+  checkboxes.forEach((cb, i) => (cb.checked = i === 0));
+
+  // Agrupamos los checkboxes en un contenedor estético
+  let selectorsContainer = modal.querySelector(".chart-selectors");
+  if (!selectorsContainer) {
+    selectorsContainer = document.createElement("div");
+    selectorsContainer.classList.add("chart-selectors");
+
+    // Movemos los checkboxes existentes dentro del contenedor
+    checkboxes.forEach((cb) => {
+      const label = cb.closest("label") || document.createElement("label");
+      if (!label.contains(cb)) label.appendChild(cb);
+      selectorsContainer.appendChild(label);
+    });
+
+    // Insertamos el contenedor antes del canvas
+    canvas.parentElement.insertBefore(selectorsContainer, canvas);
+  }
+
+  // Mostramos el modal
   showModal(modal);
 
   function updateChart() {
     const selected = Array.from(checkboxes)
-                          .filter(c => c.checked)
-                          .map(c => c.value);
+      .filter((c) => c.checked)
+      .map((c) => c.value);
+
     if (currentChart) currentChart.destroy();
+
     const datasets = selected.map((field, idx) => ({
       label: field,
       data: data
-        .filter(d => d.properties[field] != null && d.properties.profundidad != null)
-        .map(d => ({ x: d.properties[field], y: +d.properties.profundidad })),
+        .filter(
+          (d) =>
+            d.properties[field] != null &&
+            d.properties.profundidad != null
+        )
+        .map((d) => ({
+          x: d.properties[field],
+          y: +d.properties.profundidad,
+        })),
       showLine: false,
       pointRadius: 4,
-      backgroundColor: getColor(idx)
+      backgroundColor: getColor(idx),
     }));
+
     currentChart = new Chart(canvas, {
-      type: 'scatter',
+      type: "scatter",
       data: { datasets },
       options: {
         responsive: true,
         scales: {
-          x: { title: { display: true, text: 'Value' }, beginAtZero: false },
-          y: { title: { display: true, text: 'Depth (m)' }, reverse: true }
-        }
-      }
+          x: { title: { display: true, text: "Value" }, beginAtZero: false },
+          y: { title: { display: true, text: "Depth (m)" }, reverse: true },
+        },
+      },
     });
   }
 
-  checkboxes.forEach(cb => cb.addEventListener("change", updateChart));
+  // Listeners
+  checkboxes.forEach((cb) => cb.addEventListener("change", updateChart));
+
+  // Primera carga
   updateChart();
 }

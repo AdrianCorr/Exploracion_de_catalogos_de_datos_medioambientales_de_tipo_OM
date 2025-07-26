@@ -1,5 +1,4 @@
 /* view.css — Estilos específicos para el visor de datos CTD */
-/* (Depende de base.css para variables, reset y layout general) */
 
 /* Ajustes sobre el body de base.css */
 body {
@@ -245,6 +244,25 @@ body {
   width: 100% !important;
   height: 300px !important;
 }
+
+.chart-selectors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+}
+
+.chart-selectors label {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: #f7f7f7;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  font-size: 0.85rem;
+}
+
 
 /* Botón de cierre en ambas modales */
 .json-modal .modal-close,
