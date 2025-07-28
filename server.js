@@ -1,9 +1,9 @@
 /**
  * Módulos principales:
- * - express: servidor HTTP
- * - node-fetch: cliente HTTP para llamadas a APIs externas
- * - cors: habilita CORS en todas las rutas
- * - path: gestión de rutas de ficheros
+ * - express: framework para crear el servidor HTTP.
+ * - node-fetch: cliente HTTP usado para consumir APIs externas desde Node.js.
+ * - cors: habilita el intercambio de recursos entre diferentes dominios.
+ * - path: utilidades para manejar rutas de archivos y directorios.
  */
 const express = require("express");
 const fetch = require("node-fetch");
@@ -220,7 +220,7 @@ app.get("/api/filter-feature-of-interest", async (req, res) => {
  * Query params:
  *  - processTypeName (string)
  *  - id (string)
- * - timeFilter (string, opcional)
+ * - timeFilter (string)
  */
 app.get("/api/process-by-id", async (req, res) => {
   const { processTypeName, id, timeFilter } = req.query;

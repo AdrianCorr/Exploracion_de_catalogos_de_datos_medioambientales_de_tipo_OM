@@ -14,7 +14,7 @@ export function initVariableSelect(varSelect, bands, labels) {
 }
 
 /**
- * Inicializa el <select> de tiempo con valores 1..96
+ * Inicializa el <select> de tiempo con valores 1..93
  */
 export function initTimeSelect(timeSelect) {
   timeSelect.innerHTML = "";

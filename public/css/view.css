@@ -2,7 +2,6 @@
 
 /* Ajustes sobre el body de base.css */
 body {
-  /* base.css aplicaba padding:20px (≈1.25rem); aquí restauramos 1rem */
   padding: 1rem;
 }
 
